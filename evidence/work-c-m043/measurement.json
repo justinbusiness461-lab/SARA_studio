@@ -1,0 +1,141 @@
+{
+  "words": [
+    {
+      "observationId": "w0",
+      "text": "rise",
+      "sourceAudioDigest": "4746aca332f19dfc72e45383a75e7a876f6c8e09f8e5b10df149725441a051bb",
+      "decodedSampleStart": 4000,
+      "decodedSampleEnd": 6960,
+      "startSecondsDerived": 0.5,
+      "endSecondsDerived": 0.87,
+      "startErrorSamples": 0,
+      "endErrorSamples": 12,
+      "startErrorMs": 0.0,
+      "endErrorMs": 1.5
+    },
+    {
+      "observationId": "w1",
+      "text": "higher",
+      "sourceAudioDigest": "4746aca332f19dfc72e45383a75e7a876f6c8e09f8e5b10df149725441a051bb",
+      "decodedSampleStart": 10880,
+      "decodedSampleEnd": 13600,
+      "startSecondsDerived": 1.36,
+      "endSecondsDerived": 1.7,
+      "startErrorSamples": -68,
+      "endErrorSamples": 61,
+      "startErrorMs": -8.5,
+      "endErrorMs": 7.625
+    }
+  ],
+  "medianAbsoluteStartErrorMs": 4.25,
+  "medianAbsoluteEndErrorMs": 4.5625,
+  "maxAbsoluteBoundaryErrorMs": 8.5,
+  "freeze": "076aed8d438a938119a7c2d5b34bb5eeb3ba4409",
+  "neutralHarnessChecks": 5,
+  "recoveryChecks": [
+    {
+      "name": "immutable-import-rise-higher.wav",
+      "pass": true
+    },
+    {
+      "name": "project-create",
+      "pass": true
+    },
+    {
+      "name": "machine-guided-R1",
+      "pass": true
+    },
+    {
+      "name": "audio-digest-exact",
+      "pass": true
+    },
+    {
+      "name": "sample-rate-exact",
+      "pass": true
+    },
+    {
+      "name": "two-timed-occurrences",
+      "pass": true
+    },
+    {
+      "name": "confidence-honest",
+      "pass": true
+    },
+    {
+      "name": "correct-R2",
+      "pass": true
+    },
+    {
+      "name": "R2-parent-is-R1",
+      "pass": true
+    },
+    {
+      "name": "corrected-word",
+      "pass": true
+    },
+    {
+      "name": "audio-unchanged",
+      "pass": true
+    },
+    {
+      "name": "word-timing-unchanged",
+      "pass": true
+    },
+    {
+      "name": "evidence-preserved",
+      "pass": true
+    },
+    {
+      "name": "project-advanced",
+      "pass": true
+    },
+    {
+      "name": "fresh-process-cache-free-R2",
+      "pass": true
+    },
+    {
+      "name": "R1-history-immutable",
+      "pass": true
+    },
+    {
+      "name": "stale-project-409",
+      "pass": true
+    },
+    {
+      "name": "stale-lyric-409",
+      "pass": true
+    },
+    {
+      "name": "stale-save-keeps-R2",
+      "pass": true
+    },
+    {
+      "name": "immutable-import-instrumental.wav",
+      "pass": true
+    },
+    {
+      "name": "negative-project-create",
+      "pass": true
+    },
+    {
+      "name": "instrumental-no-invented-words",
+      "pass": true
+    },
+    {
+      "name": "immutable-import-invalid.wav",
+      "pass": true
+    },
+    {
+      "name": "stale-rejected-before-audio-work",
+      "pass": true
+    },
+    {
+      "name": "invalid-audio-400",
+      "pass": true
+    }
+  ],
+  "R1": "84925a9dfd6e2de09c04ed9ae2ab07118a0eeceb4a0014d1c8c59a0888795abc",
+  "R2": "29ccc96908571632e5a323385a8230a88a0e805d026606ba5b9c8a7295160b07",
+  "ceiling": "synthetic isolated speech, supplied text; signal placement, not phoneme annotation; no ASR claim",
+  "timingToleranceMs": 10
+}
