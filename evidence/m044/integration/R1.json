@@ -1,0 +1,754 @@
+{
+  "status": "SUCCESS",
+  "manifest": {
+    "projectId": "0ee1a191680142d4bf8fb61b4d2c75bc",
+    "currentRevisionId": "26939c8ba6c333875ff50dd526b1dd94ea1e084d1f077e82e6a7786c70130e2f",
+    "formatVersion": 1
+  },
+  "revision": {
+    "revisionId": "26939c8ba6c333875ff50dd526b1dd94ea1e084d1f077e82e6a7786c70130e2f",
+    "projectId": "0ee1a191680142d4bf8fb61b4d2c75bc",
+    "formatVersion": 1,
+    "parentRevisionId": "28a17063f11e9fdbcb092e2b837b3c8f7a32c913f3b58b59c348ae76b03eeb3e",
+    "songSpecDigest": "75fff117c05053d4c2b6aa340f782d1b7a6124855403acd0e1d557701e03cc6d",
+    "productionTimelineDigest": "9b81e3494c7718346bedc34e6dc86ae535c445de2d968805a40560f3d64187e8",
+    "lyricTimelineDigest": null,
+    "sourceAssetDigests": [
+      "bee040279752f6d792a0d44b09a669ef794eedefd83e8a13cca209bae5531fda"
+    ],
+    "outputArtifactIds": [
+      "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399"
+    ],
+    "createdAt": "2026-11-01T17:35:25.451371+00:00",
+    "outputBindings": [
+      {
+        "artifactId": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+        "songSpecDigest": "75fff117c05053d4c2b6aa340f782d1b7a6124855403acd0e1d557701e03cc6d",
+        "productionTimelineDigest": "9b81e3494c7718346bedc34e6dc86ae535c445de2d968805a40560f3d64187e8"
+      }
+    ],
+    "operation": {
+      "id": "render:28a17063f11e9fdbcb092e2b837b3c8f7a32c913f3b58b59c348ae76b03eeb3e",
+      "meaningDigest": "8c36111608bfb9eed185a4df17e98e5d563d2dae0750407c7b1236c817652124"
+    }
+  },
+  "songSpec": {
+    "$schema": "pulseforge.songforge.skeleton.v2.8",
+    "song_id": "m044-fixture-44044",
+    "generation_seed": 44044,
+    "title": "M044 authority and locality fixture",
+    "engine": "phase4-spatial-bbd",
+    "timebase": {
+      "ticks_per_quarter_note": 960,
+      "initial_bpm": 96,
+      "sample_rate": 44100,
+      "key": "E minor",
+      "genre": "electro-blues",
+      "meter": "4/4"
+    },
+    "structure": {
+      "sections": [
+        {
+          "id": "sec-0",
+          "name": "Intro",
+          "type": "intro",
+          "start_tick": 0,
+          "end_tick": 7680,
+          "role": "none",
+          "lyrics": ""
+        },
+        {
+          "id": "sec-7680",
+          "name": "Verse",
+          "type": "verse",
+          "start_tick": 7680,
+          "end_tick": 15360,
+          "role": "none",
+          "lyrics": ""
+        }
+      ]
+    },
+    "tracks": [
+      {
+        "track_id": "drums",
+        "name": "Drums",
+        "type": "DRUMS",
+        "volume_db": -3,
+        "pan": 0,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 38,
+            "velocity": 100,
+            "duration_ticks": 180
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 960,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 2880,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 3840,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 3840,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 4800,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 5760,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 6720,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 38,
+            "velocity": 100,
+            "duration_ticks": 180
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 8640,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 10560,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 11520,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 11520,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 12480,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 13440,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 14400,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          }
+        ]
+      },
+      {
+        "track_id": "bass",
+        "name": "Bass",
+        "type": "BASS",
+        "volume_db": -2,
+        "pan": 0,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 3840,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 5760,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 48,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 48,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 11520,
+            "note_number": 45,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 13440,
+            "note_number": 45,
+            "velocity": 105,
+            "duration_ticks": 1880
+          }
+        ]
+      },
+      {
+        "track_id": "pad",
+        "name": "Pad",
+        "type": "PAD",
+        "volume_db": -10,
+        "pan": -0.2,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 60,
+            "velocity": 70,
+            "duration_ticks": 7680
+          }
+        ]
+      },
+      {
+        "track_id": "lead",
+        "name": "Lead",
+        "type": "LEAD",
+        "volume_db": -6,
+        "pan": 0.15,
+        "muted": false,
+        "events": []
+      },
+      {
+        "track_id": "pluck",
+        "name": "Pluck",
+        "type": "STRINGS",
+        "volume_db": -4,
+        "pan": 0.25,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 52,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 960,
+            "note_number": 55,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 59,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 2880,
+            "note_number": 62,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 52,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 8640,
+            "note_number": 55,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 59,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 10560,
+            "note_number": 62,
+            "velocity": 100,
+            "duration_ticks": 480
+          }
+        ]
+      }
+    ],
+    "prompt": "dark 96 BPM E minor blues guitar",
+    "created_at": "2026-11-01T00:00:00Z"
+  },
+  "productionTimeline": {
+    "formatVersion": 1,
+    "songSpecDigest": "75fff117c05053d4c2b6aa340f782d1b7a6124855403acd0e1d557701e03cc6d",
+    "timebase": {
+      "ticks_per_quarter_note": 960,
+      "initial_bpm": 96,
+      "sample_rate": 44100,
+      "key": "E minor",
+      "genre": "electro-blues",
+      "meter": "4/4"
+    },
+    "sections": [
+      {
+        "id": "sec-0",
+        "name": "Intro",
+        "type": "intro",
+        "start_tick": 0,
+        "end_tick": 7680,
+        "role": "none",
+        "lyrics": ""
+      },
+      {
+        "id": "sec-7680",
+        "name": "Verse",
+        "type": "verse",
+        "start_tick": 7680,
+        "end_tick": 15360,
+        "role": "none",
+        "lyrics": ""
+      }
+    ],
+    "tracks": [
+      {
+        "track_id": "drums",
+        "name": "Drums",
+        "type": "DRUMS",
+        "volume_db": -3,
+        "pan": 0,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 38,
+            "velocity": 100,
+            "duration_ticks": 180
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 960,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 2880,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 3840,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 3840,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 4800,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 5760,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 6720,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 38,
+            "velocity": 100,
+            "duration_ticks": 180
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 8640,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 10560,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 11520,
+            "note_number": 36,
+            "velocity": 115,
+            "duration_ticks": 200
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 11520,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 12480,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 13440,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 14400,
+            "note_number": 42,
+            "velocity": 70,
+            "duration_ticks": 80
+          }
+        ]
+      },
+      {
+        "track_id": "bass",
+        "name": "Bass",
+        "type": "BASS",
+        "volume_db": -2,
+        "pan": 0,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 3840,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 5760,
+            "note_number": 40,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 48,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 48,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 11520,
+            "note_number": 45,
+            "velocity": 105,
+            "duration_ticks": 1880
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 13440,
+            "note_number": 45,
+            "velocity": 105,
+            "duration_ticks": 1880
+          }
+        ]
+      },
+      {
+        "track_id": "pad",
+        "name": "Pad",
+        "type": "PAD",
+        "volume_db": -10,
+        "pan": -0.2,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 60,
+            "velocity": 70,
+            "duration_ticks": 7680
+          }
+        ]
+      },
+      {
+        "track_id": "lead",
+        "name": "Lead",
+        "type": "LEAD",
+        "volume_db": -6,
+        "pan": 0.15,
+        "muted": false,
+        "events": []
+      },
+      {
+        "track_id": "pluck",
+        "name": "Pluck",
+        "type": "STRINGS",
+        "volume_db": -4,
+        "pan": 0.25,
+        "muted": false,
+        "events": [
+          {
+            "type": "NOTE_ON",
+            "tick": 0,
+            "note_number": 52,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 960,
+            "note_number": 55,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 1920,
+            "note_number": 59,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 2880,
+            "note_number": 62,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 7680,
+            "note_number": 52,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 8640,
+            "note_number": 55,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 9600,
+            "note_number": 59,
+            "velocity": 100,
+            "duration_ticks": 480
+          },
+          {
+            "type": "NOTE_ON",
+            "tick": 10560,
+            "note_number": 62,
+            "velocity": 100,
+            "duration_ticks": 480
+          }
+        ]
+      }
+    ]
+  }
+}

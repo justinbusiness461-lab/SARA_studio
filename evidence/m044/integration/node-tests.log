@@ -1,0 +1,16 @@
+✔ render completion retains captured revision, spec and sources even if caller mutates input (1.759917ms)
+✔ stale render rejects once without retrying commit (0.956591ms)
+✔ intent retains prompt, explicit musical constraints and reproducible seed (3.924081ms)
+✔ unsupported meter and contradictory explicit tempo fail rather than silently coerce (1.050545ms)
+✔ unsupported keys and invalid seeds fail explicitly (0.419493ms)
+✔ bass octave edit changes only notes starting inside the chosen section (9.945301ms)
+✔ invalid target, ambiguous IDs and out of range pitches fail atomically (1.00229ms)
+✔ section end is exclusive and straddling-note edits require explicit later policy (1.170587ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.679339
