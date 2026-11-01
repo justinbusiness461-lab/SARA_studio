@@ -1,0 +1,28 @@
+{
+  "campaign": "PF-COMPLETION-001",
+  "mission": 43,
+  "role": "CHAT_D",
+  "audit_date": "2026-11-01",
+  "freeze_sha": "076aed8d438a938119a7c2d5b34bb5eeb3ba4409",
+  "release": "2.20.0",
+  "technical_verdict": "PASS_BOUNDED_GUIDED_ALIGNMENT",
+  "lyric_quality": "BOUNDED_SYNTHETIC_FIXTURE_NOT_ASR",
+  "fresh_execution": {
+    "unit": "35/35 PASS",
+    "http_restart": "25/25 PASS",
+    "custom_adversary": "15/15 PASS"
+  },
+  "fixture": {
+    "kind": "synthetic_Flite_spoken",
+    "sample_rate": 8000,
+    "decoded_frames": 17539,
+    "wav_sha256": "b64d26f624da0722337be7153ab01296ef4c645a68e6527d9b6ac9946ab904e3",
+    "pcm_sha256": "4746aca332f19dfc72e45383a75e7a876f6c8e09f8e5b10df149725441a051bb"
+  },
+  "limitations": [
+    "not ASR",
+    "not natural sung audio",
+    "competing R3 full transition not independently reproduced",
+    "browser PWA not exercised"
+  ]
+}
