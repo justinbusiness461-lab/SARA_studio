@@ -246,6 +246,26 @@ def project_operation(root, request, commit=False, lyric=False):
                 ancestor = previous["parentRevisionId"]
             revision, spec, timeline = project_revision(root, directory, pid, rid)
             return project_result(root, manifest, revision, spec, timeline)
+        operation = None
+        if request.get('operationId') is not None:
+            if lyric or not isinstance(request['operationId'], str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', request['operationId']):
+                raise ValueError('invalid operationId')
+            if not pid or request.get('expectedCurrentRevisionId') is None:
+                raise ValueError('operation requires an existing revision')
+            meaning = {k: v for k, v in request.items() if k != 'operationId'}
+            operation = {'id': request['operationId'], 'meaningDigest': hashlib.sha256(project_json(meaning)).hexdigest()}
+            # The receipt lives in the existing immutable revision chain. No
+            # side ledger or second pointer can independently select an outcome.
+            ancestor, seen = current, set()
+            while ancestor:
+                if ancestor in seen: raise ValueError('cyclic project history')
+                seen.add(ancestor)
+                prior, prior_spec, prior_timeline = project_revision(root, directory, pid, ancestor)
+                receipt = prior.get('operation')
+                if receipt and receipt['id'] == operation['id']:
+                    if receipt != operation: raise ProjectConflict('operation identity payload conflict')
+                    return project_result(root, manifest, prior, prior_spec, prior_timeline)
+                ancestor = prior['parentRevisionId']
         if "expectedCurrentRevisionId" not in request or request["expectedCurrentRevisionId"] != current:
             raise ProjectConflict("stale project revision; reopen before saving")
         previous = None
@@ -300,6 +320,7 @@ def project_operation(root, request, commit=False, lyric=False):
                 "lyricTimelineDigest": lyric_digest, "sourceAssetDigests": sorted(set(sources)),
                 "outputArtifactIds": sorted(set(outputs)), "createdAt": datetime.now(timezone.utc).isoformat(),
                 "outputBindings": [{"artifactId": aid, "songSpecDigest": song_digest, "productionTimelineDigest": timeline_digest} for aid in sorted(set(outputs))]}
+        if operation is not None: core['operation'] = operation
         rid = hashlib.sha256(project_json(core)).hexdigest()
         revision = {"revisionId": rid, **core}
         revisions = directory / "revisions"
