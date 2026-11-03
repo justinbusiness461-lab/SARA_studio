@@ -19,7 +19,7 @@ class OperationTests(unittest.TestCase):
             'tracks': [{'track_id': 'bass', 'type': 'INSTRUMENT', 'events': [
                 {'type': 'NOTE_ON', 'tick': 0, 'note_number': 36, 'velocity': 100, 'duration_ticks': 480},
                 {'type': 'NOTE_ON', 'tick': 4000, 'note_number': 40, 'velocity': 100, 'duration_ticks': 480}]}]}
-        self.r1 = server.project_operation(self.root, {'songSpec': self.spec, 'sourceAssetDigests': [], 'outputArtifactIds': []}, commit=True)
+        self.r1 = server.project_operation(self.root, {'expectedCurrentRevisionId': None, 'songSpec': self.spec, 'sourceAssetDigests': [], 'outputArtifactIds': []}, commit=True)
         self.pid = self.r1['manifest']['projectId']
         edited = {
             **self.spec,
@@ -109,7 +109,7 @@ class OperationTests(unittest.TestCase):
         self.assertEqual(opened['revision']['revisionId'], r2['revision']['revisionId'])
         hist = server.project_operation(self.root, {'projectId': self.pid, 'revisionId': r1['revision']['revisionId']})
         self.assertEqual(hist['revision']['revisionId'], r1['revision']['revisionId'])
-        self.assertIn(audio, hist['revision']['outputArtifactIds'])
+        self.assertIn(audio, [binding['artifactId'] for binding in hist['historicalOutputBindings']])
         self.assertEqual(server.artifact_bytes(self.root, audio), b'late-r1-pcm-bytes')
         again = server.project_operation(self.root, {
             'projectId': self.pid,
@@ -121,7 +121,7 @@ class OperationTests(unittest.TestCase):
             'operationContext': {'kind': 'render', 'sourceRevisionId': r1['revision']['revisionId']},
         }, commit=True)
         self.assertEqual(again['manifest']['currentRevisionId'], r2['revision']['revisionId'])
-        self.assertIn(audio, again['revision']['outputArtifactIds'])
+        self.assertIn(audio, [binding['artifactId'] for binding in again['historicalOutputBindings']])
         other = server.persist_export(self.root, 'other.wav', 'test', b'other-bytes')['sha256']
         with self.assertRaises(server.ProjectConflict):
             server.project_operation(self.root, {
