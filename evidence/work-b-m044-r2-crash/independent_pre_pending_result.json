@@ -1,0 +1,14 @@
+{
+  "targetSha": "9f200d5e3b45494cca4f46728cc9e3e8a64766fc",
+  "killPoint": "after real project_artifact_fence returns, before pending-renders mkdir/write",
+  "childExit": 73,
+  "freshProcessReopen": true,
+  "artifactDigest": "aa8c4d282e333d204368f18f88ec71303d58c4c45e27839c7991598a2899f7d1",
+  "artifactHashValid": true,
+  "artifactDecodeValid": true,
+  "capturedRevisionId": "9c6bc15039ae975c73fb02e94ae89ae6653dcad7b3459aa12b6ef12ae62ac250",
+  "historyOccurrences": 0,
+  "R2StillCurrent": true,
+  "pendingRecords": 0,
+  "verdict": "FAIL"
+}
