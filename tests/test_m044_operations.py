@@ -1,4 +1,9 @@
 """M044 operation identity, replay, and late-render fencing."""
+import io
+import json
+import subprocess
+import sys
+import wave
 import tempfile
 import unittest
 from pathlib import Path
@@ -34,6 +39,54 @@ class OperationTests(unittest.TestCase):
             'outputArtifactIds': [],
             'operationId': 'bass-octave-001',
         }
+
+    def wav(self):
+        buffer = io.BytesIO()
+        with wave.open(buffer, 'wb') as output:
+            output.setnchannels(2)
+            output.setsampwidth(2)
+            output.setframerate(44100)
+            output.writeframes(b'\x01\x00\x02\x00' * 32)
+        return buffer.getvalue()
+
+    def late_request(self, data):
+        digest = server.persist_export(self.root, 'late.wav', 'test', data)['sha256']
+        return {
+            'projectId': self.pid,
+            'expectedCurrentRevisionId': self.r1['revision']['revisionId'],
+            'songSpec': self.spec, 'sourceAssetDigests': [],
+            'outputArtifactIds': [digest], 'operationId': 'recovery-render',
+            'operationContext': {'kind': 'render', 'sourceRevisionId': self.r1['revision']['revisionId']},
+        }
+
+    def test_malformed_historical_wav_rejected(self):
+        r2 = server.project_operation(self.root, self.request, commit=True)
+        bad_channels = bytearray(self.wav())
+        bad_channels[22:24] = b'\x01\x00'
+        for data in (b'late-r1-pcm-bytes', self.wav()[:-1], bytes(bad_channels)):
+            with self.assertRaises(ValueError):
+                server.project_operation(self.root, self.late_request(data), commit=True)
+        self.assertEqual(server.project_operation(self.root, {'projectId': self.pid})['revision'], r2['revision'])
+
+    def test_crash_before_history_bind_recovers_without_replay(self):
+        r2 = server.project_operation(self.root, self.request, commit=True)
+        request = self.late_request(self.wav())
+        code = """
+import json, os, sys
+import studio_server as server
+def terminate(boundary):
+    if boundary == 'artifact_durable_before_historical_binding':
+        os._exit(73)
+server.project_boundary = terminate
+server.project_operation(sys.argv[1], json.loads(sys.argv[2]), commit=True)
+"""
+        completed = subprocess.run([sys.executable, '-c', code, str(self.root), json.dumps(request)])
+        self.assertEqual(completed.returncode, 73)
+        history = server.project_operation(self.root, {
+            'projectId': self.pid, 'revisionId': self.r1['revision']['revisionId']})
+        self.assertEqual([b['artifactId'] for b in history.get('historicalOutputBindings', [])],
+                         request['outputArtifactIds'])
+        self.assertEqual(history['manifest'], r2['manifest'])
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -94,7 +147,7 @@ class OperationTests(unittest.TestCase):
         r2 = server.project_operation(self.root, self.request, commit=True)
         self.assertEqual(r2['manifest']['currentRevisionId'], r2['revision']['revisionId'])
         self.assertNotEqual(r2['revision']['revisionId'], r1['revision']['revisionId'])
-        audio = server.persist_export(self.root, 'late-r1.wav', 'test', b'late-r1-pcm-bytes')['sha256']
+        audio = server.persist_export(self.root, 'late-r1.wav', 'test', self.wav())['sha256']
         bound = server.project_operation(self.root, {
             'projectId': self.pid,
             'expectedCurrentRevisionId': r1['revision']['revisionId'],
@@ -110,7 +163,7 @@ class OperationTests(unittest.TestCase):
         hist = server.project_operation(self.root, {'projectId': self.pid, 'revisionId': r1['revision']['revisionId']})
         self.assertEqual(hist['revision']['revisionId'], r1['revision']['revisionId'])
         self.assertIn(audio, [binding['artifactId'] for binding in hist['historicalOutputBindings']])
-        self.assertEqual(server.artifact_bytes(self.root, audio), b'late-r1-pcm-bytes')
+        self.assertEqual(server.artifact_bytes(self.root, audio), self.wav())
         again = server.project_operation(self.root, {
             'projectId': self.pid,
             'expectedCurrentRevisionId': r1['revision']['revisionId'],

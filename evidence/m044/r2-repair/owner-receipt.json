@@ -1,0 +1,13 @@
+{
+  "base": "5403e50fb9399795e1ae52c57100c17d2f0dab9e",
+  "python": "46/46",
+  "node": "8/8",
+  "integration": "19/19",
+  "scope": "Owner local qualification. Independent B/Manus pending. Process termination recovery, not power-loss certification. Pending render ownership is durable at admission before the history-binding boundary. Unassociated generic exports are not inferred as renders.",
+  "validator": "Existing lyric PCM reader has a 60-second scope restriction. Render admission uses wave in the existing server with strict RIFF/chunk/frame checks to support longer songs without changing frozen lyric authority.",
+  "source": {
+    "tools/studio_server.py": "f2707c42cbce9b1958cf9bf64af95b1557005bfe40ec6f6ca113b0de9ea947a8",
+    "tools/m044_probe.cjs": "e227581c0449b2a444ada82354d3dd7eb7fd4a4c7af154f46de6783dc303cae5",
+    "tests/test_m044_operations.py": "105a9ee076416ef7476c12c3108f3c6985ced784f47b79d9937ef421ed4bbf1e"
+  }
+}

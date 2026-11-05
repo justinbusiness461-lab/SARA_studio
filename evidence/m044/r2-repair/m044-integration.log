@@ -1,0 +1,27 @@
+{
+  "passed": 19,
+  "failed": 0,
+  "media": {
+    "sampleRate": 44100,
+    "channels": 2,
+    "frames": 463050,
+    "duration": 10.5,
+    "R1": {
+      "wavSha256": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+      "pcmSha256": "23a1af333d81c06e3574145daf266b7519766929436ebef5a9922835bedaaa98"
+    },
+    "R2": {
+      "wavSha256": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+      "pcmSha256": "7e03ed2a052c6d037e8f42323001748a91195f1add1049b9c4620f454452ad97"
+    }
+  },
+  "locality": {
+    "startFrame": 220500,
+    "stopFrame": 441000,
+    "tailFrames": 4410,
+    "changedFrames": 220494,
+    "first": 220506,
+    "last": 442056,
+    "outside": 0
+  }
+}

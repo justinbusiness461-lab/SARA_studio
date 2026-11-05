@@ -53,7 +53,10 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
     let release, started;
     const gate = new Promise(resolve => { release = resolve; });
     const start = new Promise(resolve => { started = resolve; });
-    const old = renderCaptured(r1, 'late-r1-render', { render: async s => { started(); const b = await render(s); await gate; return b; },
+    const old = renderCaptured(r1, 'late-r1-render', { render: async s => { started(); const b = Buffer.from(await render(s));
+      // Distinct, valid PCM render fixture with an identifiable one-LSB sample.
+      b.writeInt16LE(b.readInt16LE(44) === 32767 ? 32766 : b.readInt16LE(44) + 1, 44);
+      await gate; return b; },
       write: api.write, commit: api.commit });
     await start;
     const edit = { sectionId: spec.structure.sections[1].id, trackId: 'bass', semitones: -12 };
@@ -81,6 +84,11 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
     check('late R1 binding persisted', late.historicalOutputBindings.length === 1 && equal(late.historicalOutputBindings, historical.historicalOutputBindings));
     const object = digest => fs.readFileSync(path.join(state, 'objects', digest.slice(0, 2), digest));
     const a = object(r1.revision.outputArtifactIds[0]), b = object(r2.revision.outputArtifactIds[0]);
+    const delayedId = historical.historicalOutputBindings[0].artifactId;
+    const delayed = object(delayedId);
+    check('late WAV has distinct digest from original R1 and R2', delayedId !== sha(a) && delayedId !== sha(b) && sha(delayed) === delayedId);
+    check('late WAV belongs to captured R1', historical.historicalOutputBindings[0].revisionId === r1.revision.revisionId);
+    fs.writeFileSync(path.join(out, 'R1-late.wav'), delayed);
     fs.writeFileSync(path.join(out, 'R1.wav'), a); fs.writeFileSync(path.join(out, 'R2.wav'), b);
     check('real PCM16 stereo WAVs', a.toString('ascii', 0, 4) === 'RIFF' && a.readUInt16LE(22) === 2 && a.readUInt16LE(34) === 16);
     check('artifact byte identities verified', sha(a) === r1.revision.outputArtifactIds[0] && sha(b) === r2.revision.outputArtifactIds[0]);
