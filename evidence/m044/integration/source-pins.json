@@ -1,0 +1,21 @@
+{
+  "remoteSourceCommit": "69a1019d7905b4ff79f0c667d9ed3d2d7abf65f2",
+  "sourceTree": "ab0c468c8ea5ef3990bc113aaf16e6a6c6a0387b",
+  "executedLocalCommit": "accf19ea4728a67cbc81c7f085fec314c49eede4",
+  "treeEqualityVerified": true,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "node": "v24.22.1",
+  "sha256": {
+    "app-core.js": "63ff433abdb718265818733c698d30e2a0b53ef1da7a0fa1bfa7fbf3e35bbe13",
+    "app-ui.js": "7b8a6408ea15d7a62b2a1b8b7571b65729450893a2d97d6db36b46ae9522adf0",
+    "tools/studio_server.py": "28262cefdc43062d1b04c12b54679e08f5db300aebb1a61c7c1507450985078d",
+    "tools/lyric_timeline.py": "6cac2cfaa70dd5581b588d4fc58273bf3022bc4e4e537b1dea4afe5cf6a20dd3",
+    "tools/scorecore.cjs": "5f37fe15eeafc1b8cf362c1b2e05265dc4cbbf00564fcb57eab9c137ad91b5ba",
+    "tools/m044-session.cjs": "a69546d3b0fbda8c9c15a0d64277e346e1e982d01cffb73ccbbe89f238cb0ace",
+    "tools/m044_probe.cjs": "2041a67b66cb88e432936f66b0da8ed9826b9c9137156f2affc38fe2a571c3a7",
+    "tests/test_m044_operations.py": "09c5d38c50117f0deaaa83e14b1b5e7094140dfae13f77906a4dbb4a18fb5f62",
+    "tests/m044-session.test.cjs": "1e62bf4349c9b30f3b8013304a4ae9f4dd8f8ace0fdc707b0f3c48ab91bdca01",
+    "tests/scorecore.test.cjs": "dcbfa87d00f7ded5a9fcb212905cf3bfce4d7c4a7a02f3fda87bae86bd364dc9",
+    "package-lock.json": "41903dafe31c85757004540bdb75da05aeb203093af4a0264ffdf7eee048c28d"
+  }
+}

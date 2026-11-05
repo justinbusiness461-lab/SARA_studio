@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import lyric_timeline as lyrics
+import io
 import wave
 import http.server
 import json
@@ -213,6 +214,104 @@ def project_revision(root, directory, pid, rid):
     return revision, spec, timeline
 
 
+def validate_render_audio(root, digest):
+    data = artifact_bytes(root, digest)
+    if (len(data) < 44 or data[:4] != b"RIFF" or data[8:12] != b"WAVE"
+            or struct.unpack_from("<I", data, 4)[0] + 8 != len(data)):
+        raise ValueError("invalid render WAV container")
+    offset = 12
+    format_seen = False
+    data_seen = False
+    block_align = None
+    while offset < len(data):
+        if offset + 8 > len(data):
+            raise ValueError("truncated WAV chunk header")
+        kind = data[offset:offset + 4]
+        size = struct.unpack_from("<I", data, offset + 4)[0]
+        start = offset + 8
+        end = start + size
+        if end > len(data):
+            raise ValueError("truncated WAV chunk")
+        if kind == b"fmt ":
+            if format_seen or size < 16:
+                raise ValueError("invalid WAV format chunk")
+            encoding, channels, rate, byte_rate, block_align, bits = struct.unpack_from("<HHIIHH", data, start)
+            if (encoding != 1 or channels not in (1, 2) or bits != 16
+                    or not 8000 <= rate <= 192000 or block_align != channels * 2
+                    or byte_rate != rate * block_align):
+                raise ValueError("invalid WAV PCM metadata")
+            format_seen = True
+        elif kind == b"data":
+            if not format_seen or data_seen or not size or size % block_align:
+                raise ValueError("invalid WAV PCM frame alignment")
+            data_seen = True
+        offset = end + (size & 1)
+    if offset != len(data) or not data_seen:
+        raise ValueError("invalid WAV chunk layout")
+    try:
+        with wave.open(io.BytesIO(data), "rb") as audio:
+            channels, width, rate, frames = (audio.getnchannels(), audio.getsampwidth(),
+                                             audio.getframerate(), audio.getnframes())
+            if (audio.getcomptype() != "NONE" or channels not in (1, 2)
+                    or width != 2 or rate <= 0 or frames <= 0):
+                raise ValueError("unsupported render PCM format")
+            if len(audio.readframes(frames)) != frames * channels * width:
+                raise ValueError("truncated render PCM")
+    except (wave.Error, EOFError) as error:
+        raise ValueError("invalid render WAV") from error
+
+
+def reconcile_historical_renders(root, directory, pid, manifest):
+    # Pending records carry ownership. Never infer it from unassociated CAS bytes.
+    pending = directory / "pending-renders"
+    for path in sorted(pending.glob("*.json")):
+        receipt = json.loads(path.read_text())
+        rid = receipt["revisionId"]
+        ancestor = manifest["currentRevisionId"]
+        seen = set()
+        while ancestor != rid:
+            if ancestor is None or ancestor in seen:
+                raise ValueError("pending render source outside committed history")
+            seen.add(ancestor)
+            prior, _, _ = project_revision(root, directory, pid, ancestor)
+            ancestor = prior["parentRevisionId"]
+        revision, _, _ = project_revision(root, directory, pid, rid)
+        if (receipt["projectId"] != pid
+                or receipt["songSpecDigest"] != revision["songSpecDigest"]
+                or receipt["productionTimelineDigest"] != revision["productionTimelineDigest"]
+                or path.name != receipt["operation"]["id"] + ".json"):
+            raise ValueError("pending render identity mismatch")
+        for digest in receipt["artifactIds"]:
+            validate_render_audio(root, digest)
+            project_artifact_fence(root, digest)
+        history = directory / "historical-renders"
+        durable_mkdir(history)
+        destination = history / path.name
+        encoded = project_json(receipt)
+        if destination.exists() and destination.read_bytes() != encoded:
+            raise ProjectConflict("historical render recovery conflict")
+        if not destination.exists():
+            atomic_write_bytes(destination, encoded)
+        path.unlink()
+        sync_dir(pending)
+
+
+def historical_result(root, directory, manifest, revision, spec, timeline):
+    result = project_result(root, manifest, revision, spec, timeline)
+    bindings = []
+    for path in sorted((directory / "historical-renders").glob("*.json")):
+        receipt = json.loads(path.read_text())
+        if receipt["revisionId"] == revision["revisionId"]:
+            for aid in receipt["artifactIds"]:
+                validate_render_audio(root, aid)
+                bindings.append({"artifactId": aid, "revisionId": revision["revisionId"],
+                                 "songSpecDigest": revision["songSpecDigest"],
+                                 "productionTimelineDigest": revision["productionTimelineDigest"]})
+    if bindings:
+        result["historicalOutputBindings"] = bindings
+    return result
+
+
 def project_operation(root, request, commit=False, lyric=False):
     import uuid
     root = Path(root).resolve()
@@ -234,6 +333,8 @@ def project_operation(root, request, commit=False, lyric=False):
         current = manifest["currentRevisionId"] if manifest else None
         if manifest and (manifest.get("projectId") != pid or manifest.get("formatVersion") != 1):
             raise ValueError("invalid project manifest")
+        if manifest:
+            reconcile_historical_renders(root, directory, pid, manifest)
         if not commit:
             if not manifest: raise ValueError("project has no committed revision")
             rid = request.get("revisionId") or current
@@ -245,7 +346,68 @@ def project_operation(root, request, commit=False, lyric=False):
                 previous, _, _ = project_revision(root, directory, pid, ancestor)
                 ancestor = previous["parentRevisionId"]
             revision, spec, timeline = project_revision(root, directory, pid, rid)
-            return project_result(root, manifest, revision, spec, timeline)
+            return historical_result(root, directory, manifest, revision, spec, timeline)
+        operation = None
+        if request.get('operationId') is not None:
+            if lyric or not isinstance(request['operationId'], str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}', request['operationId']):
+                raise ValueError('invalid operationId')
+            if not pid or request.get('expectedCurrentRevisionId') is None:
+                raise ValueError('operation requires an existing revision')
+            meaning = {k: v for k, v in request.items() if k != 'operationId'}
+            operation = {'id': request['operationId'], 'meaningDigest': hashlib.sha256(project_json(meaning)).hexdigest()}
+            # The receipt lives in the existing immutable revision chain. No
+            # side ledger or second pointer can independently select an outcome.
+            history = directory / "historical-renders"
+            receipt_path = history / (operation["id"] + ".json")
+            if receipt_path.exists():
+                receipt = json.loads(receipt_path.read_text())
+                if receipt["operation"] != operation:
+                    raise ProjectConflict("operation identity payload conflict")
+                prior, prior_spec, prior_timeline = project_revision(root, directory, pid, receipt["revisionId"])
+                return historical_result(root, directory, manifest, prior, prior_spec, prior_timeline)
+            context = request.get("operationContext")
+            render = isinstance(context, dict) and context.get("kind") == "render"
+            captured = request["expectedCurrentRevisionId"]
+            if render and context.get("sourceRevisionId") != captured:
+                raise ProjectConflict("render revision identity mismatch")
+            source = None
+            ancestor, seen = current, set()
+            while ancestor:
+                if ancestor in seen: raise ValueError('cyclic project history')
+                seen.add(ancestor)
+                prior, prior_spec, prior_timeline = project_revision(root, directory, pid, ancestor)
+                receipt = prior.get('operation')
+                if receipt and receipt['id'] == operation['id']:
+                    if receipt != operation: raise ProjectConflict('operation identity payload conflict')
+                    return project_result(root, manifest, prior, prior_spec, prior_timeline)
+                if render and ancestor == captured:
+                    source = prior, prior_spec, prior_timeline
+                ancestor = prior['parentRevisionId']
+            if render:
+                if source is None:
+                    raise ProjectConflict("render source is outside committed history")
+                prior, prior_spec, prior_timeline = source
+                outputs = request.get("outputArtifactIds")
+                if (request.get("songSpec") != prior_spec
+                        or request.get("sourceAssetDigests", []) != prior["sourceAssetDigests"]
+                        or request.get("lyricTimelineDigest") is not None
+                        or not isinstance(outputs, list) or len(outputs) != 1):
+                    raise ProjectConflict("render payload does not match captured revision")
+                validate_render_audio(root, outputs[0])
+                if captured != current:
+                    project_artifact_fence(root, outputs[0])
+                    pending = directory / "pending-renders"
+                    durable_mkdir(pending)
+                    receipt = {
+                        "operation": operation, "projectId": pid,
+                        "revisionId": captured, "artifactIds": outputs,
+                        "songSpecDigest": prior["songSpecDigest"],
+                        "productionTimelineDigest": prior["productionTimelineDigest"],
+                    }
+                    atomic_write_bytes(pending / (operation["id"] + ".json"), project_json(receipt))
+                    project_boundary("artifact_durable_before_historical_binding")
+                    reconcile_historical_renders(root, directory, pid, manifest)
+                    return historical_result(root, directory, manifest, prior, prior_spec, prior_timeline)
         if "expectedCurrentRevisionId" not in request or request["expectedCurrentRevisionId"] != current:
             raise ProjectConflict("stale project revision; reopen before saving")
         previous = None
@@ -300,6 +462,7 @@ def project_operation(root, request, commit=False, lyric=False):
                 "lyricTimelineDigest": lyric_digest, "sourceAssetDigests": sorted(set(sources)),
                 "outputArtifactIds": sorted(set(outputs)), "createdAt": datetime.now(timezone.utc).isoformat(),
                 "outputBindings": [{"artifactId": aid, "songSpecDigest": song_digest, "productionTimelineDigest": timeline_digest} for aid in sorted(set(outputs))]}
+        if operation is not None: core['operation'] = operation
         rid = hashlib.sha256(project_json(core)).hexdigest()
         revision = {"revisionId": rid, **core}
         revisions = directory / "revisions"
