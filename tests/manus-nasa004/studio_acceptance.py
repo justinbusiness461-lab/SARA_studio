@@ -57,7 +57,7 @@ def verify_wav(blob: bytes):
     sample_values = struct.unpack('<' + 'h' * (len(data)//2), data)
     peak = max(abs(x) for x in sample_values) / 32768.0
     dc = sum(sample_values) / len(sample_values) / 32768.0
-    rms = (sum((x / 32768.0)**2 for x in sample_values))**0.5 / (len(sample_values)**0.5)
+    rms = (sum((x / 32768.0)**2 for x in sample_values) / len(sample_values))**0.5
     stereo_corr = None
     if channels == 2 and frames >= 2:
         left, right = sample_values[0::2], sample_values[1::2]
