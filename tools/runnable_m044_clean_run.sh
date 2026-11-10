@@ -1,24 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-EXPECTED_SHA="${EXPECTED_SHA:-14e2fb9cc55c8ce2909803a66d509915a18eb625}"
+TARGET_SOURCE_SHA="${TARGET_SOURCE_SHA:-14e2fb9cc55c8ce2909803a66d509915a18eb625}"
 REPRO_COMMIT="${REPRO_COMMIT:-c107da1308dcd972676d237d33b8c318f7d34f33}"
 REPRO_PATH="evidence/work-b-m044-r2-crash/independent_pre_pending.py"
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-ACTUAL_SHA="$(git rev-parse HEAD)"
-printf 'RUNNABLE_EXPECTED_SHA=%s\n' "$EXPECTED_SHA"
-printf 'RUNNABLE_ACTUAL_SHA=%s\n' "$ACTUAL_SHA"
-if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
-  printf 'BLOCKED: exact SHA mismatch\n' >&2
+ACTUAL_HEAD="$(git rev-parse HEAD)"
+printf 'RUNNABLE_TARGET_SOURCE_SHA=%s\n' "$TARGET_SOURCE_SHA"
+printf 'RUNNABLE_ACTUAL_HEAD=%s\n' "$ACTUAL_HEAD"
+
+if ! git cat-file -e "$TARGET_SOURCE_SHA^{commit}" 2>/dev/null; then
+  printf 'BLOCKED: target source SHA is not present in this checkout\n' >&2
   exit 2
+fi
+
+if ! git merge-base --is-ancestor "$TARGET_SOURCE_SHA" HEAD; then
+  printf 'BLOCKED: target source SHA is not an ancestor of current HEAD\n' >&2
+  exit 3
+fi
+
+ALLOWED_DIFF_RE='^(tools/runnable_m044_clean_run\.sh|docs/audits/RUNNABLE_M044_.*)$'
+UNEXPECTED_DIFF="$(git diff --name-only "$TARGET_SOURCE_SHA"...HEAD | grep -Ev "$ALLOWED_DIFF_RE" || true)"
+if [[ -n "$UNEXPECTED_DIFF" ]]; then
+  printf 'BLOCKED: product/evidence source differs from pinned target beyond Runnable-only files:\n%s\n' "$UNEXPECTED_DIFF" >&2
+  exit 4
 fi
 
 if [[ -n "$(git status --porcelain)" ]]; then
   printf 'BLOCKED: working tree is not clean\n' >&2
   git status --short >&2
-  exit 3
+  exit 5
 fi
 
 python3 --version
