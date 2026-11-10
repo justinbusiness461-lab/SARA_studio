@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
-const { mkdtempSync, rmSync } = require('node:fs');
+const { mkdtempSync, readFileSync, rmSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
 const { once } = require('node:events');
@@ -79,4 +79,31 @@ test('Studio loads ScoreCore, persists Generate, and reopens the exact revision'
   const reopened = await opened.json();
   assert.equal(reopened.revision.revisionId, created.revision.revisionId);
   assert.deepEqual(reopened.songSpec, created.songSpec);
+});
+
+test('Installed Studio precaches the matching ScoreCore adapter', { timeout: 30000 }, async t => {
+  const workspace = mkdtempSync(join(tmpdir(), 'songforge-pwa-'));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  const url = await startStudio(t, workspace);
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
+  t.after(() => browser.close());
+  const page = await browser.newPage();
+  page.setDefaultTimeout(5000);
+  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  await page.goto(url);
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+
+  await page.context().setOffline(true);
+  const adapterResponse = page.waitForResponse(url + '/scorecore.js');
+  await page.reload();
+  const adapter = await adapterResponse;
+  assert.equal(adapter.status(), 200);
+  assert.equal(adapter.fromServiceWorker(), true);
+  assert.ok(
+    (await adapter.body()).equals(readFileSync(join(root, 'scorecore.js'))),
+    'Offline ScoreCore must match the adapter shipped with this Studio build',
+  );
+  assert.equal(await page.evaluate(() => typeof window.ScoreCore?.compileIntent), 'function');
 });
