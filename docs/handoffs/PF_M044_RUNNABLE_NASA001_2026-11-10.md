@@ -5,7 +5,8 @@
 **Lane:** RUNNABLE / Codex clean-room reproducibility  
 **Date:** 2026-11-10  
 **Classification:** EXECUTION SPECIFICATION — not certification by itself  
-**Primary repository:** `justinbusiness461-lab/pulseforge-songforge`
+**Primary repository:** `justinbusiness461-lab/SARA_studio`  
+**Canonical repository ID:** `1427534706` (rename preserved repository identity/history)
 
 ## 1. Mission
 
@@ -147,7 +148,7 @@ git checkout --detach "$BASELINE_SHA"
 Run PR #19's clean-run harness with the baseline pinned:
 
 ```bash
-TARGET_SOURCE_SHA="$BASELINE_SHA" bash tools/runnable_m044_clean_run.sh
+RUNNABLE_EXPECT=known-bad TARGET_SOURCE_SHA="$BASELINE_SHA" bash tools/runnable_m044_clean_run.sh
 ```
 
 The baseline is currently expected to reach the independent pre-pending reproducer and report the known failure.
@@ -162,9 +163,26 @@ historyOccurrences = 0
 verdict = FAIL
 ```
 
-The harness therefore may exit non-zero at the early-crash discriminator.
+The hardened harness must return success for **negative-control detection**, not for product recovery. In `known-bad` mode it independently requires the expected failure facts above; a false-green baseline is a harness failure.
 
-**PASS condition for G1:** the known-bad baseline is actually detected as bad.
+**PASS condition for G1:** the known-bad baseline is actually detected as bad and `RUNNABLE_M044_NEGATIVE_CONTROL=PASS` is emitted.
+
+### Receipt-verifier self-proof
+
+Before any candidate execution, run:
+
+```bash
+python3 -m unittest discover -s tests/runnable -p 'test_*.py' -v
+```
+
+The verifier must reject at minimum:
+
+```text
+verdict=PASS
+historyOccurrences=0
+```
+
+Candidate-mode PASS must not trust the top-level verdict. It must independently require the underlying evidence fields.
 
 If the baseline unexpectedly reports repaired recovery:
 
@@ -235,13 +253,65 @@ A build or unit-suite PASS alone does not prove G4/G5.
 
 Run the **same independent negative-control reproducer** against the candidate, adapted only as necessary to import the candidate's actual source. Do not weaken the kill point.
 
-Required kill window:
+Corrected R3 durability law:
 
 ```text
-durable ownership identity should already exist
-→ valid WAV becomes durable
-→ process dies before historical association finishes
-→ fresh process opens from disk only
+1. persist RenderAttempt identity:
+   operationId / projectId / sourceRevisionId / expectedRevisionId /
+   renderMeaningDigest / renderConfigDigest / deterministic staging identity /
+   state=RENDERING
+   → fsync
+
+2. render privately to staging
+3. fully validate WAV
+4. compute final artifactDigest
+5. persist RenderAttempt:
+   artifactDigest / intended CAS identity / validated audio metadata /
+   state=VALIDATED_NOT_PUBLISHED
+   → fsync
+
+6. atomically publish staging → CAS
+   → fsync CAS directory
+
+7. persist state=ARTIFACT_DURABLE
+   → fsync
+
+8. persist subordinate R1 historical association
+   → fsync
+
+9. persist state=HISTORICALLY_BOUND
+   → fsync
+
+10. attempt expected-revision current-output promotion
+```
+
+**Invariant:** exact artifact identity and intended CAS identity are durable **before** CAS publication. CAS existence is never authorization and never ownerless.
+
+Runnable must exercise two distinct deterministic crash cases:
+
+```text
+CRASH A:
+attempt knows exact artifactDigest + intended CAS identity
+CAS is not yet published
+
+Expected:
+- restart finds exactly one known incomplete attempt;
+- no invented historical output;
+- no CAS scanning/filename inference;
+- R2 current/output unchanged;
+- zero new ProjectRevision.
+
+CRASH B:
+attempt knows exact artifactDigest + intended CAS identity
+CAS is published
+historical association is not yet durable
+
+Expected:
+- restart validates that exact known CAS object;
+- binds it to R1 exactly once;
+- R2 current/output unchanged;
+- zero new ProjectRevision;
+- no caller/browser replay.
 ```
 
 Required candidate outcome after fresh reopen:
@@ -404,15 +474,16 @@ Execute deterministic, not randomized, interruption points. Manus owns large ran
 Required Runnable interruption points where supported:
 
 ```text
-A. before durable ownership record
-B. after durable ownership record
-C. after WAV artifact durability
-D. after historical association
-E. before optional current-output promotion
-F. during authorized WAV response setup
-G. client abort during WAV stream
-H. backend restart after R2 commit
-I. client/process reopen after R2
+A. after RENDERING attempt fsync, before validated digest identity
+B. after VALIDATED_NOT_PUBLISHED fsync, before CAS publication (Crash A)
+C. after CAS publication / before ARTIFACT_DURABLE state
+D. after ARTIFACT_DURABLE / before historical association (Crash B)
+E. after historical association / before HISTORICALLY_BOUND
+F. before optional current-output promotion
+G. during authorized WAV response setup
+H. client abort during WAV stream
+I. backend restart after R2 commit
+J. client/process reopen after R2
 ```
 
 For every case record:
@@ -565,6 +636,8 @@ G1_NEGATIVE_CONTROL = PASS|FAIL|BLOCKED
 G2_CANDIDATE_IDENTITY = PASS|FAIL|BLOCKED
 G3_REPO_REPRODUCTION = PASS|FAIL|BLOCKED
 G4_EARLY_CRASH_RECOVERY = PASS|FAIL|BLOCKED
+G4_CRASH_A = PASS|FAIL|BLOCKED
+G4_CRASH_B = PASS|FAIL|BLOCKED
 G5_AUTH_WAV = PASS|FAIL|BLOCKED|UNVERIFIED
 G6_R1_R2_REOPEN = PASS|FAIL|BLOCKED|UNVERIFIED
 G7_PLAYBACK_FENCE = PASS|FAIL|BLOCKED|UNVERIFIED
@@ -576,6 +649,8 @@ NODE = <passed/total>
 INTEGRATION = <passed/total>
 HTTP_AUDIO = <passed/total or UNVERIFIED>
 CRASH_CASES = <passed/total>
+RECEIPT_VERIFIER = PASS|FAIL
+CONTRADICTORY_PASS_REJECTED = true|false
 R1_HISTORY_OCCURRENCES = <integer>
 R2_STILL_CURRENT = true|false|UNVERIFIED
 CROSS_PROJECT_DENIAL = PASS|FAIL|UNVERIFIED
