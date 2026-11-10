@@ -1,0 +1,23 @@
+{
+  "base_url": "https://replace-with-actual-studio-origin.example.invalid",
+  "target_commit": "0000000000000000000000000000000000000000000000000000000000000000",
+  "nonsecret_denial_canary": "TENANT_A_SECRET_CANARY",
+  "audio": {
+    "r1": {"sha256": "1111111111111111111111111111111111111111111111111111111111111111", "revision_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    "r2": {"sha256": "2222222222222222222222222222222222222222222222222222222222222222", "revision_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+  },
+  "routes": {
+    "A_PROJECT_OWN": "/REPLACE/project/A",
+    "B_PROJECT_OWN": "/REPLACE/project/B",
+    "B_PROJECT_A": "/REPLACE/project/A",
+    "A_PROJECT_B": "/REPLACE/project/B",
+    "ANON_PROJECT_A": "/REPLACE/project/A",
+    "A_AUDIO_R1": "/REPLACE/project/A/revision/R1/audio/A",
+    "A_AUDIO_R2": "/REPLACE/project/A/revision/R2/audio/B",
+    "B_AUDIO_A_R1": "/REPLACE/project/A/revision/R1/audio/A",
+    "ANON_AUDIO_A_R1": "/REPLACE/project/A/revision/R1/audio/A",
+    "A_HISTORY_R1": "/REPLACE/project/A/history/R1",
+    "B_HISTORY_A": "/REPLACE/project/A/history/R1",
+    "A_UNBOUND_ARTIFACT": "/REPLACE/project/A/audio/unbound"
+  }
+}
