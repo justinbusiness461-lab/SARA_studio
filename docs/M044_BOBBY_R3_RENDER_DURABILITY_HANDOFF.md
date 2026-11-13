@@ -51,3 +51,43 @@ Focused execution only. Full repository regression, NASA-006 20/20/20 SIGKILL ca
 
 **R3_PASS_CLAIMED:** NO  
 **READY_FOR_CODY_EXACT_DIFF_REVIEW:** YES
+
+
+## Successor hardening — principal → project authorization
+
+Cody's independent review correctly identified that the first R3 candidate authenticated only a process-wide capability and artifact/revision association. It did not prove caller principal ownership of the project.
+
+The successor keeps the R3 durability model unchanged and adds:
+
+- opaque `X-Studio-Session` token;
+- server-side session → principal resolution;
+- durable `ProjectOwner.json` beside project authority;
+- project-owner check before project open/commit/render/audio authority;
+- project-owner check before revision/artifact resolution;
+- no ownership encoding in CAS;
+- no second project/currentness store.
+
+Authorization order is now:
+
+`session principal → ProjectOwner → ProjectManifest/revision history → revision→artifact association → CAS digest/integrity → WAV validation → bytes`
+
+Legacy pre-auth projects may be adopted only by the historical local Studio principal; arbitrary named principals cannot claim unowned legacy state.
+
+### Executed two-principal evidence
+
+Independent isolated executor:
+
+- focused Python suite: **17/17 PASS**;
+- Node render-session suite: **2/2 PASS**;
+- A → A artifact: HTTP 200 exact bytes;
+- B → B artifact: HTTP 200 exact bytes;
+- A → B valid project/revision/artifact: HTTP 403;
+- B → A valid project/revision/artifact: HTTP 403;
+- anonymous → either project: HTTP 403;
+- exact identifier knowledge does not alter denial.
+
+### Evidence ceiling
+
+This proves the local server's explicit session/principal/project ownership gate and the focused R3 durability coupling. It does **not** claim an external identity provider, hosted multi-tenant account system, full repository regression, NASA-006 endurance, or merge readiness.
+
+**READY_FOR_CODY_SUCCESSOR_REVIEW:** YES
