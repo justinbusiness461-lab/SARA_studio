@@ -5,6 +5,7 @@ import sys
 import unittest
 import threading
 import socketserver
+import subprocess
 import urllib.error
 import urllib.request
 from unittest.mock import patch
@@ -160,6 +161,63 @@ class R3RenderDurability(unittest.TestCase):
             thread.join(timeout=2)
             server.EXPORT_ROOT = old_root
             server.PORT = old_port
+
+    def test_first_owner_claim_recovers_after_process_death_before_owner_file(self):
+        explicit_pid = "b" * 32
+        request = {
+            "projectId": explicit_pid,
+            "expectedCurrentRevisionId": None,
+            "songSpec": self.fixture.spec,
+            "sourceAssetDigests": [],
+            "outputArtifactIds": [],
+        }
+        code = r"""
+import json, os, sys
+import studio_server as server
+root, raw = sys.argv[1:]
+request = json.loads(raw)
+original = server.authorize_project_owner
+def die_before_owner(directory, pid, principal_id, create=False):
+    owner = directory / "ProjectOwner.json"
+    if create and not owner.exists():
+        os._exit(91)
+    return original(directory, pid, principal_id, create=create)
+server.authorize_project_owner = die_before_owner
+server.project_operation(root, request, commit=True, principal_id="principal-a")
+"""
+        completed = subprocess.run([
+            sys.executable, "-c", code, str(self.root), json.dumps(request)
+        ], env={**os.environ, "PYTHONPATH": str(pathlib.Path(__file__).resolve().parents[1] / "tools")})
+        self.assertEqual(completed.returncode, 91)
+
+        directory = self.root / "projects" / explicit_pid
+        self.assertTrue(directory.is_dir())
+        self.assertFalse((directory / "ProjectOwner.json").exists())
+
+        recovered = server.project_operation(
+            self.root, dict(request), commit=True, principal_id="principal-a")
+        owner = json.loads((directory / "ProjectOwner.json").read_text())
+        self.assertEqual(owner["principalId"], "principal-a")
+        self.assertEqual(
+            json.loads((directory / "ProjectManifest.json").read_text())["currentRevisionId"],
+            recovered["revision"]["revisionId"])
+        self.assertEqual(len(list((directory / "revisions").glob("*.json"))), 1)
+
+        with self.assertRaises(server.ProjectConflict):
+            server.project_operation(
+                self.root, dict(request), commit=True, principal_id="principal-b")
+
+        ownerless = self.root / "projects" / ("c" * 32)
+        server.durable_mkdir(ownerless)
+        with self.assertRaises(server.ProjectConflict):
+            server.project_operation(
+                self.root, {
+                    "projectId": "c" * 32,
+                    "expectedCurrentRevisionId": None,
+                    "songSpec": self.fixture.spec,
+                    "sourceAssetDigests": [],
+                    "outputArtifactIds": [],
+                }, commit=True, principal_id="principal-a")
 
     def test_concurrent_first_owner_claim_is_immutable(self):
         explicit_pid = "a" * 32
