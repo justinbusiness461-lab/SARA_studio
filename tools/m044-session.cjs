@@ -55,10 +55,12 @@ async function session(base) {
   const origin = url.origin;
   const page = await fetch(origin).then(r => r.text());
   const capability = page.match(/window\.__STUDIO_CAPABILITY__="([^"]+)"/);
-  if (!capability) throw Error('studio capability unavailable');
+  const sessionToken = page.match(/window\.__STUDIO_SESSION__="([^"]+)"/);
+  if (!capability || !sessionToken) throw Error('studio capability/session unavailable');
   const post = async (route, payload) => {
     const response = await fetch(origin + '/api/' + route, { method: 'POST',
-      headers: { 'Content-Type': 'application/json', Origin: origin, 'X-Studio-Capability': capability[1] },
+      headers: { 'Content-Type': 'application/json', Origin: origin,
+        'X-Studio-Capability': capability[1], 'X-Studio-Session': sessionToken[1] },
       body: JSON.stringify(payload) });
     const result = await response.json();
     if (!response.ok || result.status !== 'SUCCESS') throw Error(response.status + ': ' + result.error);
