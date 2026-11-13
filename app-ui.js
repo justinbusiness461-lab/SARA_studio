@@ -443,7 +443,7 @@ async function projectAudioBytes(projectId, revisionId, artifactId) {
   return response.arrayBuffer();
 }
 
-async function verifyPlayableRevision(result, publishGuard = null) {
+async function verifyPlayableRevision(result, publishGuard = null, publishPresentation = true) {
   const ids = result && result.revision && result.revision.outputArtifactIds;
   if (!Array.isArray(ids) || ids.length !== 1) throw new Error('Audio unavailable: revision has no single authorized WAV');
   const projectId = result.manifest.projectId;
@@ -483,15 +483,27 @@ async function verifyPlayableRevision(result, publishGuard = null) {
     return null;
   }
   verifiedPlayback = { projectId, revisionId, artifactId, wavSha256, media, objectUrl };
-  window.__M044_PLAYBACK_PROOF__ = {
-    projectId, revisionId, artifactId, wavSha256,
-    decodedWavValidity: true, durationSec: media.duration,
-    transportSelectedRevision: revisionId
+  if (publishPresentation) publishVerifiedPlaybackPresentation(verifiedPlayback);
+  return verifiedPlayback;
+}
+
+function verifiedPlaybackProof(playback) {
+  return {
+    projectId: playback.projectId,
+    revisionId: playback.revisionId,
+    artifactId: playback.artifactId,
+    wavSha256: playback.wavSha256,
+    decodedWavValidity: true,
+    durationSec: playback.media.duration,
+    transportSelectedRevision: playback.revisionId
   };
+}
+
+function publishVerifiedPlaybackPresentation(playback) {
+  window.__M044_PLAYBACK_PROOF__ = verifiedPlaybackProof(playback);
   const play = $('btnPlay');
   if (play) play.disabled = false;
   setStatus('Audio verified. Ready to hear.', 'ok');
-  return verifiedPlayback;
 }
 
 async function renderAndVerifyRevision(saved) {
@@ -541,6 +553,7 @@ async function playVerifiedRevision() {
 
 let abRevisions = { r1: null, r2: null };
 let abRequestGeneration = 0;
+window.__M044_AB_SWITCH__ = { state: 'IDLE', generation: 0, targetRevisionId: null };
 
 function setABControls() {
   const edit = $('btnOctaveEdit');
@@ -559,6 +572,20 @@ function revisionRef(result) {
     artifactId: result.revision.outputArtifactIds[0]
   };
 }
+
+function publishABSwitchState(generation, target, state, extra = {}) {
+  if (generation !== abRequestGeneration) return false;
+  window.__M044_AB_SWITCH__ = {
+    generation,
+    operationId: 'ab:' + generation + ':' + target.revisionId,
+    targetRevisionId: target.revisionId,
+    artifactId: target.artifactId,
+    state,
+    ...extra
+  };
+  return true;
+}
+
 
 async function applyVerse2BassOctave() {
   if (!durableProjectRef || !abRevisions.r1 || abRevisions.r2) return;
@@ -617,39 +644,112 @@ async function selectABRevision(label) {
   const position = from && from.media ? from.media.currentTime : 0;
   const wasPlaying = !!(playing && from && from.media && !from.media.paused);
   const fromRevisionId = from ? from.revisionId : null;
+  publishABSwitchState(requestGeneration, target, 'SWITCH_REQUESTED', {
+    fromRevisionId,
+    fromPositionSec: position
+  });
+
   if (from && from.revisionId === target.revisionId) {
+    const proof = verifiedPlaybackProof(from);
+    window.__M044_PLAYBACK_PROOF__ = proof;
+    window.__M044_AB_PROOF__ = {
+      fromRevisionId,
+      toRevisionId: target.revisionId,
+      fromArtifactId: from.artifactId,
+      toArtifactId: target.artifactId,
+      fromPositionSec: position,
+      toPositionSec: position
+    };
+    publishABSwitchState(requestGeneration, target, 'COMPLETE', {
+      fromRevisionId,
+      fromPositionSec: position,
+      toPositionSec: position,
+      transportSelectedRevision: target.revisionId,
+      proofRevisionId: target.revisionId
+    });
     if ($('abStatus')) $('abStatus').textContent =
       label === 'R2' ? 'Selected R2 · current' : 'Selected R1 · historical';
     return true;
   }
+
   clearVerifiedPlayback();
+  publishABSwitchState(requestGeneration, target, 'TARGET_LOADING', {
+    fromRevisionId,
+    fromPositionSec: position
+  });
   const opened = await projectRequest('open', {
     projectId: target.projectId,
     revisionId: target.revisionId
   });
   if (requestGeneration !== abRequestGeneration) return false;
+
   const published = await verifyPlayableRevision(
     opened,
-    () => requestGeneration === abRequestGeneration
+    () => requestGeneration === abRequestGeneration,
+    false
   );
   if (!published || requestGeneration !== abRequestGeneration) return false;
+  publishABSwitchState(requestGeneration, target, 'TARGET_VERIFIED', {
+    fromRevisionId,
+    fromPositionSec: position
+  });
+
   const toPosition = Math.min(position, Math.max(0, verifiedPlayback.media.duration - 0.01));
   verifiedPlayback.media.currentTime = toPosition;
+  publishABSwitchState(requestGeneration, target, 'POSITION_RESTORED', {
+    fromRevisionId,
+    fromPositionSec: position,
+    toPositionSec: verifiedPlayback.media.currentTime
+  });
+
   if (wasPlaying) {
     try {
       await verifiedPlayback.media.play();
+      if (requestGeneration !== abRequestGeneration) {
+        verifiedPlayback.media.pause();
+        return false;
+      }
       playing = true;
       window.__M044_PLAYBACK_STARTED__ = true;
     } catch (_) {
       playing = false;
+      if (requestGeneration === abRequestGeneration) {
+        clearVerifiedPlayback();
+        publishABSwitchState(requestGeneration, target, 'FAILED', {
+          fromRevisionId,
+          error: 'browser playback failed'
+        });
+        if ($('abStatus')) $('abStatus').textContent = 'A/B unavailable · playback failed';
+      }
+      return false;
     }
   }
-  window.__M044_AB_PROOF__ = {
+
+  if (requestGeneration !== abRequestGeneration) return false;
+  const playbackProof = verifiedPlaybackProof(verifiedPlayback);
+  const abProof = {
     fromRevisionId,
     toRevisionId: target.revisionId,
+    fromArtifactId: from ? from.artifactId : null,
+    toArtifactId: target.artifactId,
     fromPositionSec: position,
     toPositionSec: verifiedPlayback.media.currentTime
   };
+
+  // One synchronous publication boundary: observers may treat COMPLETE as authoritative
+  // presentation completion only after transport and Proof describe the same target.
+  window.__M044_PLAYBACK_PROOF__ = playbackProof;
+  window.__M044_AB_PROOF__ = abProof;
+  publishABSwitchState(requestGeneration, target, 'COMPLETE', {
+    fromRevisionId,
+    fromPositionSec: position,
+    toPositionSec: verifiedPlayback.media.currentTime,
+    transportSelectedRevision: playbackProof.transportSelectedRevision,
+    proofRevisionId: abProof.toRevisionId
+  });
+  const play = $('btnPlay');
+  if (play) play.disabled = false;
+  setStatus('Audio verified. Ready to hear.', 'ok');
   if ($('abStatus')) $('abStatus').textContent =
     label === 'R2' ? 'Selected R2 · current' : 'Selected R1 · historical';
   return true;
@@ -1323,6 +1423,7 @@ if ($('btnNewProject')) $('btnNewProject').onclick = () => {
   durableProjectRef = null; durableSourceAssets = [];
   abRevisions = { r1: null, r2: null };
   abRequestGeneration++;
+  window.__M044_AB_SWITCH__ = { state: 'IDLE', generation: abRequestGeneration, targetRevisionId: null };
   clearVerifiedPlayback();
   setABControls();
   renderLyricAuthority(null);

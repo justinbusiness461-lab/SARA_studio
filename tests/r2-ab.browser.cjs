@@ -205,3 +205,55 @@ test('late R1 A-B response cannot replace newer R2 selection', { timeout: 150000
   assert.equal(selected.revisionId, r2.revisionId);
   assert.equal(await page.locator('#abStatus').textContent(), 'Selected R2 · current');
 });
+
+test('A/B exposes completion only after transport, proof, artifact and position agree', { timeout: 150000 }, async t => {
+  const workspace = mkdtempSync(join(tmpdir(), 'songforge-ab-complete-'));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  const studio = await boot(workspace); t.after(studio.stop);
+  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH }); t.after(() => browser.close());
+  const page = await pageFor(browser, studio.url);
+
+  await page.locator('#prompt').fill('96 BPM E minor dark Southern hip-hop instrumental');
+  await page.locator('#btnCompile').click();
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Audio verified. Ready to hear.', null, { timeout: 90000 });
+  const r1 = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+  await page.locator('#btnOctaveEdit').click();
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Audio verified. Ready to hear.', null, { timeout: 90000 });
+  const r2 = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+
+  await page.locator('#btnABR1').click();
+  await page.waitForFunction(
+    id => window.__M044_AB_SWITCH__?.state === 'COMPLETE' &&
+          window.__M044_AB_SWITCH__?.targetRevisionId === id,
+    r1.revisionId,
+    { timeout: 15000 }
+  );
+  const first = await page.evaluate(() => ({
+    playback: window.__M044_PLAYBACK_PROOF__,
+    ab: window.__M044_AB_PROOF__,
+    sw: window.__M044_AB_SWITCH__
+  }));
+  assert.equal(first.playback.revisionId, r1.revisionId);
+  assert.equal(first.ab.toRevisionId, r1.revisionId);
+  assert.equal(first.sw.targetRevisionId, r1.revisionId);
+  assert.equal(first.sw.artifactId, r1.artifactId);
+  assert.ok(Math.abs(first.ab.fromPositionSec - first.ab.toPositionSec) <= 0.05);
+
+  await page.locator('#btnABR2').click();
+  await page.waitForFunction(
+    id => window.__M044_AB_SWITCH__?.state === 'COMPLETE' &&
+          window.__M044_AB_SWITCH__?.targetRevisionId === id,
+    r2.revisionId,
+    { timeout: 15000 }
+  );
+  const second = await page.evaluate(() => ({
+    playback: window.__M044_PLAYBACK_PROOF__,
+    ab: window.__M044_AB_PROOF__,
+    sw: window.__M044_AB_SWITCH__
+  }));
+  assert.equal(second.playback.revisionId, r2.revisionId);
+  assert.equal(second.ab.toRevisionId, r2.revisionId);
+  assert.equal(second.sw.targetRevisionId, r2.revisionId);
+  assert.equal(second.sw.artifactId, r2.artifactId);
+  assert.ok(Math.abs(second.ab.fromPositionSec - second.ab.toPositionSec) <= 0.05);
+});
