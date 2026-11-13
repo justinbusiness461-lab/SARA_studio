@@ -15,12 +15,20 @@ test('prompt UI uses qualified intent and saves only after successful compile', 
   assert.notEqual(start,-1,'missing durable Generate action');
   const end = ui.indexOf('\nfunction ',start+1);
   const source = ui.slice(start,end);
-  let saves=0, compiled=0;
-  const ctx={compile(){compiled++;},async saveJSON(){saves++;},setStatus(){}};
+  let saves=0, compiled=0, renders=0, clears=0;
+  const ctx={
+    compile(){compiled++;},
+    clearVerifiedPlayback(){clears++;},
+    async saveJSON(){saves++; return {manifest:{projectId:'p'},revision:{revisionId:'r1'}};},
+    async renderAndVerifyRevision(){renders++;},
+    setStatus(){}
+  };
   vm.createContext(ctx);vm.runInContext(source,ctx);
-  await ctx.generateProject();assert.equal(compiled,1);assert.equal(saves,1);
+  await ctx.generateProject();
+  assert.equal(compiled,1);assert.equal(saves,1);assert.equal(renders,1);assert.equal(clears,1);
   ctx.compile=()=>{throw Error('unsupported meter');};
-  await ctx.generateProject();assert.equal(saves,1);
+  await ctx.generateProject();
+  assert.equal(saves,1);assert.equal(renders,1);
   const compile = ui.slice(ui.indexOf('function compile()'),ui.indexOf('function audioBufferToWav'));
   assert.match(compile,/ScoreCore\.compileIntent/);
   assert.match(compile,/ScoreCore\.musicIntent/);

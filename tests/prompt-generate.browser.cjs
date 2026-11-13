@@ -40,7 +40,7 @@ with socketserver.TCPServer(("127.0.0.1", 0), studio.StudioHandler) as httpd:
   return `http://127.0.0.1:${port}`;
 }
 
-test('Studio loads ScoreCore, persists Generate, and reopens the exact revision', { timeout: 30000 }, async t => {
+test('Studio loads ScoreCore, persists Generate, and reopens the exact revision', { timeout: 90000 }, async t => {
   const workspace = mkdtempSync(join(tmpdir(), 'songforge-browser-'));
   t.after(() => rmSync(workspace, { recursive: true, force: true }));
   const url = await startStudio(t, workspace);
@@ -49,7 +49,7 @@ test('Studio loads ScoreCore, persists Generate, and reopens the exact revision'
   });
   t.after(() => browser.close());
   const page = await browser.newPage({ serviceWorkers: 'block' });
-  page.setDefaultTimeout(5000);
+  page.setDefaultTimeout(15000);
   // The remote Cinema dependency is outside the Generate workflow.
   await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
   const scoreCoreResponse = page.waitForResponse(url + '/scorecore.js');
@@ -70,14 +70,22 @@ test('Studio loads ScoreCore, persists Generate, and reopens the exact revision'
   assert.equal(created.songSpec.timebase.key, 'E minor');
   assert.equal(created.manifest.currentRevisionId, created.revision.revisionId);
 
-  await page.reload();
-  await page.locator('#projectId').fill(created.manifest.projectId);
-  const openResponse = page.waitForResponse(url + '/api/projects/open');
-  await page.locator('#btnOpenProject').click();
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Audio verified. Ready to hear.', null, { timeout: 90000 });
+  const playable = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+  assert.ok(playable && playable.revisionId && playable.artifactId);
+
+  await page.close();
+  const reopenedPage = await browser.newPage({ serviceWorkers: 'block' });
+  reopenedPage.setDefaultTimeout(15000);
+  await reopenedPage.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  await reopenedPage.goto(url);
+  await reopenedPage.locator('#projectId').fill(created.manifest.projectId);
+  const openResponse = reopenedPage.waitForResponse(url + '/api/projects/open');
+  await reopenedPage.locator('#btnOpenProject').click();
   const opened = await openResponse;
   assert.equal(opened.status(), 200);
   const reopened = await opened.json();
-  assert.equal(reopened.revision.revisionId, created.revision.revisionId);
+  assert.equal(reopened.revision.revisionId, playable.revisionId);
   assert.deepEqual(reopened.songSpec, created.songSpec);
 });
 
@@ -90,7 +98,7 @@ test('Installed Studio precaches the matching ScoreCore adapter', { timeout: 300
   });
   t.after(() => browser.close());
   const page = await browser.newPage();
-  page.setDefaultTimeout(5000);
+  page.setDefaultTimeout(15000);
   await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
   await page.goto(url);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
