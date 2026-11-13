@@ -1,4 +1,3 @@
-
 /** Tauri IPC bridge — no-op in plain browser */
 function hasNativeShell() {
   return !!(window.__TAURI_IPC__ || (window.__TAURI__ && window.__TAURI__.core));
@@ -158,14 +157,18 @@ function drawMatrix() {
 function compile() {
   const text = ($("prompt").value || "").trim() ||
     "dark 102 BPM alt hip-hop, F# minor, guitar plucks, male verse";
-  skeleton = parsePrompt(text);
+  // Admission precedes draft mutation. The shared adapter owns no project state.
+  const bpmO = $("bpmOverride");
+  const keyO = $("keyOverride");
+  let directive = text;
+  if (bpmO && bpmO.value) directive += " " + bpmO.value + " BPM";
+  if (keyO && keyO.value) directive += " " + keyO.value;
+  const intent = window.ScoreCore.musicIntent(directive);
+  skeleton = window.ScoreCore.compileIntent(intent, parsePrompt);
   window.skeleton = skeleton;
   const titleEl = $("title");
   skeleton.title = (titleEl && titleEl.value) ? titleEl.value : (text.slice(0, 40) || "Generated");
-  const bpmO = $("bpmOverride");
-  if (bpmO && bpmO.value) skeleton.timebase.initial_bpm = Math.max(60, Math.min(180, +bpmO.value));
-  const keyO = $("keyOverride");
-  if (keyO && keyO.value) skeleton.timebase.key = keyO.value;
+
   activeSectionIdx = 0;
   render();
   setStatus(
@@ -173,6 +176,22 @@ function compile() {
     " · " + skeleton.tracks.reduce((n, t) => n + t.events.length, 0) + " notes · spatial BBD",
     "ok"
   );
+}
+
+async function generateProject() {
+  clearVerifiedPlayback();
+  try {
+    setStatus('Generating…', 'warn');
+    compile();
+    setStatus('Generating…', 'warn');
+    const saved = await saveJSON(false);
+    setStatus('Revision saved. Rendering audio…', 'warn');
+    await renderAndVerifyRevision(saved);
+  } catch (error) {
+    clearVerifiedPlayback();
+    const message = String(error && error.message || error);
+    setStatus(message.startsWith('Audio unavailable') ? message : 'Generate failed: ' + message, 'warn');
+  }
 }
 
 function audioBufferToWav(buffer) {
@@ -377,13 +396,149 @@ function exportMEG() {
   logToNative("EXPORT_COMPLETE", "MEG written");
 }
 
+let verifiedPlayback = null;
+let verifiedPlaybackSource = null;
+
+function studioProjectHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'X-Studio-Capability': window.__STUDIO_CAPABILITY__ || '',
+    'X-Studio-Session': window.__STUDIO_SESSION__ || ''
+  };
+}
+
+function clearVerifiedPlayback() {
+  if (verifiedPlayback && verifiedPlayback.media) {
+    try { verifiedPlayback.media.pause(); } catch (_) {}
+  }
+  if (verifiedPlayback && verifiedPlayback.objectUrl) {
+    try { URL.revokeObjectURL(verifiedPlayback.objectUrl); } catch (_) {}
+  }
+  verifiedPlaybackSource = null;
+  verifiedPlayback = null;
+  window.__M044_PLAYBACK_PROOF__ = null;
+  window.__M044_PLAYBACK_STARTED__ = false;
+  const play = $('btnPlay');
+  if (play) { play.disabled = true; play.textContent = 'Play'; }
+}
+
+async function sha256Hex(arrayBuffer) {
+  const digest = await crypto.subtle.digest('SHA-256', arrayBuffer);
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function projectAudioBytes(projectId, revisionId, artifactId) {
+  const response = await fetch('/api/projects/audio', {
+    method: 'POST',
+    headers: studioProjectHeaders(),
+    body: JSON.stringify({ projectId, revisionId, artifactId })
+  });
+  if (!response.ok) {
+    let reason = 'HTTP ' + response.status;
+    try { const body = await response.json(); reason = body.error || reason; } catch (_) {}
+    throw new Error('Audio unavailable: ' + reason);
+  }
+  return response.arrayBuffer();
+}
+
+async function verifyPlayableRevision(result) {
+  const ids = result && result.revision && result.revision.outputArtifactIds;
+  if (!Array.isArray(ids) || ids.length !== 1) throw new Error('Audio unavailable: revision has no single authorized WAV');
+  const projectId = result.manifest.projectId;
+  const revisionId = result.revision.revisionId;
+  const artifactId = ids[0];
+  const bytes = await projectAudioBytes(projectId, revisionId, artifactId);
+  const wavSha256 = await sha256Hex(bytes);
+  if (wavSha256 !== artifactId) throw new Error('Audio unavailable: returned WAV identity mismatch');
+  const view = new DataView(bytes);
+  const text = (offset, count) => String.fromCharCode(...new Uint8Array(bytes, offset, count));
+  if (bytes.byteLength < 44 || text(0, 4) !== 'RIFF' || text(8, 4) !== 'WAVE') {
+    throw new Error('Audio unavailable: returned bytes are not a WAV');
+  }
+  const objectUrl = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+  const media = new Audio();
+  media.preload = 'auto';
+  const decoded = new Promise((resolve, reject) => {
+    const done = () => {
+      media.removeEventListener('loadedmetadata', loaded);
+      media.removeEventListener('error', failed);
+    };
+    const loaded = () => { done(); resolve(); };
+    const failed = () => { done(); reject(new Error('Audio unavailable: browser WAV decode failed')); };
+    media.addEventListener('loadedmetadata', loaded, { once: true });
+    media.addEventListener('error', failed, { once: true });
+  });
+  media.src = objectUrl;
+  media.load();
+  await decoded;
+  if (!Number.isFinite(media.duration) || media.duration <= 0) {
+    URL.revokeObjectURL(objectUrl);
+    throw new Error('Audio unavailable: decoded WAV duration is invalid');
+  }
+  verifiedPlayback = { projectId, revisionId, artifactId, wavSha256, media, objectUrl };
+  window.__M044_PLAYBACK_PROOF__ = {
+    projectId, revisionId, artifactId, wavSha256,
+    decodedWavValidity: true, durationSec: media.duration,
+    transportSelectedRevision: revisionId
+  };
+  const play = $('btnPlay');
+  if (play) play.disabled = false;
+  setStatus('Audio verified. Ready to hear.', 'ok');
+  return verifiedPlayback;
+}
+
+async function renderAndVerifyRevision(saved) {
+  const response = await fetch('/api/projects/render', {
+    method: 'POST',
+    headers: studioProjectHeaders(),
+    body: JSON.stringify({
+      projectId: saved.manifest.projectId,
+      sourceRevisionId: saved.revision.revisionId,
+      operationId: 'render:' + saved.revision.revisionId,
+      filename: (saved.songSpec.song_id || 'song') + '_r1.wav',
+      subdirectory: 'm044'
+    })
+  });
+  let rendered;
+  try { rendered = await response.json(); } catch (_) { rendered = null; }
+  if (!response.ok || !rendered || rendered.status !== 'SUCCESS') {
+    throw new Error('Audio unavailable: ' + ((rendered && rendered.error) || 'render publication failed'));
+  }
+  showProjectAuthority(rendered);
+  return verifyPlayableRevision(rendered);
+}
+
+async function playVerifiedRevision() {
+  if (!verifiedPlayback || !verifiedPlayback.media) {
+    setStatus('Audio unavailable: no verified revision-bound WAV', 'warn');
+    return false;
+  }
+  verifiedPlayback.media.currentTime = 0;
+  try {
+    await verifiedPlayback.media.play();
+  } catch (error) {
+    setStatus('Audio unavailable: browser playback failed', 'warn');
+    return false;
+  }
+  playing = true;
+  window.__M044_PLAYBACK_STARTED__ = true;
+  const play = $('btnPlay');
+  if (play) play.textContent = 'Stop';
+  setStatus('Playing verified revision · ' + verifiedPlayback.revisionId, 'ok');
+  verifiedPlayback.media.onended = () => {
+    playing = false;
+    if (play) play.textContent = 'Play';
+  };
+  return true;
+}
+
 let durableProjectRef = null;
 let durableSourceAssets = [];
 
 async function projectRequest(route, payload) {
   const response = await fetch('/api/projects/' + route, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Studio-Capability': window.__STUDIO_CAPABILITY__ || '' },
+    headers: studioProjectHeaders(),
     body: JSON.stringify(payload)
   });
   const result = await response.json();
@@ -417,13 +572,13 @@ async function commitProjectSnapshot(spec, outputArtifactIds, expectedRef, sourc
   return result;
 }
 
-async function saveJSON() {
+async function saveJSON(announce = true) {
   if (!skeleton) compile();
   // Capture draft and expected pointer together; pending edits cannot change the commit.
   const spec = JSON.parse(serializeProject());
   const expected = durableProjectRef && { ...durableProjectRef };
   const result = await commitProjectSnapshot(spec, [], expected);
-  setStatus('Project saved · ' + result.manifest.projectId, 'ok');
+  if (announce) setStatus('Project saved · ' + result.manifest.projectId, 'ok');
   return result;
 }
 
@@ -441,32 +596,29 @@ async function restoreProjectFromStorage() {
   if ($('title')) $('title').value = result.songSpec.title || '';
   if ($('prompt')) $('prompt').value = result.songSpec.prompt || '';
   render();
-  setStatus('Opened durable revision · ' + result.revision.revisionId, 'ok');
+  clearVerifiedPlayback();
+  setStatus('Opened durable revision · ' + result.revision.revisionId + ' · Verifying audio…', 'warn');
+  try {
+    await verifyPlayableRevision(result);
+  } catch (error) {
+    clearVerifiedPlayback();
+    setStatus(String(error && error.message || error), 'warn');
+  }
   return result;
 }
 
 
-$("btnCompile").onclick = compile;
+$("btnCompile").onclick = generateProject;
 $("btnPlay").onclick = () => {
-  if (playing) {
-    stopAll();
-    if (window.pulseForgeCinemaSync) window.pulseForgeCinemaSync.stopLoop();
-    logToNative("TRANSPORT", "stopped");
-  } else {
-    logToNative("TRANSPORT", "play");
-    playScore();
-    if (window.pulseForgeCinemaSync) {
-      const chain = ["REST", "A", "E", "REST", "O", "U", "REST", "A", "E", "O", "U"];
-      let fromEvents = chain;
-      if (skeleton) {
-        const vocal = skeleton.tracks.find(t => t.type === "VOCAL");
-        if (vocal && vocal.events.length) {
-          fromEvents = vocal.events.slice(0, 16).map(e => e.viseme || e.phoneme || "A");
-        }
-      }
-      window.pulseForgeCinemaSync.animateVocalPerformanceLoop(fromEvents, 300);
-    }
+  if (playing && verifiedPlayback && verifiedPlayback.media) {
+    verifiedPlayback.media.pause();
+    playing = false;
+    $("btnPlay").textContent = 'Play';
+    setStatus('Stopped');
+    return;
   }
+  logToNative('TRANSPORT', 'verified revision play');
+  playVerifiedRevision();
 };
 $("btnStop").onclick = () => {
   stopAll();
@@ -1003,6 +1155,7 @@ if (btnVocalLab2) btnVocalLab2.onclick = function () { runVocalLab(); };
 if ($('btnOpenProject')) $('btnOpenProject').onclick = () => restoreProjectFromStorage().catch(e => setStatus('Open failed: ' + e.message, 'warn'));
 if ($('btnNewProject')) $('btnNewProject').onclick = () => {
   durableProjectRef = null; durableSourceAssets = [];
+  clearVerifiedPlayback();
   renderLyricAuthority(null);
   if ($('projectId')) $('projectId').value = '';
   if ($('projectRevision')) $('projectRevision').textContent = 'Unsaved draft — no durable project yet';

@@ -1,9 +1,10 @@
 /* SongForge PWA — 2.20.0 M043 candidate */
-const CACHE_NAME = 'pulseforge-songforge-v2.20.0-m043';
+const CACHE_NAME = 'pulseforge-songforge-v2.20.0-m044-prompt';
 const ASSETS = [
   './',
   './index.html',
   './app-core.js',
+  './scorecore.js',
   './app-ui.js',
   './app-cinema.js',
   './manifest.json',
@@ -14,7 +15,9 @@ const ASSETS = [
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((c) =>
+      c.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' })))
+    ).then(() => self.skipWaiting())
   );
 });
 

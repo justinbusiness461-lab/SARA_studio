@@ -1,0 +1,117 @@
+const assert = require('node:assert/strict');
+const { spawn } = require('node:child_process');
+const { mkdtempSync, readFileSync, rmSync } = require('node:fs');
+const { tmpdir } = require('node:os');
+const { join, resolve } = require('node:path');
+const { once } = require('node:events');
+const { createInterface } = require('node:readline');
+const { test } = require('node:test');
+const { chromium } = require('playwright');
+
+const root = resolve(__dirname, '..');
+
+async function startStudio(t, workspace) {
+  const server = spawn('python3', ['-u', '-c', `
+import socketserver
+import sys
+from pathlib import Path
+
+sys.path.insert(0, "tools")
+import studio_server as studio
+
+studio.EXPORT_ROOT = Path(sys.argv[1])
+with socketserver.TCPServer(("127.0.0.1", 0), studio.StudioHandler) as httpd:
+    studio.PORT = httpd.server_address[1]
+    print(studio.PORT, flush=True)
+    httpd.serve_forever()
+`, workspace], { cwd: root, stdio: ['ignore', 'pipe', 'inherit'] });
+  const closed = once(server, 'close');
+  t.after(async () => {
+    server.kill();
+    await closed;
+  });
+  const lines = createInterface({ input: server.stdout });
+  const port = await Promise.race([
+    once(lines, 'line').then(([line]) => Number(line)),
+    closed.then(([code]) => { throw new Error(`Studio exited before startup: ${code}`); }),
+  ]);
+  lines.close();
+  assert.ok(Number.isInteger(port) && port > 0, 'Studio must report its listening port');
+  return `http://127.0.0.1:${port}`;
+}
+
+test('Studio loads ScoreCore, persists Generate, and reopens the exact revision', { timeout: 90000 }, async t => {
+  const workspace = mkdtempSync(join(tmpdir(), 'songforge-browser-'));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  const url = await startStudio(t, workspace);
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ serviceWorkers: 'block' });
+  page.setDefaultTimeout(15000);
+  // The remote Cinema dependency is outside the Generate workflow.
+  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  const scoreCoreResponse = page.waitForResponse(url + '/scorecore.js');
+  await page.goto(url);
+  assert.equal((await scoreCoreResponse).status(), 200, 'ScoreCore must be served by Studio');
+  assert.equal(await page.evaluate(() => typeof window.ScoreCore?.compileIntent), 'function');
+
+  const prompt = '96 BPM E minor dark Southern hip-hop instrumental';
+  await page.locator('#prompt').fill(prompt);
+  const commitResponse = page.waitForResponse(url + '/api/projects/commit');
+  await page.locator('#btnCompile').click();
+  const commit = await commitResponse;
+  assert.equal(commit.status(), 200);
+  const created = await commit.json();
+  assert.equal(created.status, 'SUCCESS');
+  assert.equal(created.songSpec.prompt, prompt);
+  assert.equal(created.songSpec.timebase.initial_bpm, 96);
+  assert.equal(created.songSpec.timebase.key, 'E minor');
+  assert.equal(created.manifest.currentRevisionId, created.revision.revisionId);
+
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Audio verified. Ready to hear.', null, { timeout: 90000 });
+  const playable = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+  assert.ok(playable && playable.revisionId && playable.artifactId);
+
+  await page.close();
+  const reopenedPage = await browser.newPage({ serviceWorkers: 'block' });
+  reopenedPage.setDefaultTimeout(15000);
+  await reopenedPage.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  await reopenedPage.goto(url);
+  await reopenedPage.locator('#projectId').fill(created.manifest.projectId);
+  const openResponse = reopenedPage.waitForResponse(url + '/api/projects/open');
+  await reopenedPage.locator('#btnOpenProject').click();
+  const opened = await openResponse;
+  assert.equal(opened.status(), 200);
+  const reopened = await opened.json();
+  assert.equal(reopened.revision.revisionId, playable.revisionId);
+  assert.deepEqual(reopened.songSpec, created.songSpec);
+});
+
+test('Installed Studio precaches the matching ScoreCore adapter', { timeout: 30000 }, async t => {
+  const workspace = mkdtempSync(join(tmpdir(), 'songforge-pwa-'));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  const url = await startStudio(t, workspace);
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
+  t.after(() => browser.close());
+  const page = await browser.newPage();
+  page.setDefaultTimeout(15000);
+  await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+  await page.goto(url);
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+
+  await page.context().setOffline(true);
+  const adapterResponse = page.waitForResponse(url + '/scorecore.js');
+  await page.reload();
+  const adapter = await adapterResponse;
+  assert.equal(adapter.status(), 200);
+  assert.equal(adapter.fromServiceWorker(), true);
+  assert.ok(
+    (await adapter.body()).equals(readFileSync(join(root, 'scorecore.js'))),
+    'Offline ScoreCore must match the adapter shipped with this Studio build',
+  );
+  assert.equal(await page.evaluate(() => typeof window.ScoreCore?.compileIntent), 'function');
+});

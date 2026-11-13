@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 EXPORT_ROOT = ROOT / "workspace" / "studio_exports"
 
 import hashlib
+import subprocess
 from datetime import datetime, timezone
 
 MANIFEST_LOG_PATH = EXPORT_ROOT / "manifest_registry.json"
@@ -383,6 +384,24 @@ def _render_data_bytes(raw):
     raise ValueError("render data_bytes must be byte list")
 
 
+def render_authoritative_revision_bytes(spec):
+    completed = subprocess.run(
+        ["node", str(ROOT / "tools" / "render_revision.cjs")],
+        input=project_json(spec),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=ROOT,
+        timeout=90,
+        check=False,
+    )
+    if completed.returncode != 0 or not completed.stdout:
+        raise ValueError("authoritative revision render failed")
+    if len(completed.stdout) > MAX_ARTIFACT:
+        raise ValueError("artifact too large")
+    validate_render_audio_bytes(completed.stdout)
+    return completed.stdout
+
+
 def _assert_revision_in_history(root, directory, pid, manifest, rid):
     ancestor = manifest["currentRevisionId"]
     seen = set()
@@ -518,11 +537,6 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     pid = project_id(request.get("projectId"))
     operation_id = _render_operation_id(request.get("operationId"))
     source_revision = request.get("sourceRevisionId")
-    data = _render_data_bytes(request.get("data_bytes"))
-    if len(data) > MAX_ARTIFACT:
-        raise ValueError("artifact too large")
-    validate_render_audio_bytes(data)
-    digest = hashlib.sha256(data).hexdigest()
     filename = request.get("filename", "m044.wav")
     subdirectory = request.get("subdirectory", "m044")
     for value in (filename, subdirectory):
@@ -539,6 +553,13 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
         manifest = json.loads(manifest_path.read_text())
         revision, spec, _ = _assert_revision_in_history(
             root, directory, pid, manifest, source_revision)
+        raw_data = request.get("data_bytes")
+        data = (render_authoritative_revision_bytes(spec)
+                if raw_data is None else _render_data_bytes(raw_data))
+        if len(data) > MAX_ARTIFACT:
+            raise ValueError("artifact too large")
+        validate_render_audio_bytes(data)
+        digest = hashlib.sha256(data).hexdigest()
         commit_request = {
             "projectId": pid,
             "expectedCurrentRevisionId": source_revision,
@@ -929,7 +950,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 "<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";</script>"
             ).encode()
             self.send_response(200);self.send_header("Content-Type","text/html");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
-        public={"/app-core.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
+        public={"/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
         if path not in public: return self._json(404,{"status":"ERROR","error":"not a public asset"})
         return super().do_GET()
 
