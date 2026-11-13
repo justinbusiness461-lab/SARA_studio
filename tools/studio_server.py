@@ -33,8 +33,29 @@ import re
 from urllib.parse import urlsplit
 
 CAPABILITY = secrets.token_urlsafe(32)
+LOCAL_PRINCIPAL_ID = "local-studio-user"
+SESSION_PRINCIPALS = {}
 MAX_REQUEST = 64 * 1024 * 1024
 MAX_ARTIFACT = 16 * 1024 * 1024
+
+def _principal_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", value):
+        raise ValueError("invalid principal")
+    return value
+
+def issue_studio_session(principal_id=LOCAL_PRINCIPAL_ID):
+    principal_id = _principal_id(principal_id)
+    token = secrets.token_urlsafe(32)
+    SESSION_PRINCIPALS[token] = principal_id
+    return token
+
+def resolve_studio_session(token):
+    if not isinstance(token, str) or not token:
+        raise ProjectConflict("session denied")
+    principal_id = SESSION_PRINCIPALS.get(token)
+    if principal_id is None:
+        raise ProjectConflict("session denied")
+    return principal_id
 
 def authorized_origin(origin, host):
     if host not in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"} or not origin:
@@ -120,6 +141,26 @@ def project_id(value):
     if not isinstance(value, str) or not re.fullmatch(r"[a-f0-9]{32}", value):
         raise ValueError("invalid projectId")
     return value
+
+
+def authorize_project_owner(directory, pid, principal_id, create=False):
+    principal_id = _principal_id(principal_id)
+    owner_path = directory / "ProjectOwner.json"
+    if owner_path.is_symlink():
+        raise ValueError("unsafe project owner path")
+    if owner_path.exists():
+        owner = json.loads(owner_path.read_text())
+        if owner != {"projectId": pid, "principalId": principal_id, "formatVersion": 1}:
+            raise ProjectConflict("project principal denied")
+        return principal_id
+    # Existing pre-auth projects may be adopted only by the historical local
+    # Studio principal. Named/multi-user principals cannot claim unowned state.
+    if not create and principal_id != LOCAL_PRINCIPAL_ID:
+        raise ProjectConflict("project principal denied")
+    atomic_write_bytes(owner_path, project_json({
+        "projectId": pid, "principalId": principal_id, "formatVersion": 1
+    }))
+    return principal_id
 
 
 def artifact_bytes(root, digest):
@@ -408,7 +449,7 @@ def reconcile_render_attempts(root, directory, pid, manifest):
             raise ValueError("unknown render attempt state")
 
 
-def render_publish_operation(root, request):
+def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     root = Path(root).resolve()
     pid = project_id(request.get("projectId"))
     operation_id = _render_operation_id(request.get("operationId"))
@@ -426,6 +467,7 @@ def render_publish_operation(root, request):
     directory = root / "projects" / pid
     if not directory.is_dir():
         raise ValueError("unknown project")
+    authorize_project_owner(directory, pid, principal_id)
     lock = os.open(directory / ".render.lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -491,7 +533,7 @@ def render_publish_operation(root, request):
         fcntl.flock(lock, fcntl.LOCK_UN)
         os.close(lock)
 
-    result = project_operation(root, _render_commit_request(root, directory, pid, attempt), commit=True)
+    result = project_operation(root, _render_commit_request(root, directory, pid, attempt), commit=True, principal_id=principal_id)
 
     lock = os.open(directory / ".render.lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
@@ -514,12 +556,13 @@ def render_publish_operation(root, request):
     return result
 
 
-def project_audio_bytes(root, request):
+def project_audio_bytes(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     root = Path(root).resolve()
     pid = project_id(request.get("projectId"))
     rid = request.get("revisionId")
     digest = request.get("artifactId")
     directory = root / "projects" / pid
+    authorize_project_owner(directory, pid, principal_id)
     manifest_path = directory / "ProjectManifest.json"
     if not manifest_path.is_file():
         raise ValueError("unknown project")
@@ -588,7 +631,7 @@ def historical_result(root, directory, manifest, revision, spec, timeline):
     return result
 
 
-def project_operation(root, request, commit=False, lyric=False):
+def project_operation(root, request, commit=False, lyric=False, principal_id=LOCAL_PRINCIPAL_ID):
     import uuid
     root = Path(root).resolve()
     pid = request.get("projectId")
@@ -598,8 +641,10 @@ def project_operation(root, request, commit=False, lyric=False):
         pid = uuid.uuid4().hex
     pid = project_id(pid)
     directory = root / "projects" / pid
-    if not commit and not directory.is_dir(): raise ValueError("unknown project")
+    existed = directory.is_dir()
+    if not commit and not existed: raise ValueError("unknown project")
     durable_mkdir(directory)
+    authorize_project_owner(directory, pid, principal_id, create=not existed)
     fd = os.open(directory / ".lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
@@ -819,7 +864,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"private storage"})
         if path in {"/","/index.html"}:
             # Fresh same-origin capability, never cached by the service worker.
-            body=(ROOT/"index.html").read_text().replace("<head>","<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";</script>").encode()
+            session = issue_studio_session(LOCAL_PRINCIPAL_ID)
+            body=(ROOT/"index.html").read_text().replace(
+                "<head>",
+                "<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";</script>"
+            ).encode()
             self.send_response(200);self.send_header("Content-Type","text/html");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
         public={"/app-core.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
         if path not in public: return self._json(404,{"status":"ERROR","error":"not a public asset"})
@@ -831,11 +880,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if self.headers.get("Access-Control-Request-Method") not in {"GET","POST"}:
             return self._json(403,{"status":"ERROR","error":"method denied"})
         requested={v.strip().lower() for v in self.headers.get("Access-Control-Request-Headers","").split(",") if v.strip()}
-        if not requested <= {"content-type","x-studio-capability"}:
+        if not requested <= {"content-type","x-studio-capability","x-studio-session"}:
             return self._json(403,{"status":"ERROR","error":"headers denied"})
         self.send_response(204)
         self.send_header("Access-Control-Allow-Methods","GET, POST")
-        self.send_header("Access-Control-Allow-Headers","Content-Type, X-Studio-Capability")
+        self.send_header("Access-Control-Allow-Headers","Content-Type, X-Studio-Capability, X-Studio-Session")
         self.end_headers()
 
     def _json(self, code: int, obj: dict):
@@ -856,6 +905,12 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if not secrets.compare_digest(supplied,CAPABILITY):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
+        principal_id = None
+        if path.startswith("/api/projects/"):
+            try:
+                principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
+            except ProjectConflict as e:
+                return self._json(403, {"status": "DENY", "error": str(e)})
         try:
             if self.headers.get("Transfer-Encoding"): raise ValueError("transfer encoding unsupported")
             length=int(self.headers.get("Content-Length","-1"))
@@ -868,14 +923,14 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/projects/render":
             try:
-                return self._json(200, render_publish_operation(EXPORT_ROOT, payload))
+                return self._json(200, render_publish_operation(EXPORT_ROOT, payload, principal_id=principal_id))
             except ProjectConflict as e:
                 return self._json(409, {"status": "CONFLICT", "error": str(e)})
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError):
                 return self._json(400, {"status": "ERROR", "error": "invalid or unavailable render authority"})
         if path == "/api/projects/audio":
             try:
-                data = project_audio_bytes(EXPORT_ROOT, payload)
+                data = project_audio_bytes(EXPORT_ROOT, payload, principal_id=principal_id)
                 self.send_response(200)
                 self.send_header("Content-Type", "audio/wav")
                 self.send_header("Content-Length", str(len(data)))
@@ -891,7 +946,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._json(400, {"status": "ERROR", "error": "invalid or unavailable audio authority"})
         if path in {"/api/projects/commit", "/api/projects/open", "/api/projects/lyrics"}:
             try:
-                return self._json(200, project_operation(EXPORT_ROOT, payload, commit=not path.endswith("/open"), lyric=path.endswith("/lyrics")))
+                return self._json(200, project_operation(EXPORT_ROOT, payload, commit=not path.endswith("/open"), lyric=path.endswith("/lyrics"), principal_id=principal_id))
             except ProjectConflict as e:
                 return self._json(409, {"status": "CONFLICT", "error": str(e)})
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError):
