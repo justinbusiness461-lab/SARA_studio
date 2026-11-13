@@ -20,8 +20,11 @@ test('prompt UI uses qualified intent and saves only after successful compile', 
     compile(){compiled++;},
     clearVerifiedPlayback(){clears++;},
     async saveJSON(){saves++; return {manifest:{projectId:'p'},revision:{revisionId:'r1'}};},
-    async renderAndVerifyRevision(){renders++;},
-    setStatus(){}
+    async renderAndVerifyRevision(){renders++; return {manifest:{projectId:'p'},revision:{revisionId:'r1',outputArtifactIds:['a']}};},
+    setStatus(){},
+    revisionRef(result){return {projectId:result.manifest.projectId,revisionId:result.revision.revisionId,artifactId:result.revision.outputArtifactIds[0]};},
+    setABControls(){},
+    abRevisions:{r1:null,r2:null}
   };
   vm.createContext(ctx);vm.runInContext(source,ctx);
   await ctx.generateProject();
