@@ -723,8 +723,43 @@ async function restoreProjectFromStorage() {
   setStatus('Opened durable revision · ' + result.revision.revisionId + ' · Verifying audio…', 'warn');
   try {
     await verifyPlayableRevision(result);
+    const outputs = result.revision.outputArtifactIds || [];
+    if (outputs.length === 1) {
+      let ancestorId = result.revision.parentRevisionId;
+      let previousPlayable = null;
+      const seen = new Set();
+      while (ancestorId && !seen.has(ancestorId)) {
+        seen.add(ancestorId);
+        const ancestor = await projectRequest('open', {
+          projectId: result.manifest.projectId,
+          revisionId: ancestorId
+        });
+        const ancestorOutputs = ancestor.revision.outputArtifactIds || [];
+        if (ancestorOutputs.length === 1) {
+          previousPlayable = ancestor;
+          break;
+        }
+        ancestorId = ancestor.revision.parentRevisionId;
+      }
+      if (previousPlayable) {
+        abRevisions = {
+          r1: revisionRef(previousPlayable),
+          r2: revisionRef(result)
+        };
+        setABControls();
+        if ($('abStatus')) $('abStatus').textContent = 'Selected R2 · current';
+      } else {
+        abRevisions = { r1: revisionRef(result), r2: null };
+        setABControls();
+      }
+    } else {
+      abRevisions = { r1: null, r2: null };
+      setABControls();
+    }
   } catch (error) {
     clearVerifiedPlayback();
+    abRevisions = { r1: null, r2: null };
+    setABControls();
     setStatus(String(error && error.message || error), 'warn');
   }
   return result;
