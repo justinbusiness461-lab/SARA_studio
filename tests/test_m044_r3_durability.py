@@ -170,18 +170,12 @@ class R3RenderDurability(unittest.TestCase):
             "sourceAssetDigests": [],
             "outputArtifactIds": [],
         }
-        barrier = threading.Barrier(2)
-        original_atomic = server.atomic_write_bytes
-
-        def synchronized_owner_write(path, data):
-            if path.name == "ProjectOwner.json":
-                barrier.wait(timeout=2)
-            return original_atomic(path, data)
-
+        start_gate = threading.Barrier(3)
         outcomes = []
         outcome_lock = threading.Lock()
 
         def create(principal):
+            start_gate.wait(timeout=2)
             try:
                 result = server.project_operation(
                     self.root, dict(request), commit=True, principal_id=principal)
@@ -193,16 +187,17 @@ class R3RenderDurability(unittest.TestCase):
             with outcome_lock:
                 outcomes.append(outcome)
 
-        with patch.object(server, "atomic_write_bytes", synchronized_owner_write):
-            a = threading.Thread(target=create, args=("principal-a",))
-            b = threading.Thread(target=create, args=("principal-b",))
-            a.start(); b.start(); a.join(timeout=5); b.join(timeout=5)
+        a = threading.Thread(target=create, args=("principal-a",))
+        b = threading.Thread(target=create, args=("principal-b",))
+        a.start(); b.start(); start_gate.wait(timeout=2)
+        a.join(timeout=5); b.join(timeout=5)
 
         self.assertFalse(a.is_alive() or b.is_alive(), outcomes)
         passes = [row for row in outcomes if row[0] == "PASS"]
         denies = [row for row in outcomes if row[0] == "DENY"]
         self.assertEqual(len(passes), 1, outcomes)
         self.assertEqual(len(denies), 1, outcomes)
+        self.assertFalse([row for row in outcomes if row[0] == "ERROR"], outcomes)
 
         directory = self.root / "projects" / explicit_pid
         owner = json.loads((directory / "ProjectOwner.json").read_text())
@@ -213,10 +208,13 @@ class R3RenderDurability(unittest.TestCase):
         revisions = list((directory / "revisions").glob("*.json"))
         self.assertEqual(len(revisions), 1)
 
+        # Ownership is immutable after first claim.
         with self.assertRaises(server.ProjectConflict):
             server.project_operation(
                 self.root, {"projectId": explicit_pid},
                 principal_id=denies[0][1])
+        owner_after = json.loads((directory / "ProjectOwner.json").read_text())
+        self.assertEqual(owner_after, owner)
 
     def test_two_principal_http_audio_authorization(self):
         principal_a = "principal-a"
