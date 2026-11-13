@@ -113,18 +113,19 @@ class R3RenderDurability(unittest.TestCase):
         self.assertEqual(self.current_revision(), self.r2["revision"]["revisionId"])
 
     def test_digest_knowledge_alone_is_never_authorization(self):
-        other = OperationTests()
-        other.setUp()
-        try:
-            server.persist_export(self.root, "known.wav", "m044", self.bytes)
-            with self.assertRaises(server.ProjectConflict):
-                server.project_audio_bytes(self.root, {
-                    "projectId": other.pid,
-                    "revisionId": other.r1["revision"]["revisionId"],
-                    "artifactId": self.digest,
-                })
-        finally:
-            other.tearDown()
+        other = server.project_operation(self.root, {
+            "expectedCurrentRevisionId": None,
+            "songSpec": self.fixture.spec,
+            "sourceAssetDigests": [],
+            "outputArtifactIds": [],
+        }, commit=True)
+        server.persist_export(self.root, "known.wav", "m044", self.bytes)
+        with self.assertRaises(server.ProjectConflict):
+            server.project_audio_bytes(self.root, {
+                "projectId": other["manifest"]["projectId"],
+                "revisionId": other["revision"]["revisionId"],
+                "artifactId": self.digest,
+            })
 
 
 if __name__ == "__main__":
