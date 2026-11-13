@@ -148,3 +148,71 @@ After the exact committed fixture was staged, the same full command passed 64/64
 This was an executor-materialization defect, not a product source failure.
 
 **READY_FOR_CODY_SUCCESSOR_REVIEW:** YES
+
+
+## Successor hardening — first-owner crash recovery
+
+Cody's third HOLD correctly identified a crash window after durable project-directory creation but before durable `ProjectOwner.json`.
+
+### Valid RED
+
+Exact valid RED commit:
+
+`a0d51653ac70f706ad14b1d0c13de4f89962dc70`
+
+(The immediately prior test commit had a harness-only missing `import os`; product source was unchanged. The corrected RED above failed for the intended product reason: retrying principal A received `ProjectConflict: project principal denied` after the ownerless directory survived.)
+
+### Repair
+
+The existing `projects/.owner-create.lock` remains the serialization mutex.
+
+A recovery-only claim is now durably written under:
+
+`projects/.owner-claims/<projectId>.json`
+
+before first project-directory creation.
+
+Claim contents are limited to:
+
+- `projectId`
+- `principalId`
+- `formatVersion`
+
+The claim owns no revision, current pointer, artifact, render, Proof, or project content.
+
+First-create sequence:
+
+`owner-create.lock → durable owner claim → durable project directory → immutable ProjectOwner.json → verify owner → delete claim → fsync claim namespace → normal per-project .lock → project mutation`
+
+Recovery behavior:
+
+- directory absent + matching claim + same principal → resume first creation;
+- directory present + owner absent + matching claim + same principal → finish owner establishment;
+- matching projectId + claim owned by another principal → DENY / CONFLICT;
+- existing owner → normal immutable owner check;
+- ownerless legacy directory + no claim → existing fail-closed policy remains; named principals cannot adopt it.
+
+### Executed evidence
+
+Independent isolated executor, exact repaired source candidate `23cb4228b198919a7ba84841fbb9241311dde6ec`:
+
+- focused R3/authorization/crash-recovery Python suite: **19/19 PASS**;
+- repository-documented full Python suite:
+  `python3 -m unittest discover -s tests -v`
+  → **65/65 PASS**;
+- Node render-session suite: **2/2 PASS**.
+
+Crash-recovery acceptance proved:
+
+- process dies after durable project directory exists but before `ProjectOwner.json`;
+- fresh process, same principal A retries and succeeds;
+- `ProjectOwner.json = A`;
+- exactly one revision exists;
+- `ProjectManifest.currentRevisionId` equals that revision;
+- principal B is denied;
+- ownerless legacy directory with no recovery claim remains denied to named principal.
+
+R3 render durability, CAS authorization, two-principal steady-state isolation, and first-owner concurrency behavior remain unchanged and green.
+
+**SECOND_AUTHORITY_CREATED:** NO  
+**READY_FOR_CODY_SUCCESSOR_REVIEW:** YES
