@@ -161,6 +161,63 @@ class R3RenderDurability(unittest.TestCase):
             server.EXPORT_ROOT = old_root
             server.PORT = old_port
 
+    def test_concurrent_first_owner_claim_is_immutable(self):
+        explicit_pid = "a" * 32
+        request = {
+            "projectId": explicit_pid,
+            "expectedCurrentRevisionId": None,
+            "songSpec": self.fixture.spec,
+            "sourceAssetDigests": [],
+            "outputArtifactIds": [],
+        }
+        barrier = threading.Barrier(2)
+        original_atomic = server.atomic_write_bytes
+
+        def synchronized_owner_write(path, data):
+            if path.name == "ProjectOwner.json":
+                barrier.wait(timeout=2)
+            return original_atomic(path, data)
+
+        outcomes = []
+        outcome_lock = threading.Lock()
+
+        def create(principal):
+            try:
+                result = server.project_operation(
+                    self.root, dict(request), commit=True, principal_id=principal)
+                outcome = ("PASS", principal, result["revision"]["revisionId"])
+            except server.ProjectConflict as exc:
+                outcome = ("DENY", principal, str(exc))
+            except Exception as exc:
+                outcome = ("ERROR", principal, type(exc).__name__ + ":" + str(exc))
+            with outcome_lock:
+                outcomes.append(outcome)
+
+        with patch.object(server, "atomic_write_bytes", synchronized_owner_write):
+            a = threading.Thread(target=create, args=("principal-a",))
+            b = threading.Thread(target=create, args=("principal-b",))
+            a.start(); b.start(); a.join(timeout=5); b.join(timeout=5)
+
+        self.assertFalse(a.is_alive() or b.is_alive(), outcomes)
+        passes = [row for row in outcomes if row[0] == "PASS"]
+        denies = [row for row in outcomes if row[0] == "DENY"]
+        self.assertEqual(len(passes), 1, outcomes)
+        self.assertEqual(len(denies), 1, outcomes)
+
+        directory = self.root / "projects" / explicit_pid
+        owner = json.loads((directory / "ProjectOwner.json").read_text())
+        self.assertEqual(owner["principalId"], passes[0][1])
+
+        manifest = json.loads((directory / "ProjectManifest.json").read_text())
+        self.assertEqual(manifest["currentRevisionId"], passes[0][2])
+        revisions = list((directory / "revisions").glob("*.json"))
+        self.assertEqual(len(revisions), 1)
+
+        with self.assertRaises(server.ProjectConflict):
+            server.project_operation(
+                self.root, {"projectId": explicit_pid},
+                principal_id=denies[0][1])
+
     def test_two_principal_http_audio_authorization(self):
         principal_a = "principal-a"
         principal_b = "principal-b"
