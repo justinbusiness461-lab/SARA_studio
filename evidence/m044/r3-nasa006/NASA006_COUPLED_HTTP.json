@@ -1,0 +1,15 @@
+{
+  "targetSha":"eac42c4174f95694389077b8a2125bb7c5f2cdfa",
+  "crash":"B",
+  "sigkill":true,
+  "artifactDigest":"a2be61805a5e925760e74dbc7d259485ec560ef511974a13a5532c6240dd60a8",
+  "preReconciliationStatus":403,
+  "postReconciliationStatus":200,
+  "postReconciliationExactBytes":true,
+  "wrongPrincipalStatus":403,
+  "anonymousStatus":403,
+  "wrongRevisionStatus":403,
+  "R2StillCurrent":true,
+  "R1HistoryOccurrences":1,
+  "result":"PASS"
+}

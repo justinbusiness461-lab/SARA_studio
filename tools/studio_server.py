@@ -33,8 +33,29 @@ import re
 from urllib.parse import urlsplit
 
 CAPABILITY = secrets.token_urlsafe(32)
+LOCAL_PRINCIPAL_ID = "local-studio-user"
+SESSION_PRINCIPALS = {}
 MAX_REQUEST = 64 * 1024 * 1024
 MAX_ARTIFACT = 16 * 1024 * 1024
+
+def _principal_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", value):
+        raise ValueError("invalid principal")
+    return value
+
+def issue_studio_session(principal_id=LOCAL_PRINCIPAL_ID):
+    principal_id = _principal_id(principal_id)
+    token = secrets.token_urlsafe(32)
+    SESSION_PRINCIPALS[token] = principal_id
+    return token
+
+def resolve_studio_session(token):
+    if not isinstance(token, str) or not token:
+        raise ProjectConflict("session denied")
+    principal_id = SESSION_PRINCIPALS.get(token)
+    if principal_id is None:
+        raise ProjectConflict("session denied")
+    return principal_id
 
 def authorized_origin(origin, host):
     if host not in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"} or not origin:
@@ -120,6 +141,90 @@ def project_id(value):
     if not isinstance(value, str) or not re.fullmatch(r"[a-f0-9]{32}", value):
         raise ValueError("invalid projectId")
     return value
+
+
+def authorize_project_owner(directory, pid, principal_id, create=False):
+    principal_id = _principal_id(principal_id)
+    owner_path = directory / "ProjectOwner.json"
+    if owner_path.is_symlink():
+        raise ValueError("unsafe project owner path")
+    if owner_path.exists():
+        owner = json.loads(owner_path.read_text())
+        if owner != {"projectId": pid, "principalId": principal_id, "formatVersion": 1}:
+            raise ProjectConflict("project principal denied")
+        return principal_id
+    # Existing pre-auth projects may be adopted only by the historical local
+    # Studio principal. Named/multi-user principals cannot claim unowned state.
+    if not create and principal_id != LOCAL_PRINCIPAL_ID:
+        raise ProjectConflict("project principal denied")
+    atomic_write_bytes(owner_path, project_json({
+        "projectId": pid, "principalId": principal_id, "formatVersion": 1
+    }))
+    return principal_id
+
+
+def project_owner_directory(root, pid, principal_id, allow_create=False):
+    """Serialize and recover immutable first-owner establishment.
+
+    .owner-claims contains recovery intent only. It never selects revisions,
+    artifacts, currentness, or project content.
+    """
+    principal_id = _principal_id(principal_id)
+    projects = root / "projects"
+    durable_mkdir(projects)
+    fd = os.open(projects / ".owner-create.lock",
+                 os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        claims = projects / ".owner-claims"
+        durable_mkdir(claims)
+        claim_path = claims / (pid + ".json")
+        if claim_path.is_symlink():
+            raise ValueError("unsafe owner claim path")
+        directory = projects / pid
+        existed = directory.is_dir()
+        owner_path = directory / "ProjectOwner.json"
+
+        claim = None
+        if claim_path.exists():
+            claim = json.loads(claim_path.read_text())
+            expected_claim = {"projectId": pid, "principalId": principal_id, "formatVersion": 1}
+            if claim != expected_claim:
+                raise ProjectConflict("project owner claim denied")
+
+        if not existed:
+            if not allow_create:
+                raise ValueError("unknown project")
+            if claim is None:
+                claim = {"projectId": pid, "principalId": principal_id, "formatVersion": 1}
+                atomic_write_bytes(claim_path, project_json(claim))
+            durable_mkdir(directory)
+            authorize_project_owner(directory, pid, principal_id, create=True)
+        elif owner_path.exists():
+            authorize_project_owner(directory, pid, principal_id, create=False)
+        elif claim is not None:
+            # Same principal resumes an interrupted first-owner transaction.
+            authorize_project_owner(directory, pid, principal_id, create=True)
+        else:
+            # Preserve fail-closed legacy policy: only LOCAL_PRINCIPAL_ID may
+            # adopt an existing ownerless pre-auth project.
+            authorize_project_owner(directory, pid, principal_id, create=False)
+
+        owner = json.loads(owner_path.read_text())
+        expected_owner = {"projectId": pid, "principalId": principal_id, "formatVersion": 1}
+        if owner != expected_owner:
+            raise ProjectConflict("project principal denied")
+
+        if claim_path.exists():
+            stored_claim = json.loads(claim_path.read_text())
+            if stored_claim != expected_owner:
+                raise ProjectConflict("project owner claim mismatch")
+            claim_path.unlink()
+            sync_dir(claims)
+        return directory
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
 
 
 def artifact_bytes(root, digest):
@@ -214,8 +319,7 @@ def project_revision(root, directory, pid, rid):
     return revision, spec, timeline
 
 
-def validate_render_audio(root, digest):
-    data = artifact_bytes(root, digest)
+def validate_render_audio_bytes(data):
     if (len(data) < 44 or data[:4] != b"RIFF" or data[8:12] != b"WAVE"
             or struct.unpack_from("<I", data, 4)[0] + 8 != len(data)):
         raise ValueError("invalid render WAV container")
@@ -260,6 +364,283 @@ def validate_render_audio(root, digest):
     except (wave.Error, EOFError) as error:
         raise ValueError("invalid render WAV") from error
 
+
+
+def validate_render_audio(root, digest):
+    data = artifact_bytes(root, digest)
+    validate_render_audio_bytes(data)
+
+
+def _render_operation_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", value):
+        raise ValueError("invalid render operationId")
+    return value
+
+
+def _render_data_bytes(raw):
+    if isinstance(raw, list) and all(type(v) is int and 0 <= v <= 255 for v in raw):
+        return bytes(raw)
+    raise ValueError("render data_bytes must be byte list")
+
+
+def _assert_revision_in_history(root, directory, pid, manifest, rid):
+    ancestor = manifest["currentRevisionId"]
+    seen = set()
+    while ancestor != rid:
+        if ancestor is None or ancestor in seen:
+            raise ProjectConflict("render source is outside committed history")
+        seen.add(ancestor)
+        prior, _, _ = project_revision(root, directory, pid, ancestor)
+        ancestor = prior["parentRevisionId"]
+    return project_revision(root, directory, pid, rid)
+
+
+def _render_commit_request(root, directory, pid, attempt):
+    revision, spec, _ = project_revision(root, directory, pid, attempt["sourceRevisionId"])
+    request = {
+        "projectId": pid,
+        "expectedCurrentRevisionId": attempt["sourceRevisionId"],
+        "songSpec": spec,
+        "sourceAssetDigests": revision["sourceAssetDigests"],
+        "outputArtifactIds": [attempt["artifactDigest"]],
+        "operationId": attempt["operationId"],
+        "operationContext": {"kind": "render", "sourceRevisionId": attempt["sourceRevisionId"]},
+    }
+    meaning = {k: v for k, v in request.items() if k != "operationId"}
+    if hashlib.sha256(project_json(meaning)).hexdigest() != attempt["operationMeaningDigest"]:
+        raise ValueError("render attempt meaning mismatch")
+    return request
+
+
+def _historical_receipt_from_attempt(root, directory, pid, attempt):
+    revision, _, _ = project_revision(root, directory, pid, attempt["sourceRevisionId"])
+    return {
+        "operation": {"id": attempt["operationId"], "meaningDigest": attempt["operationMeaningDigest"]},
+        "projectId": pid,
+        "revisionId": attempt["sourceRevisionId"],
+        "artifactIds": [attempt["artifactDigest"]],
+        "songSpecDigest": revision["songSpecDigest"],
+        "productionTimelineDigest": revision["productionTimelineDigest"],
+    }
+
+
+def _write_render_attempt(path, attempt):
+    atomic_write_bytes(path, project_json(attempt))
+    project_namespace_fence(path.parent, path.parents[3])
+
+
+def _publish_cas_exact(root, digest, data):
+    if hashlib.sha256(data).hexdigest() != digest:
+        raise ValueError("render digest mismatch")
+    directory = root / "objects" / digest[:2]
+    durable_mkdir(directory)
+    obj = directory / digest
+    if obj.exists():
+        if obj.is_symlink() or obj.read_bytes() != data:
+            raise ValueError("immutable object corruption")
+    else:
+        atomic_write_bytes(obj, data)
+    project_artifact_fence(root, digest)
+    return obj
+
+
+def reconcile_render_attempts(root, directory, pid, manifest):
+    attempts = directory / "render-attempts"
+    if not attempts.is_dir():
+        return
+    history = directory / "historical-renders"
+    for path in sorted(attempts.glob("*.json")):
+        attempt = json.loads(path.read_text())
+        required = {
+            "operationId", "projectId", "sourceRevisionId", "artifactDigest",
+            "intendedCas", "byteLength", "songSpecDigest",
+            "productionTimelineDigest", "operationMeaningDigest", "state"
+        }
+        if not required <= set(attempt):
+            raise ValueError("incomplete render attempt")
+        if (attempt["projectId"] != pid
+                or path.name != attempt["operationId"] + ".json"
+                or attempt["intendedCas"] != f"objects/{attempt['artifactDigest'][:2]}/{attempt['artifactDigest']}"):
+            raise ValueError("render attempt identity mismatch")
+        revision, _, _ = _assert_revision_in_history(
+            root, directory, pid, manifest, attempt["sourceRevisionId"])
+        if (revision["songSpecDigest"] != attempt["songSpecDigest"]
+                or revision["productionTimelineDigest"] != attempt["productionTimelineDigest"]):
+            raise ValueError("render attempt source mismatch")
+        state = attempt["state"]
+        cas = root / attempt["intendedCas"]
+        if state == "VALIDATED_NOT_PUBLISHED":
+            # Crash after atomic CAS publication but before state advancement is
+            # recoverable only because exact CAS identity was already durable.
+            if not cas.exists():
+                continue
+            data = artifact_bytes(root, attempt["artifactDigest"])
+            if len(data) != attempt["byteLength"]:
+                raise ValueError("render attempt byte length mismatch")
+            validate_render_audio_bytes(data)
+            project_artifact_fence(root, attempt["artifactDigest"])
+            attempt["state"] = "ARTIFACT_DURABLE"
+            _write_render_attempt(path, attempt)
+            state = "ARTIFACT_DURABLE"
+        if state == "ARTIFACT_DURABLE":
+            data = artifact_bytes(root, attempt["artifactDigest"])
+            if len(data) != attempt["byteLength"]:
+                raise ValueError("render attempt byte length mismatch")
+            validate_render_audio_bytes(data)
+            project_artifact_fence(root, attempt["artifactDigest"])
+            # Do not invent a successor for a render whose source is still current.
+            # The exact caller may replay that operation; open-time recovery is only
+            # for historical source revisions.
+            if attempt["sourceRevisionId"] == manifest["currentRevisionId"]:
+                continue
+            receipt = _historical_receipt_from_attempt(root, directory, pid, attempt)
+            durable_mkdir(history)
+            destination = history / (attempt["operationId"] + ".json")
+            encoded = project_json(receipt)
+            if destination.exists() and destination.read_bytes() != encoded:
+                raise ProjectConflict("historical render recovery conflict")
+            if not destination.exists():
+                atomic_write_bytes(destination, encoded)
+            attempt["state"] = "HISTORICALLY_BOUND"
+            _write_render_attempt(path, attempt)
+            state = "HISTORICALLY_BOUND"
+        if state == "HISTORICALLY_BOUND":
+            receipt = _historical_receipt_from_attempt(root, directory, pid, attempt)
+            destination = history / (attempt["operationId"] + ".json")
+            if not destination.is_file() or destination.read_bytes() != project_json(receipt):
+                raise ValueError("historical render binding missing")
+        elif state not in {"VALIDATED_NOT_PUBLISHED", "ARTIFACT_DURABLE", "REVISION_BOUND"}:
+            raise ValueError("unknown render attempt state")
+
+
+def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
+    root = Path(root).resolve()
+    pid = project_id(request.get("projectId"))
+    operation_id = _render_operation_id(request.get("operationId"))
+    source_revision = request.get("sourceRevisionId")
+    data = _render_data_bytes(request.get("data_bytes"))
+    if len(data) > MAX_ARTIFACT:
+        raise ValueError("artifact too large")
+    validate_render_audio_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    filename = request.get("filename", "m044.wav")
+    subdirectory = request.get("subdirectory", "m044")
+    for value in (filename, subdirectory):
+        if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value):
+            raise ValueError("invalid export name")
+    directory = project_owner_directory(
+        root, pid, principal_id, allow_create=False)
+    lock = os.open(directory / ".render.lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        manifest_path = directory / "ProjectManifest.json"
+        if not manifest_path.is_file():
+            raise ValueError("project has no committed revision")
+        manifest = json.loads(manifest_path.read_text())
+        revision, spec, _ = _assert_revision_in_history(
+            root, directory, pid, manifest, source_revision)
+        commit_request = {
+            "projectId": pid,
+            "expectedCurrentRevisionId": source_revision,
+            "songSpec": spec,
+            "sourceAssetDigests": revision["sourceAssetDigests"],
+            "outputArtifactIds": [digest],
+            "operationId": operation_id,
+            "operationContext": {"kind": "render", "sourceRevisionId": source_revision},
+        }
+        meaning = {k: v for k, v in commit_request.items() if k != "operationId"}
+        meaning_digest = hashlib.sha256(project_json(meaning)).hexdigest()
+        attempts = directory / "render-attempts"
+        staging = directory / "render-staging"
+        durable_mkdir(attempts)
+        durable_mkdir(staging)
+        attempt_path = attempts / (operation_id + ".json")
+        staging_path = staging / (operation_id + ".wav")
+        identity = {
+            "operationId": operation_id,
+            "projectId": pid,
+            "sourceRevisionId": source_revision,
+            "artifactDigest": digest,
+            "intendedCas": f"objects/{digest[:2]}/{digest}",
+            "byteLength": len(data),
+            "songSpecDigest": revision["songSpecDigest"],
+            "productionTimelineDigest": revision["productionTimelineDigest"],
+            "operationMeaningDigest": meaning_digest,
+            "filename": filename,
+            "subdirectory": subdirectory,
+        }
+        if attempt_path.exists():
+            attempt = json.loads(attempt_path.read_text())
+            for key, value in identity.items():
+                if attempt.get(key) != value:
+                    raise ProjectConflict("render attempt identity conflict")
+            if not staging_path.is_file() or staging_path.read_bytes() != data:
+                raise ProjectConflict("render staging identity conflict")
+        else:
+            atomic_write_bytes(staging_path, data)
+            attempt = {**identity, "state": "VALIDATED_NOT_PUBLISHED"}
+            _write_render_attempt(attempt_path, attempt)
+        if attempt["state"] == "VALIDATED_NOT_PUBLISHED":
+            project_boundary("render_attempt_validated_not_published")
+            staged = staging_path.read_bytes()
+            if hashlib.sha256(staged).hexdigest() != digest:
+                raise ValueError("render staging corruption")
+            _publish_cas_exact(root, digest, staged)
+            project_boundary("render_attempt_cas_published_before_state")
+            attempt["state"] = "ARTIFACT_DURABLE"
+            _write_render_attempt(attempt_path, attempt)
+        if attempt["state"] == "ARTIFACT_DURABLE":
+            project_boundary("render_attempt_artifact_durable")
+    finally:
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        os.close(lock)
+
+    result = project_operation(root, _render_commit_request(root, directory, pid, attempt), commit=True, principal_id=principal_id)
+
+    lock = os.open(directory / ".render.lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        attempt = json.loads(attempt_path.read_text())
+        if result["revision"]["revisionId"] == source_revision and result["manifest"]["currentRevisionId"] != source_revision:
+            if attempt["state"] != "HISTORICALLY_BOUND":
+                # project_operation/open-time reconciliation owns historical binding.
+                reconcile_render_attempts(root, directory, pid, result["manifest"])
+                attempt = json.loads(attempt_path.read_text())
+            if attempt["state"] != "HISTORICALLY_BOUND":
+                raise ValueError("historical render did not bind")
+            project_boundary("render_attempt_historically_bound")
+        else:
+            attempt["state"] = "REVISION_BOUND"
+            _write_render_attempt(attempt_path, attempt)
+    finally:
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        os.close(lock)
+    return result
+
+
+def project_audio_bytes(root, request, principal_id=LOCAL_PRINCIPAL_ID):
+    root = Path(root).resolve()
+    pid = project_id(request.get("projectId"))
+    rid = request.get("revisionId")
+    digest = request.get("artifactId")
+    directory = project_owner_directory(
+        root, pid, principal_id, allow_create=False)
+    manifest_path = directory / "ProjectManifest.json"
+    if not manifest_path.is_file():
+        raise ValueError("unknown project")
+    manifest = json.loads(manifest_path.read_text())
+    revision, _, _ = _assert_revision_in_history(root, directory, pid, manifest, rid)
+    allowed = set(revision.get("outputArtifactIds", []))
+    history = directory / "historical-renders"
+    if history.is_dir():
+        for path in sorted(history.glob("*.json")):
+            receipt = json.loads(path.read_text())
+            if receipt.get("projectId") == pid and receipt.get("revisionId") == rid:
+                allowed.update(receipt.get("artifactIds", []))
+    if digest not in allowed:
+        raise ProjectConflict("artifact is not lawfully bound to requested revision")
+    validate_render_audio(root, digest)
+    return artifact_bytes(root, digest)
 
 def reconcile_historical_renders(root, directory, pid, manifest):
     # Pending records carry ownership. Never infer it from unassociated CAS bytes.
@@ -312,7 +693,7 @@ def historical_result(root, directory, manifest, revision, spec, timeline):
     return result
 
 
-def project_operation(root, request, commit=False, lyric=False):
+def project_operation(root, request, commit=False, lyric=False, principal_id=LOCAL_PRINCIPAL_ID):
     import uuid
     root = Path(root).resolve()
     pid = request.get("projectId")
@@ -321,9 +702,8 @@ def project_operation(root, request, commit=False, lyric=False):
             raise ValueError("projectId required")
         pid = uuid.uuid4().hex
     pid = project_id(pid)
-    directory = root / "projects" / pid
-    if not commit and not directory.is_dir(): raise ValueError("unknown project")
-    durable_mkdir(directory)
+    directory = project_owner_directory(
+        root, pid, principal_id, allow_create=commit)
     fd = os.open(directory / ".lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
@@ -334,6 +714,7 @@ def project_operation(root, request, commit=False, lyric=False):
         if manifest and (manifest.get("projectId") != pid or manifest.get("formatVersion") != 1):
             raise ValueError("invalid project manifest")
         if manifest:
+            reconcile_render_attempts(root, directory, pid, manifest)
             reconcile_historical_renders(root, directory, pid, manifest)
         if not commit:
             if not manifest: raise ValueError("project has no committed revision")
@@ -542,7 +923,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"private storage"})
         if path in {"/","/index.html"}:
             # Fresh same-origin capability, never cached by the service worker.
-            body=(ROOT/"index.html").read_text().replace("<head>","<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";</script>").encode()
+            session = issue_studio_session(LOCAL_PRINCIPAL_ID)
+            body=(ROOT/"index.html").read_text().replace(
+                "<head>",
+                "<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";</script>"
+            ).encode()
             self.send_response(200);self.send_header("Content-Type","text/html");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
         public={"/app-core.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
         if path not in public: return self._json(404,{"status":"ERROR","error":"not a public asset"})
@@ -554,11 +939,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if self.headers.get("Access-Control-Request-Method") not in {"GET","POST"}:
             return self._json(403,{"status":"ERROR","error":"method denied"})
         requested={v.strip().lower() for v in self.headers.get("Access-Control-Request-Headers","").split(",") if v.strip()}
-        if not requested <= {"content-type","x-studio-capability"}:
+        if not requested <= {"content-type","x-studio-capability","x-studio-session"}:
             return self._json(403,{"status":"ERROR","error":"headers denied"})
         self.send_response(204)
         self.send_header("Access-Control-Allow-Methods","GET, POST")
-        self.send_header("Access-Control-Allow-Headers","Content-Type, X-Studio-Capability")
+        self.send_header("Access-Control-Allow-Headers","Content-Type, X-Studio-Capability, X-Studio-Session")
         self.end_headers()
 
     def _json(self, code: int, obj: dict):
@@ -579,6 +964,12 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if not secrets.compare_digest(supplied,CAPABILITY):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
+        principal_id = None
+        if path.startswith("/api/projects/"):
+            try:
+                principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
+            except ProjectConflict as e:
+                return self._json(403, {"status": "DENY", "error": str(e)})
         try:
             if self.headers.get("Transfer-Encoding"): raise ValueError("transfer encoding unsupported")
             length=int(self.headers.get("Content-Length","-1"))
@@ -589,9 +980,32 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
 
+        if path == "/api/projects/render":
+            try:
+                return self._json(200, render_publish_operation(EXPORT_ROOT, payload, principal_id=principal_id))
+            except ProjectConflict as e:
+                return self._json(409, {"status": "CONFLICT", "error": str(e)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError):
+                return self._json(400, {"status": "ERROR", "error": "invalid or unavailable render authority"})
+        if path == "/api/projects/audio":
+            try:
+                data = project_audio_bytes(EXPORT_ROOT, payload, principal_id=principal_id)
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/wav")
+                self.send_header("Content-Length", str(len(data)))
+                if authorized_origin(self.headers.get("Origin"), self.headers.get("Host")):
+                    self.send_header("Access-Control-Allow-Origin", self.headers["Origin"])
+                    self.send_header("Vary", "Origin")
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except ProjectConflict as e:
+                return self._json(403, {"status": "DENY", "error": str(e)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError):
+                return self._json(400, {"status": "ERROR", "error": "invalid or unavailable audio authority"})
         if path in {"/api/projects/commit", "/api/projects/open", "/api/projects/lyrics"}:
             try:
-                return self._json(200, project_operation(EXPORT_ROOT, payload, commit=not path.endswith("/open"), lyric=path.endswith("/lyrics")))
+                return self._json(200, project_operation(EXPORT_ROOT, payload, commit=not path.endswith("/open"), lyric=path.endswith("/lyrics"), principal_id=principal_id))
             except ProjectConflict as e:
                 return self._json(409, {"status": "CONFLICT", "error": str(e)})
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError):
