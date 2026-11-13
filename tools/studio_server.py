@@ -163,6 +163,26 @@ def authorize_project_owner(directory, pid, principal_id, create=False):
     return principal_id
 
 
+def project_owner_directory(root, pid, principal_id, allow_create=False):
+    """Serialize directory creation and immutable first-owner establishment."""
+    projects = root / "projects"
+    durable_mkdir(projects)
+    fd = os.open(projects / ".owner-create.lock",
+                 os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        directory = projects / pid
+        existed = directory.is_dir()
+        if not existed and not allow_create:
+            raise ValueError("unknown project")
+        durable_mkdir(directory)
+        authorize_project_owner(directory, pid, principal_id, create=not existed)
+        return directory
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+
+
 def artifact_bytes(root, digest):
     if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
         raise ValueError("invalid artifact digest")
@@ -464,10 +484,8 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     for value in (filename, subdirectory):
         if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value):
             raise ValueError("invalid export name")
-    directory = root / "projects" / pid
-    if not directory.is_dir():
-        raise ValueError("unknown project")
-    authorize_project_owner(directory, pid, principal_id)
+    directory = project_owner_directory(
+        root, pid, principal_id, allow_create=False)
     lock = os.open(directory / ".render.lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -561,8 +579,8 @@ def project_audio_bytes(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     pid = project_id(request.get("projectId"))
     rid = request.get("revisionId")
     digest = request.get("artifactId")
-    directory = root / "projects" / pid
-    authorize_project_owner(directory, pid, principal_id)
+    directory = project_owner_directory(
+        root, pid, principal_id, allow_create=False)
     manifest_path = directory / "ProjectManifest.json"
     if not manifest_path.is_file():
         raise ValueError("unknown project")
@@ -640,11 +658,8 @@ def project_operation(root, request, commit=False, lyric=False, principal_id=LOC
             raise ValueError("projectId required")
         pid = uuid.uuid4().hex
     pid = project_id(pid)
-    directory = root / "projects" / pid
-    existed = directory.is_dir()
-    if not commit and not existed: raise ValueError("unknown project")
-    durable_mkdir(directory)
-    authorize_project_owner(directory, pid, principal_id, create=not existed)
+    directory = project_owner_directory(
+        root, pid, principal_id, allow_create=commit)
     fd = os.open(directory / ".lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
