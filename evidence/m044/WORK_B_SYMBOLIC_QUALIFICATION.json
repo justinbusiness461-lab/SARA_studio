@@ -1,0 +1,88 @@
+{
+  "campaign": "PF-COMPLETION-001",
+  "mission": 44,
+  "role": "WORK_B",
+  "date": "2026-11-01",
+  "candidateSha": "caeac41b9c88949739c31239a3096661fb0dda7e",
+  "candidateBranch": "bobby/m044-scorecore-foundation",
+  "baseSha": "c4f681878134f76b429788f58ccf2686198045da",
+  "verdict": "QUALIFIED_FOR_INTEGRATION",
+  "promotion": "M044_SCORECORE_CANDIDATE = QUALIFIED_FOR_INTEGRATION",
+  "sourceInventory": [
+    {
+      "path": "tools/scorecore.cjs",
+      "gitBlobSha": "2ed1a5bdf1349258ab0f3b9997fbea9ba49a76e3",
+      "byteSize": 4134,
+      "remotePresent": true
+    },
+    {
+      "path": "tests/scorecore.test.cjs",
+      "gitBlobSha": "455db9f6a612af2b4889d3d557b23d734c83d295",
+      "byteSize": 3709,
+      "remotePresent": true
+    },
+    {
+      "path": "docs/M044_BOBBY_REUSE_MAP.md",
+      "gitBlobSha": "93381060c0182c6418ea8e4d1edbefe7ee17ebc6",
+      "byteSize": 8275,
+      "remotePresent": true
+    },
+    {
+      "path": "app-core.js",
+      "gitBlobSha": "2e9d8ea62a5c68d3218edc7317a1fca49163aed6",
+      "byteSize": 37016,
+      "remotePresent": true
+    },
+    {
+      "path": "app-ui.js",
+      "gitBlobSha": "926336744d9e60027c4718dbcf207b20503a76a6",
+      "byteSize": 41942,
+      "remotePresent": true
+    },
+    {
+      "path": "tools/studio_server.py",
+      "gitBlobSha": "e37b886d1b01b5466abd3360536eb21d787190e0",
+      "byteSize": 29123,
+      "remotePresent": true
+    }
+  ],
+  "execution": {
+    "command": "node --test tests/scorecore.test.cjs",
+    "tests": 6,
+    "passed": 6,
+    "failed": 0,
+    "exitCode": 0,
+    "localInputGitBlobHashesMatched": true,
+    "scope": "symbolic adapter + exact existing parser only"
+  },
+  "answers": {
+    "musicIntent": "Non-authoritative frozen value; compileIntent re-admits prompt/seed and checks fields; no database, persistence, renderer or project owner.",
+    "songSpec": "Delegates to exact app-core.js parsePrompt; returns existing representation.",
+    "targeting": "Exactly one section ID and track ID; missing/duplicate matches reject. Half-open ticks; crossing NOTE_ON intervals reject.",
+    "pitch": "Integer semitones and resulting MIDI pitches 0..127; fail atomically without changing input. Actual renderer qualification remains open.",
+    "conservation": "Deep-cloned result changes only targeted NOTE_ON note_number fields; supplied test proves full structural equality against expected delta.",
+    "projectIntegration": "Existing commitProjectSnapshot/project_operation CAS and content-addressed artifact paths are reusable. No second save path needed; integration not yet executed."
+  },
+  "authorizedNextSlice": [
+    "Persist R1 through existing project authority before render admission",
+    "Render immutable captured R1 input; bind exact SongSpec/timeline digests",
+    "Apply one scoped bass edit and commit R2 using expected current R1",
+    "Render captured R2; late R1 completion must not bind as R2 output",
+    "Replay fence: same operation identity/payload must not transpose twice; changed payload under same identity rejects",
+    "Retain R1 and non-target structure; compare real audio change locality with declared tails",
+    "Terminate/restart; reopen by projectId without browser state; exact R2 and historical R1 recover",
+    "Retain source, render identities and executable evidence in repository"
+  ],
+  "limits": [
+    "No merge/freeze or M044 runtime/audio/music-quality PASS",
+    "Pure transpose is a transform, not itself an idempotent operation transaction",
+    "Current API accepts full SongSpec; integration must explicitly supply/preserve existing sourceAssetDigests and lyrics",
+    "Stable whole-section selection only; arbitrary bars65-68 selection not implemented by this helper",
+    "No general prompt semantics, stereo upgrade, benchmark song, browser/PWA or musical-quality qualification"
+  ],
+  "refreshLimits": [
+    "Repository exact candidate/base and relevant project instructions reviewed; no AGENTS.md in candidate tree",
+    "Floot runtime and separate governance repository not refreshed",
+    "Unavailable attachments: Sound Forge 2.txt; Pulse forge 16.txt; ELEVEN_MUSIC_DONOR_FORGE_2026-10-19.zip; SoundForge-Studio-Release-v2.18.zip; Sound Forge 3.txt; Sound forge 1.txt"
+  ]
+}

@@ -38,12 +38,15 @@ async function render(spec) {
 async function renderCaptured(snapshot, operationId, io) {
   const captured = clone(snapshot);
   const bytes = await io.render(captured.songSpec);
-  const artifact = await io.write(bytes);
-  return io.commit({ projectId: captured.manifest.projectId,
-    expectedCurrentRevisionId: captured.revision.revisionId,
-    songSpec: captured.songSpec, sourceAssetDigests: captured.revision.sourceAssetDigests,
-    outputArtifactIds: [artifact.sha256], operationId,
-    operationContext: { kind: 'render', sourceRevisionId: captured.revision.revisionId } });
+  if (typeof io.publish !== 'function') throw Error('durable render publisher required');
+  return io.publish({
+    projectId: captured.manifest.projectId,
+    sourceRevisionId: captured.revision.revisionId,
+    operationId,
+    filename: 'm044.wav',
+    subdirectory: 'm044',
+    data_bytes: Array.from(bytes)
+  });
 }
 
 async function session(base) {
@@ -52,10 +55,12 @@ async function session(base) {
   const origin = url.origin;
   const page = await fetch(origin).then(r => r.text());
   const capability = page.match(/window\.__STUDIO_CAPABILITY__="([^"]+)"/);
-  if (!capability) throw Error('studio capability unavailable');
+  const sessionToken = page.match(/window\.__STUDIO_SESSION__="([^"]+)"/);
+  if (!capability || !sessionToken) throw Error('studio capability/session unavailable');
   const post = async (route, payload) => {
     const response = await fetch(origin + '/api/' + route, { method: 'POST',
-      headers: { 'Content-Type': 'application/json', Origin: origin, 'X-Studio-Capability': capability[1] },
+      headers: { 'Content-Type': 'application/json', Origin: origin,
+        'X-Studio-Capability': capability[1], 'X-Studio-Session': sessionToken[1] },
       body: JSON.stringify(payload) });
     const result = await response.json();
     if (!response.ok || result.status !== 'SUCCESS') throw Error(response.status + ': ' + result.error);
@@ -64,8 +69,9 @@ async function session(base) {
   const commit = payload => post('projects/commit', payload);
   const open = (projectId, revisionId) => post('projects/open', { projectId, ...(revisionId ? { revisionId } : {}) });
   const write = bytes => post('write_production_file', { filename: 'm044.wav', subdirectory: 'm044', data_bytes: Array.from(bytes) });
-  return { open, commit, write,
-    render: snapshot => renderCaptured(snapshot, 'render:' + snapshot.revision.revisionId, { render, write, commit }),
+  const publish = payload => post('projects/render', payload);
+  return { open, commit, write, publish,
+    render: snapshot => renderCaptured(snapshot, 'render:' + snapshot.revision.revisionId, { render, publish }),
     edit: async (projectId, expectedCurrentRevisionId, operationId, edit) => {
       // Resolve the immutable base, not whichever revision happens to be current.
       // Repeating this request regenerates exactly the same candidate payload;

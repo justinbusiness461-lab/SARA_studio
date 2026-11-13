@@ -1,0 +1,112 @@
+{
+  "checks": [
+    "R1 persisted before rendering",
+    "R1 render bound to exact spec and timeline",
+    "only targeted bass pitches changed",
+    "identical edit replay returns same revision",
+    "same operation ID changed payload rejects",
+    "stale edit rejects",
+    "late R1 render cannot replace R2 output",
+    "source bindings preserved",
+    "R1 remains immutable and recoverable",
+    "late R1 binding persisted",
+    "late WAV has distinct digest from original R1 and R2",
+    "late WAV belongs to captured R1",
+    "real PCM16 stereo WAVs",
+    "artifact byte identities verified",
+    "actual audio changed only inside edit plus declared 100ms tail",
+    "cold process exact R2 recovered",
+    "cold process R1 retained",
+    "cold replay does not advance or reapply edit",
+    "cold reopened exact WAV reproduced"
+  ],
+  "testCounts": {
+    "passed": 19,
+    "failed": 0
+  },
+  "environment": {
+    "node": "v24.22.1",
+    "platform": "linux",
+    "renderer": "web-audio-engine@0.13.4",
+    "server": "python3; existing studio_server"
+  },
+  "media": {
+    "sampleRate": 44100,
+    "channels": 2,
+    "frames": 463050,
+    "duration": 10.5,
+    "R1": {
+      "wavSha256": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+      "pcmSha256": "23a1af333d81c06e3574145daf266b7519766929436ebef5a9922835bedaaa98"
+    },
+    "R2": {
+      "wavSha256": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+      "pcmSha256": "7e03ed2a052c6d037e8f42323001748a91195f1add1049b9c4620f454452ad97"
+    }
+  },
+  "locality": {
+    "startFrame": 220500,
+    "stopFrame": 441000,
+    "tailFrames": 4410,
+    "changedFrames": 220494,
+    "first": 220506,
+    "last": 442056,
+    "outside": 0
+  },
+  "projectId": "66fd999c490e4fd49cbed8de7f15bd84",
+  "R1": {
+    "revisionId": "f39d0a9f8709c8da341b75ca26ad42b3aa4e33c4634f2963bdccab630798b45a",
+    "projectId": "66fd999c490e4fd49cbed8de7f15bd84",
+    "formatVersion": 1,
+    "parentRevisionId": "40946b17690105ca034464f019cab238e9419d2ffdf089c1c3804533571e67d7",
+    "songSpecDigest": "75fff117c05053d4c2b6aa340f782d1b7a6124855403acd0e1d557701e03cc6d",
+    "productionTimelineDigest": "9b81e3494c7718346bedc34e6dc86ae535c445de2d968805a40560f3d64187e8",
+    "lyricTimelineDigest": null,
+    "sourceAssetDigests": [
+      "bee040279752f6d792a0d44b09a669ef794eedefd83e8a13cca209bae5531fda"
+    ],
+    "outputArtifactIds": [
+      "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399"
+    ],
+    "createdAt": "2026-11-05T13:33:12.091942+00:00",
+    "outputBindings": [
+      {
+        "artifactId": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+        "songSpecDigest": "75fff117c05053d4c2b6aa340f782d1b7a6124855403acd0e1d557701e03cc6d",
+        "productionTimelineDigest": "9b81e3494c7718346bedc34e6dc86ae535c445de2d968805a40560f3d64187e8"
+      }
+    ],
+    "operation": {
+      "id": "render:40946b17690105ca034464f019cab238e9419d2ffdf089c1c3804533571e67d7",
+      "meaningDigest": "b7a6029d0f0c23746c4f50f08d5a43f963ae41faeb506ec036cfdf9b3a23d84c"
+    }
+  },
+  "R2": {
+    "revisionId": "8ced57beb8905e4e32df31ddaea82f26d8825a9aa8bec22597b3ee5fe41f4339",
+    "projectId": "66fd999c490e4fd49cbed8de7f15bd84",
+    "formatVersion": 1,
+    "parentRevisionId": "e1eb96a8c7da8246934f1f6874aa240c2e57d4859dc850258618fa78c204d161",
+    "songSpecDigest": "1ccd7fa65a9de07db41083823d1a30b238a7fdb4957bf1236eb9c0d32a4d92b9",
+    "productionTimelineDigest": "f7e4e91d755aac6a856e155be4a13acdc618e240f6b66b93dfd581abafd97187",
+    "lyricTimelineDigest": null,
+    "sourceAssetDigests": [
+      "bee040279752f6d792a0d44b09a669ef794eedefd83e8a13cca209bae5531fda"
+    ],
+    "outputArtifactIds": [
+      "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4"
+    ],
+    "createdAt": "2026-11-05T13:33:13.557305+00:00",
+    "outputBindings": [
+      {
+        "artifactId": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+        "songSpecDigest": "1ccd7fa65a9de07db41083823d1a30b238a7fdb4957bf1236eb9c0d32a4d92b9",
+        "productionTimelineDigest": "f7e4e91d755aac6a856e155be4a13acdc618e240f6b66b93dfd581abafd97187"
+      }
+    ],
+    "operation": {
+      "id": "render:e1eb96a8c7da8246934f1f6874aa240c2e57d4859dc850258618fa78c204d161",
+      "meaningDigest": "1eec0339012d1e25f942e5b93218dce10e11038e5c6cd85a602ae82cd7b12a42"
+    }
+  },
+  "ceiling": "local headless renderer + HTTP + filesystem + SIGKILL/restart; dual mono; no browser, C physical qualification, D listening, benchmark quality or mission promotion"
+}

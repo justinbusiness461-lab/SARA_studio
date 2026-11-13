@@ -1,0 +1,16 @@
+{
+  "verdict":"PASS",
+  "historyOccurrences":1,
+  "artifactHashValid":true,
+  "artifactDecodeValid":true,
+  "R2StillCurrent":true,
+  "pendingRecords":0,
+  "duplicateR1Binding":false,
+  "phantomProjectRevision":false,
+  "R2OutputMutated":false,
+  "qualifiedSourceSha":"eac42c4174f95694389077b8a2125bb7c5f2cdfa",
+  "supportingCampaign":"NASA006_EAC42C417_RECEIPT.json",
+  "verifier":"PR #19 hardened runnable_receipt_verifier.py",
+  "verifierResult":"PASS",
+  "contradictoryPassRejected":true
+}

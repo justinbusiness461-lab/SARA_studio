@@ -1,0 +1,29 @@
+.F...F.....
+======================================================================
+FAIL: test_crash_before_history_bind_recovers_without_replay (test_m044_operations.OperationTests.test_crash_before_history_bind_recovers_without_replay)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/5c6e11653a41/m044/tests/test_m044_operations.py", line 77, in test_crash_before_history_bind_recovers_without_replay
+    self.assertEqual([b['artifactId'] for b in history.get('historicalOutputBindings', [])],
+AssertionError: Lists differ: [] != ['aa8c4d282e333d204368f18f88ec71303d58c4c45e27839c7991598a2899f7d1']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'aa8c4d282e333d204368f18f88ec71303d58c4c45e27839c7991598a2899f7d1'
+
+- []
++ ['aa8c4d282e333d204368f18f88ec71303d58c4c45e27839c7991598a2899f7d1']
+
+======================================================================
+FAIL: test_malformed_historical_wav_rejected (test_m044_operations.OperationTests.test_malformed_historical_wav_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/5c6e11653a41/m044/tests/test_m044_operations.py", line 62, in test_malformed_historical_wav_rejected
+    with self.assertRaises(ValueError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.357s
+
+FAILED (failures=2)

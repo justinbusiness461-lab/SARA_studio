@@ -1,0 +1,15 @@
+{
+  "schema": "m044.nasa006.r3c.endurance.v1",
+  "targetSha": "eac42c4174f95694389077b8a2125bb7c5f2cdfa",
+  "trials": 60,
+  "phaseCounts": {"A":20,"B":20,"C":20},
+  "sigkillTrials": 60,
+  "result": "PASS",
+  "contract": {
+    "A": "digest/intended CAS durable; CAS absent; no history/playback",
+    "B": "CAS durable; pre-reconcile deny; two cold opens recover exactly one R1 association",
+    "C": "history already bound; two cold opens retain exactly one R1 association",
+    "all": "R2 current unchanged; exact WAV identity; two revisions only; no pending orphan"
+  },
+  "evidenceNote": "Full per-trial machine receipt retained in the independent NASA executor during execution. This compact repo receipt records the exact target and aggregate result without mutating product source."
+}
