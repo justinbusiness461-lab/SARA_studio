@@ -38,12 +38,15 @@ async function render(spec) {
 async function renderCaptured(snapshot, operationId, io) {
   const captured = clone(snapshot);
   const bytes = await io.render(captured.songSpec);
-  const artifact = await io.write(bytes);
-  return io.commit({ projectId: captured.manifest.projectId,
-    expectedCurrentRevisionId: captured.revision.revisionId,
-    songSpec: captured.songSpec, sourceAssetDigests: captured.revision.sourceAssetDigests,
-    outputArtifactIds: [artifact.sha256], operationId,
-    operationContext: { kind: 'render', sourceRevisionId: captured.revision.revisionId } });
+  if (typeof io.publish !== 'function') throw Error('durable render publisher required');
+  return io.publish({
+    projectId: captured.manifest.projectId,
+    sourceRevisionId: captured.revision.revisionId,
+    operationId,
+    filename: 'm044.wav',
+    subdirectory: 'm044',
+    data_bytes: Array.from(bytes)
+  });
 }
 
 async function session(base) {
@@ -64,8 +67,9 @@ async function session(base) {
   const commit = payload => post('projects/commit', payload);
   const open = (projectId, revisionId) => post('projects/open', { projectId, ...(revisionId ? { revisionId } : {}) });
   const write = bytes => post('write_production_file', { filename: 'm044.wav', subdirectory: 'm044', data_bytes: Array.from(bytes) });
-  return { open, commit, write,
-    render: snapshot => renderCaptured(snapshot, 'render:' + snapshot.revision.revisionId, { render, write, commit }),
+  const publish = payload => post('projects/render', payload);
+  return { open, commit, write, publish,
+    render: snapshot => renderCaptured(snapshot, 'render:' + snapshot.revision.revisionId, { render, publish }),
     edit: async (projectId, expectedCurrentRevisionId, operationId, edit) => {
       // Resolve the immutable base, not whichever revision happens to be current.
       // Repeating this request regenerates exactly the same candidate payload;
