@@ -57,7 +57,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
       // Distinct, valid PCM render fixture with an identifiable one-LSB sample.
       b.writeInt16LE(b.readInt16LE(44) === 32767 ? 32766 : b.readInt16LE(44) + 1, 44);
       await gate; return b; },
-      write: api.write, commit: api.commit });
+      publish: api.publish });
     await start;
     const edit = { sectionId: spec.structure.sections[1].id, trackId: 'bass', semitones: -12 };
     const r2Draft = await api.edit(pid, r1.revision.revisionId, 'bass-octave-001', edit);
