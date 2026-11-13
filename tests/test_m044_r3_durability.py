@@ -3,6 +3,10 @@ import json
 import pathlib
 import sys
 import unittest
+import threading
+import socketserver
+import urllib.error
+import urllib.request
 from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "tools"))
@@ -111,6 +115,49 @@ class R3RenderDurability(unittest.TestCase):
         server.project_operation(self.root, {"projectId": self.pid})
         self.assertEqual(self.historical_ids(), [self.digest])
         self.assertEqual(self.current_revision(), self.r2["revision"]["revisionId"])
+
+    def test_http_denies_orphan_then_serves_exact_bytes_after_reconciliation(self):
+        def stop(name):
+            if name == "render_attempt_artifact_durable":
+                raise OSError("crash-b")
+        with patch.object(server, "project_boundary", stop):
+            with self.assertRaises(OSError):
+                server.render_publish_operation(self.root, self.request)
+
+        old_root, old_port = server.EXPORT_ROOT, server.PORT
+        httpd = socketserver.TCPServer(("127.0.0.1", 0), server.StudioHandler)
+        server.EXPORT_ROOT = self.root
+        server.PORT = httpd.server_address[1]
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        try:
+            url = f"http://127.0.0.1:{server.PORT}/api/projects/audio"
+            payload = json.dumps({
+                "projectId": self.pid,
+                "revisionId": self.r1["revision"]["revisionId"],
+                "artifactId": self.digest,
+            }).encode()
+            headers = {
+                "Content-Type": "application/json",
+                "Origin": f"http://127.0.0.1:{server.PORT}",
+                "X-Studio-Capability": server.CAPABILITY,
+            }
+            with self.assertRaises(urllib.error.HTTPError) as denied:
+                urllib.request.urlopen(urllib.request.Request(url, data=payload, headers=headers), timeout=2)
+            self.assertEqual(denied.exception.code, 403)
+
+            server.project_operation(self.root, {"projectId": self.pid})
+            with urllib.request.urlopen(
+                    urllib.request.Request(url, data=payload, headers=headers), timeout=2) as response:
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.headers.get_content_type(), "audio/wav")
+                self.assertEqual(response.read(), self.bytes)
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+            thread.join(timeout=2)
+            server.EXPORT_ROOT = old_root
+            server.PORT = old_port
 
     def test_digest_knowledge_alone_is_never_authorization(self):
         other = server.project_operation(self.root, {
