@@ -137,10 +137,12 @@ class R3RenderDurability(unittest.TestCase):
                 "revisionId": self.r1["revision"]["revisionId"],
                 "artifactId": self.digest,
             }).encode()
+            local_session = server.issue_studio_session(server.LOCAL_PRINCIPAL_ID)
             headers = {
                 "Content-Type": "application/json",
                 "Origin": f"http://127.0.0.1:{server.PORT}",
                 "X-Studio-Capability": server.CAPABILITY,
+                "X-Studio-Session": local_session,
             }
             with self.assertRaises(urllib.error.HTTPError) as denied:
                 urllib.request.urlopen(urllib.request.Request(url, data=payload, headers=headers), timeout=2)
