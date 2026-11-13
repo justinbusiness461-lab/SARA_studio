@@ -91,3 +91,60 @@ Independent isolated executor:
 This proves the local server's explicit session/principal/project ownership gate and the focused R3 durability coupling. It does **not** claim an external identity provider, hosted multi-tenant account system, full repository regression, NASA-006 endurance, or merge readiness.
 
 **READY_FOR_CODY_SUCCESSOR_REVIEW:** YES
+
+
+## Successor hardening — immutable first-owner serialization
+
+Cody's second HOLD correctly identified that first `ProjectOwner.json` establishment occurred before the per-project lock.
+
+### RED
+
+Exact RED commit:
+
+`432a657fdf60efbfb7c0278244ced83e9e15c234`
+
+A deterministic concurrent first-claim test reproduced the defect before repair. Both principals were synchronized at first creation; the unfixed source failed before a lawful single owner could be established, including a directory-creation race.
+
+### Repair
+
+The render durability model and CAS authorization model are unchanged.
+
+A root-level synchronization-only mutex:
+
+`projects/.owner-create.lock`
+
+now serializes:
+
+`projects namespace → project directory creation/existence → ProjectOwner existence check → immutable first owner write`
+
+After ownership is established, the existing per-project `.lock` continues to serialize project mutation.
+
+The mutex is not authority, state, or a second currentness store. `ProjectOwner.json` remains the sole durable project-principal authorization record.
+
+### Concurrent acceptance
+
+Two principals simultaneously create the same explicit projectId:
+
+- exactly one succeeds;
+- exactly one receives project-principal DENY/CONFLICT;
+- `ProjectOwner.json` equals the winner and remains immutable;
+- exactly one ProjectRevision exists;
+- ProjectManifest.currentRevisionId equals that winning revision;
+- losing principal cannot subsequently open the project.
+
+### Regression evidence
+
+Independent isolated executor, exact source candidate `98177f6184af0a9be2cb9946f48da2aca74ed7a0`:
+
+- focused Python R3/authorization suite: **18/18 PASS**;
+- Node render-session suite: **2/2 PASS**;
+- repository-documented full Python suite:
+  `python3 -m unittest discover -s tests -v`
+  → **64/64 PASS**.
+
+The first full-suite materialization initially lacked the committed binary fixture
+`evidence/m043/fixtures/rise-higher.wav`, producing 14 fixture-not-found errors.
+After the exact committed fixture was staged, the same full command passed 64/64.
+This was an executor-materialization defect, not a product source failure.
+
+**READY_FOR_CODY_SUCCESSOR_REVIEW:** YES
