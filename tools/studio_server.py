@@ -164,19 +164,63 @@ def authorize_project_owner(directory, pid, principal_id, create=False):
 
 
 def project_owner_directory(root, pid, principal_id, allow_create=False):
-    """Serialize directory creation and immutable first-owner establishment."""
+    """Serialize and recover immutable first-owner establishment.
+
+    .owner-claims contains recovery intent only. It never selects revisions,
+    artifacts, currentness, or project content.
+    """
+    principal_id = _principal_id(principal_id)
     projects = root / "projects"
     durable_mkdir(projects)
     fd = os.open(projects / ".owner-create.lock",
                  os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
+        claims = projects / ".owner-claims"
+        durable_mkdir(claims)
+        claim_path = claims / (pid + ".json")
+        if claim_path.is_symlink():
+            raise ValueError("unsafe owner claim path")
         directory = projects / pid
         existed = directory.is_dir()
-        if not existed and not allow_create:
-            raise ValueError("unknown project")
-        durable_mkdir(directory)
-        authorize_project_owner(directory, pid, principal_id, create=not existed)
+        owner_path = directory / "ProjectOwner.json"
+
+        claim = None
+        if claim_path.exists():
+            claim = json.loads(claim_path.read_text())
+            expected_claim = {"projectId": pid, "principalId": principal_id, "formatVersion": 1}
+            if claim != expected_claim:
+                raise ProjectConflict("project owner claim denied")
+
+        if not existed:
+            if not allow_create:
+                raise ValueError("unknown project")
+            if claim is None:
+                claim = {"projectId": pid, "principalId": principal_id, "formatVersion": 1}
+                atomic_write_bytes(claim_path, project_json(claim))
+            durable_mkdir(directory)
+            authorize_project_owner(directory, pid, principal_id, create=True)
+        elif owner_path.exists():
+            authorize_project_owner(directory, pid, principal_id, create=False)
+        elif claim is not None:
+            # Same principal resumes an interrupted first-owner transaction.
+            authorize_project_owner(directory, pid, principal_id, create=True)
+        else:
+            # Preserve fail-closed legacy policy: only LOCAL_PRINCIPAL_ID may
+            # adopt an existing ownerless pre-auth project.
+            authorize_project_owner(directory, pid, principal_id, create=False)
+
+        owner = json.loads(owner_path.read_text())
+        expected_owner = {"projectId": pid, "principalId": principal_id, "formatVersion": 1}
+        if owner != expected_owner:
+            raise ProjectConflict("project principal denied")
+
+        if claim_path.exists():
+            stored_claim = json.loads(claim_path.read_text())
+            if stored_claim != expected_owner:
+                raise ProjectConflict("project owner claim mismatch")
+            claim_path.unlink()
+            sync_dir(claims)
         return directory
     finally:
         fcntl.flock(fd, fcntl.LOCK_UN)
