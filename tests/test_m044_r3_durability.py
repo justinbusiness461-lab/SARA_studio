@@ -159,6 +159,94 @@ class R3RenderDurability(unittest.TestCase):
             server.EXPORT_ROOT = old_root
             server.PORT = old_port
 
+    def test_two_principal_http_audio_authorization(self):
+        principal_a = "principal-a"
+        principal_b = "principal-b"
+        session_a = server.issue_studio_session(principal_a)
+        session_b = server.issue_studio_session(principal_b)
+
+        project_a = server.project_operation(self.root, {
+            "expectedCurrentRevisionId": None,
+            "songSpec": self.fixture.spec,
+            "sourceAssetDigests": [],
+            "outputArtifactIds": [],
+        }, commit=True, principal_id=principal_a)
+        project_b = server.project_operation(self.root, {
+            "expectedCurrentRevisionId": None,
+            "songSpec": self.fixture.spec,
+            "sourceAssetDigests": [],
+            "outputArtifactIds": [],
+        }, commit=True, principal_id=principal_b)
+
+        bytes_a = self.fixture.wav()
+        bytes_b = self.fixture.wav()[:44] + bytes([7, 0, 8, 0]) * 32
+        out_a = server.render_publish_operation(self.root, {
+            "projectId": project_a["manifest"]["projectId"],
+            "sourceRevisionId": project_a["revision"]["revisionId"],
+            "operationId": "principal-a-render",
+            "filename": "a.wav", "subdirectory": "m044", "data_bytes": list(bytes_a),
+        }, principal_id=principal_a)
+        out_b = server.render_publish_operation(self.root, {
+            "projectId": project_b["manifest"]["projectId"],
+            "sourceRevisionId": project_b["revision"]["revisionId"],
+            "operationId": "principal-b-render",
+            "filename": "b.wav", "subdirectory": "m044", "data_bytes": list(bytes_b),
+        }, principal_id=principal_b)
+
+        aid_a = out_a["revision"]["outputArtifactIds"][0]
+        aid_b = out_b["revision"]["outputArtifactIds"][0]
+
+        old_root, old_port = server.EXPORT_ROOT, server.PORT
+        httpd = socketserver.TCPServer(("127.0.0.1", 0), server.StudioHandler)
+        server.EXPORT_ROOT = self.root
+        server.PORT = httpd.server_address[1]
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+
+        def request(project, revision, artifact, session=None):
+            url = f"http://127.0.0.1:{server.PORT}/api/projects/audio"
+            payload = json.dumps({
+                "projectId": project, "revisionId": revision, "artifactId": artifact
+            }).encode()
+            headers = {
+                "Content-Type": "application/json",
+                "Origin": f"http://127.0.0.1:{server.PORT}",
+                "X-Studio-Capability": server.CAPABILITY,
+            }
+            if session is not None:
+                headers["X-Studio-Session"] = session
+            return urllib.request.urlopen(
+                urllib.request.Request(url, data=payload, headers=headers), timeout=2)
+
+        try:
+            with request(project_a["manifest"]["projectId"], out_a["revision"]["revisionId"], aid_a, session_a) as response:
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.read(), bytes_a)
+            with request(project_b["manifest"]["projectId"], out_b["revision"]["revisionId"], aid_b, session_b) as response:
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.read(), bytes_b)
+
+            for session, project, revision, artifact in [
+                (session_a, project_b["manifest"]["projectId"], out_b["revision"]["revisionId"], aid_b),
+                (session_b, project_a["manifest"]["projectId"], out_a["revision"]["revisionId"], aid_a),
+                (None, project_a["manifest"]["projectId"], out_a["revision"]["revisionId"], aid_a),
+                (None, project_b["manifest"]["projectId"], out_b["revision"]["revisionId"], aid_b),
+            ]:
+                with self.assertRaises(urllib.error.HTTPError) as denied:
+                    request(project, revision, artifact, session)
+                self.assertEqual(denied.exception.code, 403)
+
+            # Exact identifiers do not override caller ownership.
+            with self.assertRaises(urllib.error.HTTPError) as denied:
+                request(project_b["manifest"]["projectId"], out_b["revision"]["revisionId"], aid_b, session_a)
+            self.assertEqual(denied.exception.code, 403)
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+            thread.join(timeout=2)
+            server.EXPORT_ROOT = old_root
+            server.PORT = old_port
+
     def test_digest_knowledge_alone_is_never_authorization(self):
         other = server.project_operation(self.root, {
             "expectedCurrentRevisionId": None,
