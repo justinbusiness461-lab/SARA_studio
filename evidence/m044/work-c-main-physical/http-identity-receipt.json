@@ -1,0 +1,160 @@
+{
+  "sourceSHA": "b8385407425ea8f8c05de044b1c1a8728cdd5eab",
+  "method": "real localhost HTTP POST through unmodified StudioHandler; retained WAV upload through existing producer; fresh process restart; new sessions; no rerender",
+  "rows": [
+    {
+      "phase": "before-restart",
+      "client": "desktop",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "1ea8d0022def05e56b4ebe5c0636516da020b4e7b69d978b6a4b762f3d9089df",
+      "artifactSHA256": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+      "networkPCM_SHA256": "23a1af333d81c06e3574145daf266b7519766929436ebef5a9922835bedaaa98",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "before-restart",
+      "client": "desktop",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "bccfbbd7db31c808f4ef2807d3fca918bf48d447a2d1c7325f85bb5fb637fee5",
+      "artifactSHA256": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+      "networkPCM_SHA256": "7e03ed2a052c6d037e8f42323001748a91195f1add1049b9c4620f454452ad97",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "before-restart",
+      "client": "phone",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "1ea8d0022def05e56b4ebe5c0636516da020b4e7b69d978b6a4b762f3d9089df",
+      "artifactSHA256": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+      "networkPCM_SHA256": "23a1af333d81c06e3574145daf266b7519766929436ebef5a9922835bedaaa98",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "before-restart",
+      "client": "phone",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "bccfbbd7db31c808f4ef2807d3fca918bf48d447a2d1c7325f85bb5fb637fee5",
+      "artifactSHA256": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+      "networkPCM_SHA256": "7e03ed2a052c6d037e8f42323001748a91195f1add1049b9c4620f454452ad97",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "desktop",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "1ea8d0022def05e56b4ebe5c0636516da020b4e7b69d978b6a4b762f3d9089df",
+      "artifactSHA256": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+      "networkPCM_SHA256": "23a1af333d81c06e3574145daf266b7519766929436ebef5a9922835bedaaa98",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "desktop",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "bccfbbd7db31c808f4ef2807d3fca918bf48d447a2d1c7325f85bb5fb637fee5",
+      "artifactSHA256": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+      "networkPCM_SHA256": "7e03ed2a052c6d037e8f42323001748a91195f1add1049b9c4620f454452ad97",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "phone",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "1ea8d0022def05e56b4ebe5c0636516da020b4e7b69d978b6a4b762f3d9089df",
+      "artifactSHA256": "908f6f5745ff3afd794aea296c5b9a23245d0778e18a4f37cf82e0e089cda399",
+      "networkPCM_SHA256": "23a1af333d81c06e3574145daf266b7519766929436ebef5a9922835bedaaa98",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "phone",
+      "projectId": "e19a507931b340e68388fa6a562c0c3e",
+      "revisionId": "bccfbbd7db31c808f4ef2807d3fca918bf48d447a2d1c7325f85bb5fb637fee5",
+      "artifactSHA256": "ee0bec084d0c745748ca9fd6b413844c0568133eaa3ac40ef0e660ca939b7fd4",
+      "networkPCM_SHA256": "7e03ed2a052c6d037e8f42323001748a91195f1add1049b9c4620f454452ad97",
+      "httpStatus": 200,
+      "contentType": "audio/wav",
+      "bytes": 1852244,
+      "bindingCount": 1,
+      "R2Current": true
+    }
+  ],
+  "negativeChecks": [
+    {
+      "phase": "before-restart",
+      "client": "desktop",
+      "wrongRevisionStatus": 403
+    },
+    {
+      "phase": "before-restart",
+      "client": "desktop",
+      "anonymousStatus": 403
+    },
+    {
+      "phase": "before-restart",
+      "client": "phone",
+      "wrongRevisionStatus": 403
+    },
+    {
+      "phase": "before-restart",
+      "client": "phone",
+      "anonymousStatus": 403
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "desktop",
+      "wrongRevisionStatus": 403
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "desktop",
+      "anonymousStatus": 403
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "phone",
+      "wrongRevisionStatus": 403
+    },
+    {
+      "phase": "cold-reopen",
+      "client": "phone",
+      "anonymousStatus": 403
+    }
+  ],
+  "networkArtifactIdentity": "PASS_BOUNDED_RETAINED_MEDIA",
+  "networkDecodedPCMIdentity": "PASS_BOUNDED_RETAINED_MEDIA",
+  "normalColdReopen": "PASS",
+  "browserPlayback": "UNVERIFIED_AF_UNIX_BLOCKED",
+  "musicalPositionAlignment": "UNVERIFIED",
+  "sixViewportParity": "UNVERIFIED_NO_RS001_CANDIDATE",
+  "userAgentCeiling": "Desktop/phone User-Agent headers are not browser/device/viewport parity; both sessions resolve existing local-studio-user, not two principals",
+  "listening": "NOT_PERFORMED"
+}
