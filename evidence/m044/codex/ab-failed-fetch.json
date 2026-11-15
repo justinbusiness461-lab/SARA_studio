@@ -1,0 +1,34 @@
+{
+  "sourceSha256": "90b683b4096353975660511ed06e9ff21d088fafc240dc7fc69b8b3c70f67867",
+  "evidence": "SOURCE_FUNCTION_VM_ONLY",
+  "defectReproduced": 2,
+  "expectedRepair": "FAILED state and invalidated prior A/B success proof for active generation",
+  "results": [
+    {
+      "failure": "project-open",
+      "switchState": "TARGET_LOADING",
+      "target": "r2",
+      "playbackProof": null,
+      "abProof": {
+        "toRevisionId": "r1",
+        "toArtifactId": "a1"
+      },
+      "playDisabled": true,
+      "status": "A/B failed: injected project open failure",
+      "label": "Selected R1 · historical"
+    },
+    {
+      "failure": "audio-fetch",
+      "switchState": "TARGET_LOADING",
+      "target": "r2",
+      "playbackProof": null,
+      "abProof": {
+        "toRevisionId": "r1",
+        "toArtifactId": "a1"
+      },
+      "playDisabled": true,
+      "status": "A/B failed: Audio unavailable: injected audio failure",
+      "label": "Selected R1 · historical"
+    }
+  ]
+}
