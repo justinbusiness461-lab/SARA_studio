@@ -1,0 +1,59 @@
+{
+  "sourceSHA": "749127ce0ce2cd08cdc5a6354626a078064f4704",
+  "media": [
+    {
+      "revisionId": "de9577737e840fbc8d44f9364b39df63f410741f2c38a65e5bdf95fb0be3429a",
+      "artifactSHA256": "f64a87121e950f288b667a234905ad29e8f54f618bb070a92c1745993a441b47",
+      "PCM_SHA256": "a54f0876c7cd74a968b823c1e00eb82e2cb36ade01641c63720ec696036d6891",
+      "ffmpegPCMMatch": true,
+      "sampleRate": 44100,
+      "channels": 2,
+      "frames": 2227050,
+      "durationSeconds": 50.5,
+      "samplePeak": 0.341156005859375,
+      "dcPerChannel": [
+        0.00011077441673735294,
+        0.00011077441673735294
+      ],
+      "clippedSamples": 0,
+      "stereoChannelsIdentical": true,
+      "silentFrames": 27223
+    },
+    {
+      "revisionId": "6f8aae95e2548f77f75e9fc04325c20f4acc96f5d7e5afc3ff27689511e58f4f",
+      "artifactSHA256": "dff1b10db598f51d42397627c8f8cc99e548f6f701ada65d8bcf2488f5ffa7c8",
+      "PCM_SHA256": "316fca9a50818bb29e794ceaeaf3c41b0586b6a7a8a5b43a03b852025b8518ea",
+      "ffmpegPCMMatch": true,
+      "sampleRate": 44100,
+      "channels": 2,
+      "frames": 2227050,
+      "durationSeconds": 50.5,
+      "samplePeak": 0.341156005859375,
+      "dcPerChannel": [
+        0.00011009986596355746,
+        0.00011009986596355746
+      ],
+      "clippedSamples": 0,
+      "stereoChannelsIdentical": true,
+      "silentFrames": 27234
+    }
+  ],
+  "targetNotesTransposedExactlyMinus12": 8,
+  "nonTargetSongSpecConserved": true,
+  "editIntervalFrames": [
+    1102500,
+    1543500
+  ],
+  "declaredTailFrames": 4410,
+  "changedFrames": 440118,
+  "outsideEditAndTailChangedFrames": 0,
+  "firstChangedFrame": 1102509,
+  "lastChangedFrame": 1544556,
+  "coldReopenR2Current": true,
+  "lawfulAccessorBytesEqualAuthoritativeArtifacts": true,
+  "HTTPBytes": "UNVERIFIED_EXECUTOR_SOCKET_RESTRICTION",
+  "browserAB": "UNVERIFIED_EXECUTOR_SOCKET_RESTRICTION",
+  "truePeak": "NOT_MEASURED",
+  "LUFS_I": "NOT_MEASURED",
+  "listening": "NOT_PERFORMED"
+}
