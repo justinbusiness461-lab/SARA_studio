@@ -1,0 +1,13 @@
+test_24fps_15_seconds (__main__.ClockOracleTests.test_24fps_15_seconds) ... ok
+test_boolean_and_float_frames_denied (__main__.ClockOracleTests.test_boolean_and_float_frames_denied) ... ok
+test_fractional_adjacent_windows_no_gap (__main__.ClockOracleTests.test_fractional_adjacent_windows_no_gap) ... ok
+test_fractional_fps_exact (__main__.ClockOracleTests.test_fractional_fps_exact) ... ok
+test_invalid_and_reversed_denied (__main__.ClockOracleTests.test_invalid_and_reversed_denied) ... ok
+test_nonzero_global_offset (__main__.ClockOracleTests.test_nonzero_global_offset) ... ok
+test_one_sample_short_denied (__main__.ClockOracleTests.test_one_sample_short_denied) ... ok
+test_wrong_15second_assumption_rejected (__main__.ClockOracleTests.test_wrong_15second_assumption_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.008s
+
+OK
