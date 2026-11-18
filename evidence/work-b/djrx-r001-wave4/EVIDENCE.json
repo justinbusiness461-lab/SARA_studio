@@ -1,0 +1,21 @@
+{
+  "round": "DJRX-R001",
+  "wave": 4,
+  "worker": "Work B / CODY\u00b2",
+  "source_main": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+  "candidate_sha": null,
+  "result": "HOLD_CANDIDATE_IDENTITY",
+  "fresh_oracle_tests": 8,
+  "oracle_exit": 0,
+  "live_issuer_tests": 0,
+  "physical_pcm_comparison": false,
+  "product_mutation": false,
+  "evidence_tier": "SOURCE + EXECUTED_TEST_ORACLE",
+  "python": "3.12.14",
+  "files": {
+    "NEXT_HANDOFF.md": "95a0d45c397f7b56967f37eb893671772c1b5109c8abdb17911396c310b5391c",
+    "RETURN.md": "007f640e207bcdc6a8f6c7deea9a1bbb6b0d65988fa4cf44efa11be2559e8bd2",
+    "test-run.txt": "2faa1d458edfa674a8be7658b3d908aae398628045b77fa0108314f1044e8cda",
+    "test_clock_oracle.py": "ae48a2aa6a891e494568899c2a47fb225ff167b841881cf4dda3b205c175895b"
+  }
+}
