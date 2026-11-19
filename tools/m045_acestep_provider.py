@@ -34,6 +34,7 @@ class AceStepProvider:
     model_id = "ace-step-1.5"
     model_version = "ace-step-1.5"
     supports_remote_resume = True
+    supports_repaint = True
 
     def __init__(self, *, endpoint_url=None, checkpoint_dir=None, checkpoint_sha256=None,
                  api_key=None, timeout=300, poll_interval=1, max_polls=180):
@@ -54,14 +55,36 @@ class AceStepProvider:
             raise ProviderUnavailable("ACE_STEP_ENDPOINT_UNTRUSTED")
         return self.endpoint.rstrip("/") + endpoint
 
-    def _request(self, path, body=None, *, limit=1024*1024):
+    @staticmethod
+    def _multipart(fields, source):
+        # Multipart is required: ACE-Step does not accept client-local paths.
+        boundary = "sara" + hashlib.sha256(source + json.dumps(fields,sort_keys=True).encode()).hexdigest()[:32]
+        chunks=[]
+        for name, value in sorted(fields.items()):
+            if isinstance(value, bool):
+                value="true" if value else "false"
+            chunks.append((f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n").encode())
+        chunks.append((f"--{boundary}\r\nContent-Disposition: form-data; name=\"src_audio\"; filename=\"source.wav\"\r\nContent-Type: audio/wav\r\n\r\n").encode())
+        chunks.append(source)
+        chunks.append((f"\r\n--{boundary}--\r\n").encode())
+        return b"".join(chunks), "multipart/form-data; boundary="+boundary
+
+    def _request(self, path, body=None, *, limit=1024*1024, src_audio=None):
         headers={"Accept": "application/json" if body is not None or path != "/v1/audio" else "audio/wav"}
         if self.api_key:
             headers["Authorization"]="Bearer "+self.api_key
-        if body is not None:
+        if src_audio is not None:
+            if path != "/release_task" or not isinstance(body,dict):
+                raise ValueError("ACE_STEP_INVALID_REPAINT_MULTIPART")
+            payload,mime=self._multipart(body,src_audio)
+            headers["Content-Type"]=mime
+        elif body is not None:
+            payload=json.dumps(body,sort_keys=True).encode("utf-8")
             headers["Content-Type"]="application/json"
+        else:
+            payload=None
         request=urllib.request.Request(self._url(path),
-            data=(json.dumps(body,sort_keys=True).encode("utf-8") if body is not None else None),
+            data=payload,
             headers=headers,method="POST" if body is not None else "GET")
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
@@ -114,7 +137,18 @@ class AceStepProvider:
             raise ValueError("GENERATION_PROMPT_REQUIRED")
         if lyrics is not None and not isinstance(lyrics,str):
             raise ValueError("INVALID_LYRICS")
-        if not isinstance(params,dict) or set(params)-{"music_length_ms"}:
+        if not isinstance(params,dict):
+            raise ValueError("ACE_STEP_UNSUPPORTED_PARAMETERS")
+        repaint=params.get("_m045_repaint")
+        allowed={"music_length_ms"}
+        if repaint is not None:
+            allowed.update({"edit_mode","start_bar","end_bar","target_track_id","_m045_repaint"})
+            if params.get("edit_mode")!="repaint":
+                raise ValueError("ACE_STEP_REPAINT_MODE_REQUIRED")
+            if (not isinstance(repaint,dict) or
+                    set(repaint)!={"start_sample","end_sample","source_sha256"}):
+                raise ValueError("ACE_STEP_REPAINT_AUTHORITY_REQUIRED")
+        if set(params)-allowed:
             raise ValueError("ACE_STEP_UNSUPPORTED_PARAMETERS")
         duration=params.get("music_length_ms",15000)
         if type(duration) is not int or not 10000 <= duration <= 210000:
@@ -126,12 +160,29 @@ class AceStepProvider:
               "batch_size":1,"use_random_seed":False,"seed":seed,
               "thinking":False, **self._music_attributes(song_spec)}
         stage=pathlib.Path(stage_dir)
+        source_bytes=None
+        if repaint is not None:
+            source_file=stage/"repaint-source.wav"
+            if not source_file.is_file() or source_file.is_symlink():
+                raise ValueError("ACE_STEP_REPAINT_SOURCE_MISSING")
+            source_bytes=source_file.read_bytes()
+            from m045_repaint import read_pcm16_wav
+            _, source_frames=read_pcm16_wav(source_bytes)
+            start,end=repaint["start_sample"],repaint["end_sample"]
+            if (type(start) is not int or type(end) is not int
+                    or not 0<=start<end<=source_frames
+                    or hashlib.sha256(source_bytes).hexdigest()!=repaint["source_sha256"]):
+                raise ValueError("ACE_STEP_REPAINT_SOURCE_MISMATCH")
+            body.update({"task_type":"repaint","chunk_mask_mode":"explicit",
+                "repainting_start":start/44100, "repainting_end":end/44100,
+                "audio_duration":source_frames/44100})
         started=time.monotonic()
         identity = {
             "endpoint_url": self.endpoint.rstrip("/"),
             "checkpoint_sha256": self.checkpoint_sha256,
             "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest(),
             "provider": "ace_step_native",
+            "source_sha256": hashlib.sha256(source_bytes).hexdigest() if source_bytes is not None else None,
         }
         task_path = stage / "upstream-task.json"
         if task_path.is_file():
@@ -144,7 +195,7 @@ class AceStepProvider:
             task_id = saved["task_id"]
         else:
             try:
-                released = self._request("/release_task", body)
+                released = self._request("/release_task", body, src_audio=source_bytes)
             except ProviderUnavailable as exc:
                 # Upstream might have accepted the task before our connection failed.
                 # No task ID means no lawful way to resume; do not blindly retry.
@@ -210,7 +261,7 @@ class AceStepProvider:
             "source_type":"OPEN_WEIGHT_REMOTE_PROVIDER",
             "rights_status":"OPEN_WEIGHT_UNVERIFIED_TRAINING_DATA",
             "license_class":"UNVERIFIED",
-            "preservation_tier":"P3",
+            "preservation_tier":"P2" if repaint is not None else "P3",
             "provider_id":"ace_step_native_api",
             "model_id":self.model_id,"model_version":self.model_version,
             "dit_model":str(files[0].get("dit_model",""))[:128],
