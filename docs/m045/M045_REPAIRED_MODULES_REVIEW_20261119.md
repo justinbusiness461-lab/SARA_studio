@@ -1,0 +1,44 @@
+# M045 PR #33 — Review of "Repaired, Fail-Closed" Follow-up Modules
+**Date:** 2026-11-19  
+**Disposition:** BLOCKED — production certification / direct merge of supplied modules.  
+**Source:** owner-pasted modules `m045_security_and_jobs.py`, `m045_dsp_repairs.py`, `pf_cinema_021l_hardened.py`, and `test_pf_cinema_021l_hardened.py` in the DJ RezrXtion project conversation (2026-11-19). These snippets are not repository-owned source until integrated on lawful branches and executed against exact SHAs.  
+**Checked Studio baseline:** latest retrieved main commit `d6aa889a0def72bb8e1c87009a98d6c29e47067e`, `tools/studio_server.py` blob `55a2b3b54fbc162faaa1b2c401ca979f3a210cea`, `scorecore.js` blob `6ee01fbfdf6f2b4cebcfc9cbc533aa28f59175da`. Prior PR #33 document: `docs/m045/M045_NATIVE_INTEGRATION_SECURITY_GATE_20261119.md`. This is a static review, **not** claimed RED/GREEN test execution.
+
+## Material remaining defects
+
+| ID | Severity | Exact evidence in owner-supplied repair | Failed boundary / minimum fix |
+|---|---|---|---|
+| M045-R2-AUTH-01 | P0 | `issue_audience_bound_grant` reads `manifest.get("owner_id")`, `manifest.get("revisions", {})`, `rev.get("accepted_artifacts")`. | Real Studio manifest/revision/artifact association are distinct sources; plug authenticated principal into canonical authorized project/revision read, not guessed dict. |
+| M045-R2-JOB-02 | P0 | `reconcile_or_commit_generation` loops `manifest.get("revisions", {})` and then calls commit; no durable per-(project,key) unique lock nor request-payload fingerprint. | Concurrent same-key commits can double execute. Repeated key with changed song/prompt must reject, not replay unrelated result. Atomic uniqueness and recovery on existing owner required. |
+| M045-R2-JOB-03 | P0 | If canonical commit raises after durable publication, routine has no uncertainty reconciliation around the exception; `except OSError: pass` only protects post-return job receipt. | On ambiguous commit exception or lost response, reread revision, lawful artifact association and current CAS; return COMMITTED if verified, otherwise COMMIT_UNCERTAIN. Never retry blind. |
+| M045-R2-CAS-04 | P0 | `self.blobs_dir = Path(data_root) / "blobs" / "sha256"` while checked `studio_server.py` existing immutable namespace is `objects/<prefix>/<sha>`. Issuer only checks `blob_path.is_file()` before hashing PCM. | No new CAS/authority or cross-project digest probing. Verify actual digest against requested SHA, accepted revision association, sample format and complete decode using canonical object read. |
+| M045-R2-GRANT-05 | P0 | HMAC includes `principal_id`, audience and timestamp but code lacks consuming-side principal authorization, signer key ID, replay/revocation semantics, and authentic source association check. | Bind grants to authorized project, intended service audience and principal/capability, key ID, verified immutable artifact and expiration; prove consumer verifies all critical fields. HMAC alone proves key possession, not artist approval. |
+| M045-R2-LUFS-06 | P0 | Formula uses one-pole ~60 Hz high-pass plus sample-to-sample difference instead of defined ITU-R BS.1770 two biquad K filters; no 400 ms overlapping blocks, absolute and relative gating. | The returned `integrated_lufs` is not compliant integrated LUFS. Use qualified BS.1770/EBU R128 implementation with regression against known audio and reference meter. Do not issue LUFS certification. |
+| M045-R2-TP-07 | P1 | 4x Catmull-Rom interpolation is labeled `true_peak_dbtp`. | A convenient oversampled heuristic, but not a validated ITU-R BS.1770-4 true-peak measurement filter. Benchmark against reference true-peak implementation and intersample-over fixtures; label estimate until qualified. |
+| M045-R2-DSP-08 | P1 | Renderer reads both decks but sets `cursor=0.0` per event, uses constant `velocity` and `fader_gain`, and clamps each partial sum. | Overlap *permission* is fixed, but two-deck crossfader performance, platter curves, source offsets, anti-click, and output mix precision are not. Clamping at each addition makes result order-sensitive and fails linear exact stem recombination. |
+| M045-R2-DSP-09 | P1 | `src_len = len(src_l)` is used as modulo without verifying length >0, channels match and all numeric controls finite and bounded. | Empty deck / NaN / malformed input may crash or bypass meaningful checks; reject before rendering. |
+| M045-R2-APPROVAL-10 | P0 | `verify_signed_semantic_approval` accepts any caller-provided `approval_secret` and `approver_id`; signature lacks project/movie identity, mask actual bytes verification, approval event authority/role and non-repudiable actor evidence. | Sign only through authorized artist/Foreman approval workflow. Verify keys from trusted host-controlled store and bind movie/source revision, canonical source/mask digests and approval scope. A synthetically signed scene is not artist approval. |
+| M045-R2-VIDEO-11 | P0 | Supplied `verify_lockstep_mp4_streams` checks protected RGB pixels and frame lengths only; there is **no** EQ target inventory, spectral excitation, target correlation, source silhouette validation or certified source artwork binding. | It cannot support `RESPONSIVE_PROVEN`. Require actual decoded source-bound target geometry and independently derived synchronized audio envelopes before any EQ statement. |
+| M045-R2-STREAM-12 | P1 | `proc.stdout.read(frame_bytes)` may return partial bytes; code treats partial chunk as frame truncation; `zip_longest` iterator early failure doesn't explicitly close both generators. `stderr=PIPE` is only drained at end. | Implement exact-size read loop, bounded stderr handling, explicit generator closure on early failure, process-group termination and physical ffprobe dimensions/fps validation. |
+| M045-R2-STREAM-13 | P1 | Caller supplies `width`, `height`, `protected_coords`, and `expected_frames` without checked stream metadata/authorized visual revision. Empty protected coords passes preservation unconditionally. | Derive frame geometry and authorized region from the approved visual/source manifest; reject absent protected scope where required; verify candidate vs decoded frame digest and exact bound revision. |
+| M045-R2-TEST-14 | P1 | Four tests cover coordinate parsing, arbitrary HMAC sign/verify, two overlapping deck tones and 12-vs-16 frame mismatch. | No actual Studio HTTP/runtime, M042–M044 regression, real music provider, certified audio meter, authenticated approval action, EQ motion, or cross-project denial is tested. These tests cannot close PR #33 wholesale. |
+
+## Precise attribution and scope
+- Correctly repaired in proposed text: integer `(x,y)` extraction for two-item arrays; rejection of bare unsigned approval strings; explicit Bearer session callback rather than trusted `X-Sara-Principal` header; overlapping events on **different** decks; `zip_longest` detects asymmetric frame counts.
+- These are **mechanism candidates**. No proof that the callback authenticates against current Studio capability/session model, the real storage API accepts the adapter, or the signing party is the artist.
+- **No blanket “all P0/P1 closed” claim**, no “production-ready” claim, no “ITU-compliant LUFS” claim.
+
+## Minimum next lawful increment
+1. Add **RED tests** to the actual Studio code for unauthorized principal, concurrent same idempotency key with divergent payloads, commit-before-response fault, wrong-revision object, forged/expired grant; execute test fail against baseline with exact SHA receipt.
+2. Extend the canonical `studio_server.py` owner with a *thin* generation attempt adapter; do not introduce `blobs/sha256`, `manifest.revisions` or duplicate SongSpec.
+3. For audio loudness, qualify an existing real BS.1770 implementation, measure synthetic and independent WAV fixtures, and separate objective metrics from listening/artist approval.
+4. For cinema, only an actual video decoder + exact authenticated audio + authorized scene mask + measured band-to-core motion correlation can create a physically verified EQ witness. Publish cinema code to `dj_rezrxtion`, not Studio.
+5. Retain explicit terminal state: **BLOCKED**, owner and wake condition: *an independently tested implementation at exact repository SHAs with authenticated media and authority readback*.
+
+## JUSTIN 101
+**WHAT CHANGED:** Specific regression-risk map of supplied repair attempt; no incorrect production promotion.
+**WHAT FAILED:** Claims of all P0/P1 closure, standard-compliant LUFS, certified EQ response.
+**PROVEN:** Static source mismatch and directly inspectable algorithmic omissions; repository evidence read.
+**UNPROVEN:** Runtime tests, native model playback, per-deck physical fidelity, accepted grants, approved 18-scene semantics.
+**TEAM NEXT:** RED tests and native-owner adapters, then physical validation; follow separate repo boundaries.
+**JUSTIN ACTION:** None required for engineering repairs.
