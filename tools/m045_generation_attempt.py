@@ -313,7 +313,8 @@ class GenerationAttemptOwner:
                 receipt_path = stage_dir / "provider-receipt.json"
                 if receipt_path.is_file():
                     provenance = json.loads(receipt_path.read_text(encoding="utf-8"))
-                    if (provenance.get("source_type") != "LICENSED_PROVIDER"
+                    if (provenance.get("source_type") != "EXTERNAL_COMMERCIAL_PROVIDER"
+                            or provenance.get("rights_status") != "PROVIDER_TERMS_UNVERIFIED"
                             or provenance.get("preservation_tier") != "P3"
                             or provenance.get("model_id") != model_id
                             or provenance.get("model_version") != model_version
