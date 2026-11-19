@@ -49,6 +49,34 @@ test('M045 Studio UI submits revision-fenced attempt and never fabricates physic
  assert.match(await page.locator('#m045Proof').innerText(),/PROVIDER_TERMS_UNVERIFIED/);
  assert.doesNotMatch(await page.locator('#m045Proof').innerText(),/PHYSICALLY_VERIFIED/);
  assert.equal(attempts,1);
+ // Repaint changes the request contract, not the proof standard. No mock audio
+ // is ever admitted as physical listening verification.
+ await page.unroute('**/api/m045/attempts');
+ await page.route('**/api/m045/attempts',async route=>{
+  attempts++;
+  const body=route.request().postDataJSON();
+  assert.equal(body.model_id,'ace-step-1.5');
+  assert.equal(body.params.edit_mode,'repaint');
+  assert.equal(body.params.start_bar,2);
+  assert.equal(body.params.end_bar,3);
+  assert.equal(body.params.target_track_id,'bass');
+  assert.equal(typeof body.expected_current_revision_id,'string');
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+   state:'COMMITTED',attempt:{idempotency_key:body.idempotency_key,
+   provenance:{provider_id:'ace_step_native_api',preservation_tier:'P1',
+               preservation_method:'EXACT_OUTSIDE_REGION_PCM_SPLICING',
+               rights_status:'OPEN_WEIGHT_UNVERIFIED_TRAINING_DATA'}},
+   revision:{revisionId:'mocked-repaint-revision'}})});
+ });
+ await page.locator('#m045Provider').selectOption('ace');
+ await page.locator('#m045TargetTrack').selectOption('bass');
+ await page.locator('#m045BarStart').fill('2');
+ await page.locator('#m045BarEnd').fill('3');
+ await page.locator('#btnM045Generate').click();
+ await page.locator('#m045Proof').getByText(/COMMITTED/).waitFor();
+ assert.match(await page.locator('#m045Proof').innerText(),/P1/);
+ assert.doesNotMatch(await page.locator('#m045Proof').innerText(),/PHYSICALLY_VERIFIED/);
+ assert.equal(attempts,2);
  const opened = page.waitForResponse(r=>r.url().endsWith('/api/projects/open'));
  await page.locator('#btnOpenProject').click();
  const openedResponse = await opened;
@@ -60,7 +88,7 @@ test('M045 Studio UI submits revision-fenced attempt and never fabricates physic
  await lock.click();
  await page.locator('#btnM045Generate').click();
  assert.equal(await page.evaluate(()=>m045LocksDirty),true);
- assert.equal(attempts,1);
+ assert.equal(attempts,2);
  const lockSave = page.waitForResponse(r=>r.url().endsWith('/api/projects/commit'));
  await page.locator('#btnSave').click();
  const lockedResponse = await lockSave;
@@ -68,7 +96,7 @@ test('M045 Studio UI submits revision-fenced attempt and never fabricates physic
  await page.locator('#btnM045Generate').click();
  assert.equal(await page.evaluate(()=>m045LocksDirty),false);
  assert.equal(await page.evaluate(()=>window.skeleton.tracks[0].sonic_lock),true);
- assert.equal(attempts,1);
+ assert.equal(attempts,2);
  await page.route('**/api/m045/attempts/reconcile',async route=>{
   const body=route.request().postDataJSON();
   assert.ok(body.idempotency_key);
