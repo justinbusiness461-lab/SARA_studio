@@ -24,6 +24,24 @@ let activeSectionIdx = 0;
 function render() {
   if (!skeleton) return;
   const tb = skeleton.timebase;
+  const repaintTrack = $("m045TargetTrack");
+  if (repaintTrack) {
+    const selected = repaintTrack.value;
+    repaintTrack.replaceChildren();
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "Select an unlocked track";
+    repaintTrack.appendChild(empty);
+    skeleton.tracks.forEach(track => {
+      const option = document.createElement("option");
+      option.value = track.track_id;
+      option.textContent = track.track_id + (track.sonic_lock ? " · Sonic Lock ON" : "");
+      option.disabled = !!track.sonic_lock;
+      repaintTrack.appendChild(option);
+    });
+    if (skeleton.tracks.some(track => track.track_id === selected && !track.sonic_lock))
+      repaintTrack.value = selected;
+  }
   $("meta").innerHTML =
     "<strong>" + (skeleton.title || "Song") + "</strong> · " +
     tb.initial_bpm + " BPM · " + tb.key + " · " + tb.genre +
@@ -799,7 +817,14 @@ async function submitM045Attempt() {
   if (start || end) {
     if (!Number.isInteger(+start) || !Number.isInteger(+end) || +start < 1 || +end <= +start)
       throw new Error("Enter a valid bar range");
-    params.target_bar_range = [+start, +end];
+    if (provider !== "ace") throw new Error("Repaint currently requires ACE-Step");
+    const target = $("m045TargetTrack").value;
+    if (!target || !skeleton.tracks.some(track => track.track_id === target && !track.sonic_lock))
+      throw new Error("Select an unlocked target track");
+    params.edit_mode = "repaint";
+    params.start_bar = +start;
+    params.end_bar = +end;
+    params.target_track_id = target;
   }
   const generation = ++m045RequestToken;
   const abToken = abRequestGeneration;
