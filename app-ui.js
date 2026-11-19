@@ -85,6 +85,7 @@ function render() {
       "<label>Vol</label><input type='range' min='-24' max='6' step='0.5' value='" + (tr.volume_db || 0) + "' data-vol='" + tr.track_id + "'/>" +
       "<label>Pan</label><input type='range' min='-1' max='1' step='0.05' value='" + (tr.pan || 0) + "' data-pan='" + tr.track_id + "'/>" +
       "<button class='secondary sm' data-mute='" + tr.track_id + "'>" + (tr.muted ? "Unmute" : "Mute") + "</button>" +
+      "<button class='secondary sm' data-lock='" + tr.track_id + "' aria-pressed='" + (!!tr.sonic_lock) + "'>" + (tr.sonic_lock ? "Sonic Lock™ ON" : "Sonic Lock™ OFF") + "</button>" +
       "</div>";
     mix.appendChild(el);
   });
@@ -108,6 +109,17 @@ function render() {
       btn.textContent = t.muted ? "Unmute" : "Mute";
       btn.style.background = t.muted ? "var(--danger)" : "";
       btn.style.color = t.muted ? "#fff" : "";
+    };
+  });
+  mix.querySelectorAll("[data-lock]").forEach(btn => {
+    btn.onclick = () => {
+      const tr = skeleton.tracks.find(x => x.track_id === btn.dataset.lock);
+      if (!tr) return;
+      tr.sonic_lock = !tr.sonic_lock;
+      m045LocksDirty = true;
+      btn.textContent = tr.sonic_lock ? "Sonic Lock™ ON" : "Sonic Lock™ OFF";
+      btn.setAttribute("aria-pressed", String(!!tr.sonic_lock));
+      setStatus("Sonic Lock changed in draft · Save project before generation", "warn");
     };
   });
   drawMatrix();
@@ -755,6 +767,88 @@ async function selectABRevision(label) {
   return true;
 }
 
+let m045RequestToken = 0;
+let m045LocksDirty = false;
+
+
+function m045ProofText(state, attempt = {}) {
+  const prov = attempt.provenance || {};
+  const status = ["COMMITTED", "ASSOCIATED_HISTORICAL"].includes(state) ? state : String(state || "DECLARED");
+  const tier = ["P0", "P1", "P2", "P3"].includes(prov.preservation_tier) ? prov.preservation_tier : "PRESERVATION_UNVERIFIED";
+  const rights = prov.rights_status || "RIGHTS_UNVERIFIED";
+  return [status, tier, prov.provider_id || "PROVIDER_UNVERIFIED", rights, "audio quality UNVERIFIED"].join(" · ");
+}
+function m045PublishProof(state, attempt) {
+  const node = $("m045Proof");
+  if (node) node.textContent = m045ProofText(state, attempt);
+}
+async function submitM045Attempt() {
+  const active = durableProjectRef && {...durableProjectRef};
+  if (!active || !skeleton) throw new Error("Save or open a project first");
+  if (m045LocksDirty) throw new Error("Save Sonic Lock changes before generation");
+  if (skeleton.tracks.some(track => track.sonic_lock === true))
+    throw new Error("Sonic Lock prevents full-song reconstruction");
+  const duration = Number($("m045Duration").value);
+  if (!Number.isInteger(duration) || duration < 3 || duration > 210) throw new Error("Duration must be 3–210 seconds");
+  const provider = $("m045Provider").value;
+  const model = provider === "ace" ? "ace-step-1.5" : "music_v2_5";
+  const modelVersion = provider === "ace" ? "ace-step-1.5" : "elevenlabs-music-v2.5";
+  const params = {music_length_ms: duration * 1000};
+  const start = $("m045BarStart").value.trim();
+  const end = $("m045BarEnd").value.trim();
+  if (start || end) {
+    if (!Number.isInteger(+start) || !Number.isInteger(+end) || +start < 1 || +end <= +start)
+      throw new Error("Enter a valid bar range");
+    params.target_bar_range = [+start, +end];
+  }
+  const generation = ++m045RequestToken;
+  const abToken = abRequestGeneration;
+  m045PublishProof("DECLARED");
+  const body = {
+    project_id: active.projectId, base_revision_id: active.revisionId,
+    expected_current_revision_id: active.revisionId,
+    idempotency_key: crypto.randomUUID(), model_id: model,
+    model_version: modelVersion, prompt: ($("prompt").value || "").trim(),
+    song_spec: JSON.parse(serializeProject()), lyrics: null, seed: 0, params
+  };
+  if (!body.prompt) throw new Error("Prompt required");
+  const response = await fetch("/api/m045/attempts", {
+    method:"POST", headers: {...studioProjectHeaders(), Authorization:"Bearer " + (window.__STUDIO_SESSION__ || "")},
+    body: JSON.stringify(body)
+  });
+  const result = await response.json();
+  if (generation !== m045RequestToken || !durableProjectRef ||
+      durableProjectRef.projectId !== active.projectId ||
+      durableProjectRef.revisionId !== active.revisionId || abToken !== abRequestGeneration) return;
+  if (!response.ok) {
+    m045PublishProof("DECLARED");
+    throw new Error(result.error || "Generation attempt rejected");
+  }
+  m045PublishProof(result.state, result.attempt);
+  if (["COMMITTED", "ASSOCIATED_HISTORICAL"].includes(result.state)) {
+    try { localStorage.setItem("m045_attempt_pointer", JSON.stringify({
+      projectId:active.projectId,idempotencyKey:body.idempotency_key
+    })); } catch (_) {}
+    setStatus("Generation recorded · reopen project for authoritative audio readback", "warn");
+  }
+}
+async function recoverM045Proof() {
+  const generation = ++m045RequestToken;
+  const active = durableProjectRef && {...durableProjectRef};
+  let pointer = null;
+  try { pointer = JSON.parse(localStorage.getItem("m045_attempt_pointer") || "null"); } catch (_) {}
+  if (!active || !pointer || pointer.projectId !== active.projectId || !pointer.idempotencyKey) {
+    m045PublishProof("DECLARED");
+    return;
+  }
+  const response = await fetch("/api/m045/attempts/reconcile",{
+    method:"POST",headers:{...studioProjectHeaders(),Authorization:"Bearer " + (window.__STUDIO_SESSION__ || "")},
+    body:JSON.stringify({project_id:active.projectId,idempotency_key:pointer.idempotencyKey})
+  });
+  const result = await response.json();
+  if (generation !== m045RequestToken || !durableProjectRef || durableProjectRef.projectId !== active.projectId) return;
+  m045PublishProof(response.ok ? result.state : "DECLARED", response.ok ? result.attempt : null);
+}
 let durableProjectRef = null;
 let durableSourceAssets = [];
 
@@ -770,6 +864,12 @@ async function projectRequest(route, payload) {
 }
 
 function showProjectAuthority(result) {
+  if (!durableProjectRef ||
+      durableProjectRef.projectId !== result.manifest.projectId ||
+      durableProjectRef.revisionId !== result.revision.revisionId) {
+    ++m045RequestToken;
+    m045PublishProof("DECLARED");
+  }
   durableProjectRef = { projectId: result.manifest.projectId, revisionId: result.revision.revisionId };
   durableSourceAssets = result.revision.sourceAssetDigests.slice();
   try { localStorage.setItem('sf_project_ref', JSON.stringify(durableProjectRef)); } catch (_) {}
@@ -801,11 +901,13 @@ async function saveJSON(announce = true) {
   const spec = JSON.parse(serializeProject());
   const expected = durableProjectRef && { ...durableProjectRef };
   const result = await commitProjectSnapshot(spec, [], expected);
+  m045LocksDirty = false;
   if (announce) setStatus('Project saved · ' + result.manifest.projectId, 'ok');
   return result;
 }
 
 async function restoreProjectFromStorage() {
+  ++m045RequestToken;
   let id = $('projectId') && $('projectId').value.trim();
   if (!id) {
     // Cache contains an address only, never the song or the authoritative pointer.
@@ -816,6 +918,8 @@ async function restoreProjectFromStorage() {
   const loaded = loadProjectObject(result.songSpec);
   if (!loaded.ok) throw new Error(loaded.error);
   showProjectAuthority(result);
+  m045LocksDirty = false;
+  recoverM045Proof().catch(() => m045PublishProof("DECLARED"));
   if ($('title')) $('title').value = result.songSpec.title || '';
   if ($('prompt')) $('prompt').value = result.songSpec.prompt || '';
   render();
@@ -890,6 +994,8 @@ $("btnStop").onclick = () => {
 $("btnWav").onclick = exportWav;
 $("btnMEG").onclick = exportMEG;
 $("btnSave").onclick = () => saveJSON().catch(e => setStatus("Save failed: " + e.message, "warn"));
+if ($("btnM045Generate")) $("btnM045Generate").onclick = () =>
+  submitM045Attempt().catch(e => setStatus("M045 blocked: " + e.message, "warn"));
 $("editTrack").onchange = drawMatrix;
 
 const lyricsEl = $("lyrics");
@@ -1420,6 +1526,9 @@ setABControls();
 // Project address survives independently of browser cache; enter it on any fresh client.
 if ($('btnOpenProject')) $('btnOpenProject').onclick = () => restoreProjectFromStorage().catch(e => setStatus('Open failed: ' + e.message, 'warn'));
 if ($('btnNewProject')) $('btnNewProject').onclick = () => {
+  ++m045RequestToken;
+  m045LocksDirty = false;
+  m045PublishProof("DECLARED");
   durableProjectRef = null; durableSourceAssets = [];
   abRevisions = { r1: null, r2: null };
   abRequestGeneration++;
