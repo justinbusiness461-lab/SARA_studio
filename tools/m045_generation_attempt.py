@@ -35,6 +35,8 @@ class AttemptSecurityError(PermissionError):
 
 class AttemptLifecycleState(str, Enum):
     PREPARING = "PREPARING"
+    POLL_INTERRUPTED = "POLL_INTERRUPTED"
+    SUBMISSION_UNCERTAIN = "SUBMISSION_UNCERTAIN"
     FAILED_PRE_COMMIT = "FAILED_PRE_COMMIT"
     ARTIFACT_DURABLE = "ARTIFACT_DURABLE"
     COMMITTED = "COMMITTED"
@@ -222,7 +224,8 @@ class GenerationAttemptOwner:
                 return revision
         return None
 
-    def reconcile_attempt(self, *, headers: Dict[str, str], project_id: str, idempotency_key: str) -> Dict[str, Any]:
+    def reconcile_attempt(self, *, headers: Dict[str, str], project_id: str, idempotency_key: str,
+                          synthesize_to_stage_fn=None) -> Dict[str, Any]:
         project_id = _safe(project_id, "project_id")
         idempotency_key = _safe(idempotency_key, "idempotency_key")
         self._authorize(headers, project_id, "generate")
@@ -243,9 +246,29 @@ class GenerationAttemptOwner:
                 attempt["committed_revision_id"] = revision.get("revisionId")
                 self._save_attempt(path, attempt)
                 return {"state": state, "attempt": attempt, "revision": revision, "reconciled": True}
-            return {"state": attempt["state"], "attempt": attempt, "revision": None, "reconciled": False}
+            provider = synthesize_to_stage_fn
+            if isinstance(provider, dict):
+                provider = provider.get(attempt.get("model_id"))
+            if (attempt["state"] in {AttemptLifecycleState.POLL_INTERRUPTED.value,
+                                      AttemptLifecycleState.PREPARING.value}
+                    and (self._attempt_dir(project_id) / (attempt["attempt_id"] + ".stage") / "upstream-task.json").is_file()
+                    and callable(provider)
+                    and getattr(provider, "supports_remote_resume", False)
+                    and getattr(provider, "model_id", None) == attempt.get("model_id")
+                    and getattr(provider, "model_version", None) == attempt.get("model_version")):
+                stored = attempt.get("resume_request")
+                if not isinstance(stored, dict):
+                    raise _conflict("missing durable resume request")
+                retry_fields = dict(stored)
+                retry_fields["headers"] = headers
+                retry_fields["synthesize_to_stage_fn"] = provider
+            else:
+                return {"state": attempt["state"], "attempt": attempt, "revision": None, "reconciled": False}
         finally:
             self._unlock(handle)
+        # Re-enter canonical execution under the same project lock and idempotency
+        # key. Never submit a second task: the provider verifies its saved task ID.
+        return self.execute_attempt(**retry_fields)
 
     def execute_attempt(self, **kwargs: Any) -> Dict[str, Any]:
         headers = kwargs.get("headers") or {}
@@ -278,6 +301,7 @@ class GenerationAttemptOwner:
         path = self._attempt_path(project_id, idempotency_key)
         try:
             existing = self._load_attempt(path) if path.is_file() else None
+            resume = False
             if existing is not None:
                 if existing.get("request_digest") != request_digest:
                     raise _conflict("idempotency key payload conflict")
@@ -295,31 +319,64 @@ class GenerationAttemptOwner:
                     raise RuntimeError(existing.get("error_code", "previous synthesis failed"))
                 if existing.get("state") == AttemptLifecycleState.COMMIT_UNCERTAIN.value:
                     raise _conflict("commit outcome remains uncertain; reconcile first")
-                raise _conflict("generation attempt is already in progress")
+                if existing.get("state") == AttemptLifecycleState.SUBMISSION_UNCERTAIN.value:
+                    raise _conflict("remote submission outcome uncertain; no safe task ID")
+                if (existing.get("state") in {AttemptLifecycleState.POLL_INTERRUPTED.value,
+                                               AttemptLifecycleState.PREPARING.value}
+                        and getattr(synthesize, "supports_remote_resume", False)):
+                    stage_resume = self._attempt_dir(project_id) / (existing["attempt_id"] + ".stage")
+                    task_file = stage_resume / "upstream-task.json"
+                    if not task_file.is_file() or task_file.is_symlink():
+                        raise _conflict("durable upstream task identity missing")
+                    # When Studio observed the submission, its native attempt also
+                    # binds the task identity. Divergence is not a retry signal.
+                    anchored_task = existing.get("remote_task")
+                    if anchored_task is not None:
+                        actual_task = json.loads(task_file.read_text(encoding="utf-8"))
+                        if actual_task != anchored_task:
+                            raise _conflict("remote task identity tampered")
+                    attempt = existing
+                    resume = True
+                else:
+                    raise _conflict("generation attempt is already in progress")
 
-            current = self.read_revision(project_id, "CURRENT")
-            if not current or current.get("revisionId") != expected_revision_id:
-                raise _conflict("stale expected revision")
-            attempt = {
-                "attempt_id": "att_" + uuid.uuid4().hex,
-                "project_id": project_id,
-                "base_revision_id": base_revision_id,
-                "expected_current_revision_id": expected_revision_id,
-                "idempotency_key": idempotency_key,
-                "request_digest": request_digest,
-                "model_id": model_id,
-                "model_version": model_version,
-                "seed": int(kwargs.get("seed", 0)),
-                "state": AttemptLifecycleState.PREPARING.value,
-                "created_at": time.time(),
-                "updated_at": time.time(),
-                "error_code": None,
-                "artifact_digest": None,
-                "committed_revision_id": None,
-            }
-            self._save_attempt(path, attempt)
+            if not resume:
+                current = self.read_revision(project_id, "CURRENT")
+                if not current or current.get("revisionId") != expected_revision_id:
+                    raise _conflict("stale expected revision")
+                attempt = {
+                    "attempt_id": "att_" + uuid.uuid4().hex,
+                    "project_id": project_id,
+                    "base_revision_id": base_revision_id,
+                    "expected_current_revision_id": expected_revision_id,
+                    "idempotency_key": idempotency_key,
+                    "request_digest": request_digest,
+                    "model_id": model_id,
+                    "model_version": model_version,
+                    "seed": int(kwargs.get("seed", 0)),
+                    "state": AttemptLifecycleState.PREPARING.value,
+                    "resume_request": {k: kwargs.get(k) for k in (
+                        "project_id", "base_revision_id", "expected_current_revision_id",
+                        "idempotency_key", "model_id", "model_version", "seed",
+                        "song_spec", "prompt", "lyrics", "params")},
+                    "created_at": time.time(),
+                    "updated_at": time.time(),
+                    "error_code": None,
+                    "artifact_digest": None,
+                    "committed_revision_id": None,
+                }
+                self._save_attempt(path, attempt)
             stage_dir = self._attempt_dir(project_id) / (attempt["attempt_id"] + ".stage")
             stage_dir.mkdir(parents=True, exist_ok=True)
+            if getattr(synthesize, "supports_remote_resume", False):
+                # Cross the directory durability boundary BEFORE remote submission.
+                # Otherwise a durable task file may disappear with its unflushed parent.
+                for directory in (stage_dir.parent, stage_dir):
+                    fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+                    try:
+                        os.fsync(fd)
+                    finally:
+                        os.close(fd)
             stage_path = stage_dir / "output.wav"
             try:
                 result = synthesize(stage_dir, kwargs.get("song_spec"), kwargs.get("prompt"), kwargs.get("lyrics"), int(kwargs.get("seed", 0)), kwargs.get("params") or {})
@@ -361,7 +418,21 @@ class GenerationAttemptOwner:
                 attempt["state"] = AttemptLifecycleState.ARTIFACT_DURABLE.value
                 self._save_attempt(path, attempt)
             except Exception as exc:
-                attempt["state"] = AttemptLifecycleState.FAILED_PRE_COMMIT.value
+                upstream_path = stage_dir / "upstream-task.json"
+                if (getattr(synthesize, "supports_remote_resume", False)
+                        and exc.__class__.__name__ == "RemoteSubmissionUncertain"):
+                    attempt["state"] = AttemptLifecycleState.SUBMISSION_UNCERTAIN.value
+                elif (getattr(synthesize, "supports_remote_resume", False)
+                        and upstream_path.is_file() and not upstream_path.is_symlink()
+                        and "GENERATION_FAILED" not in str(exc)
+                        and "IDENTITY_CONFLICT" not in str(exc)):
+                    task_record = json.loads(upstream_path.read_text(encoding="utf-8"))
+                    if not isinstance(task_record, dict) or not task_record.get("task_id"):
+                        raise _conflict("invalid durable remote task")
+                    attempt["remote_task"] = task_record
+                    attempt["state"] = AttemptLifecycleState.POLL_INTERRUPTED.value
+                else:
+                    attempt["state"] = AttemptLifecycleState.FAILED_PRE_COMMIT.value
                 attempt["error_code"] = str(exc)
                 self._save_attempt(path, attempt)
                 raise
