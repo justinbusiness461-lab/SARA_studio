@@ -1021,6 +1021,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._json(503, {"status": "BLOCKED", "error": "M045 generation authority unavailable"})
             try:
                 fields = dict(payload)
+                configured_model = getattr(M045_SYNTHESIZE_TO_STAGE, "model_id", None)
+                configured_version = getattr(M045_SYNTHESIZE_TO_STAGE, "model_version", None)
+                if configured_model and (fields.get("model_id") != configured_model
+                                         or fields.get("model_version") != configured_version):
+                    return self._json(400, {"status": "DENY", "error": "host provider model mismatch"})
                 fields["headers"] = dict(self.headers)
                 fields["synthesize_to_stage_fn"] = M045_SYNTHESIZE_TO_STAGE
                 result = M045_ATTEMPT_OWNER.execute_attempt(**fields)
