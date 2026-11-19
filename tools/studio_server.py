@@ -1104,12 +1104,15 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 result = M045_ATTEMPT_OWNER.reconcile_attempt(
                     headers=dict(self.headers),
                     project_id=payload["project_id"],
-                    idempotency_key=payload["idempotency_key"])
+                    idempotency_key=payload["idempotency_key"],
+                    synthesize_to_stage_fn=M045_SYNTHESIZE_TO_STAGE)
                 return self._json(200, result)
             except AttemptSecurityError as exc:
                 return self._json(403, {"status": "DENY", "error": str(exc)})
             except ProjectConflict as exc:
                 return self._json(409, {"status": "CONFLICT", "error": str(exc)})
+            except RuntimeError as exc:
+                return self._json(422, {"status": "ERROR", "error": str(exc)})
             except (ValueError, KeyError, TypeError, OSError) as exc:
                 return self._json(400, {"status": "ERROR", "error": str(exc)})
 
