@@ -310,6 +310,16 @@ class GenerationAttemptOwner:
                 if not stage_path.is_file():
                     raise ValueError("synthesizer did not produce a WAV")
                 media = _verify_wav(stage_path)
+                receipt_path = stage_dir / "provider-receipt.json"
+                if receipt_path.is_file():
+                    provenance = json.loads(receipt_path.read_text(encoding="utf-8"))
+                    if (provenance.get("source_type") != "LICENSED_PROVIDER"
+                            or provenance.get("preservation_tier") != "P3"
+                            or provenance.get("model_id") != model_id
+                            or provenance.get("model_version") != model_version
+                            or provenance.get("audio_sha256") != media["sha256"]):
+                        raise ValueError("provider provenance mismatch")
+                    attempt["provenance"] = provenance
                 artifact_digest = self.publish_cas_object(stage_path.read_bytes())
                 if artifact_digest != media["sha256"] or not HEX64.fullmatch(artifact_digest):
                     raise ValueError("CAS digest mismatch")
