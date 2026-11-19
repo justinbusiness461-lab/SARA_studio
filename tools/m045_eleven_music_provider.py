@@ -109,7 +109,8 @@ class ElevenMusicProvider:
         native_atomic_write_bytes(output, audio_bytes)
         decoded_path.unlink()
         receipt = {
-            "source_type": "LICENSED_PROVIDER",
+            "source_type": "EXTERNAL_COMMERCIAL_PROVIDER",
+            "rights_status": "PROVIDER_TERMS_UNVERIFIED",
             "preservation_tier": "P3",
             "provider_id": "elevenlabs_music",
             "model_id": MODEL_ID,
