@@ -1,0 +1,19 @@
+test_m045_native_attempt (unittest.loader._FailedTest.test_m045_native_attempt) ... ERROR
+
+======================================================================
+ERROR: test_m045_native_attempt (unittest.loader._FailedTest.test_m045_native_attempt)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_m045_native_attempt
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/sara-1122-main/tests/test_m045_native_attempt.py", line 16, in <module>
+    from m045_generation_attempt import (
+ModuleNotFoundError: No module named 'm045_generation_attempt'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

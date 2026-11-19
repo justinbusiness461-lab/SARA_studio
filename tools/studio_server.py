@@ -33,9 +33,17 @@ import tempfile
 import re
 from urllib.parse import urlsplit
 
+try:
+    from m045_generation_attempt import AttemptSecurityError, GenerationAttemptOwner
+except ImportError:  # pragma: no cover - keeps unrelated tooling importable
+    AttemptSecurityError = None
+    GenerationAttemptOwner = None
+
 CAPABILITY = secrets.token_urlsafe(32)
 LOCAL_PRINCIPAL_ID = "local-studio-user"
 SESSION_PRINCIPALS = {}
+M045_ATTEMPT_OWNER = None
+M045_SYNTHESIZE_TO_STAGE = None
 MAX_REQUEST = 64 * 1024 * 1024
 MAX_ARTIFACT = 16 * 1024 * 1024
 
@@ -57,6 +65,13 @@ def resolve_studio_session(token):
     if principal_id is None:
         raise ProjectConflict("session denied")
     return principal_id
+
+
+def configure_m045_generation(owner, synthesize_to_stage_fn):
+    """Install a host-owned M045 owner and synthesizer; no client fallback exists."""
+    global M045_ATTEMPT_OWNER, M045_SYNTHESIZE_TO_STAGE
+    M045_ATTEMPT_OWNER = owner
+    M045_SYNTHESIZE_TO_STAGE = synthesize_to_stage_fn
 
 def authorized_origin(origin, host):
     if host not in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"} or not origin:
@@ -960,11 +975,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if self.headers.get("Access-Control-Request-Method") not in {"GET","POST"}:
             return self._json(403,{"status":"ERROR","error":"method denied"})
         requested={v.strip().lower() for v in self.headers.get("Access-Control-Request-Headers","").split(",") if v.strip()}
-        if not requested <= {"content-type","x-studio-capability","x-studio-session"}:
+        if not requested <= {"authorization","content-type","x-studio-capability","x-studio-session"}:
             return self._json(403,{"status":"ERROR","error":"headers denied"})
         self.send_response(204)
         self.send_header("Access-Control-Allow-Methods","GET, POST")
-        self.send_header("Access-Control-Allow-Headers","Content-Type, X-Studio-Capability, X-Studio-Session")
+        self.send_header("Access-Control-Allow-Headers","Authorization, Content-Type, X-Studio-Capability, X-Studio-Session")
         self.end_headers()
 
     def _json(self, code: int, obj: dict):
@@ -1000,6 +1015,24 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload,dict): raise ValueError("object required")
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
+
+        if path == "/api/m045/attempts":
+            if M045_ATTEMPT_OWNER is None or not callable(M045_SYNTHESIZE_TO_STAGE):
+                return self._json(503, {"status": "BLOCKED", "error": "M045 generation authority unavailable"})
+            try:
+                fields = dict(payload)
+                fields["headers"] = dict(self.headers)
+                fields["synthesize_to_stage_fn"] = M045_SYNTHESIZE_TO_STAGE
+                result = M045_ATTEMPT_OWNER.execute_attempt(**fields)
+                return self._json(200, result)
+            except AttemptSecurityError as e:
+                return self._json(403, {"status": "DENY", "error": str(e)})
+            except ProjectConflict as e:
+                return self._json(409, {"status": "CONFLICT", "error": str(e)})
+            except RuntimeError as e:
+                return self._json(422, {"status": "ERROR", "error": str(e)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError) as e:
+                return self._json(400, {"status": "ERROR", "error": str(e)})
 
         if path == "/api/projects/render":
             try:
