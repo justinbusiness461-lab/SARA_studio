@@ -285,17 +285,58 @@ class GenerationAttemptOwner:
         if base_revision_id != expected_revision_id:
             raise _conflict("base and expected revisions differ")
         self._authorize(headers, project_id, "generate")
-        # Full-song renders cannot preserve any locked track's audio.
-        # Read saved project authority, never the request's mutable SongSpec.
-        from studio_server import project_operation
-        saved = project_operation(self.data_root, {"projectId": project_id}, principal_id=self.authenticate_bearer(headers))
+        # A full-mix provider edit cannot isolate a locked stem. Both
+        # generation and scoped repaint fail closed while any track is locked.
+        from studio_server import project_operation, project_audio_bytes
+        from m045_repaint import bar_sample_window, read_pcm16_wav
+        principal = self.authenticate_bearer(headers)
+        saved = project_operation(self.data_root, {"projectId": project_id,
+            "revisionId": base_revision_id}, principal_id=principal)
         current_spec = saved["songSpec"]
         if any(track.get("sonic_lock") is True for track in current_spec.get("tracks", [])):
-            raise _conflict("Sonic Lock prevents full-song reconstruction")
+            raise _conflict("Sonic Lock prevents full-mix reconstruction")
         requested = kwargs.get("params") or {}
         if not isinstance(requested, dict):
             raise ValueError("invalid generation params")
-        if "target_bar_range" in requested or "target_sample_range" in requested:
+        selective = requested.get("edit_mode") == "repaint"
+        source_pcm = None
+        region = None
+        if selective:
+            if not getattr(synthesize, "supports_repaint", False):
+                raise _conflict("Change ONLY This requires a qualified selective renderer")
+            if (set(requested) - {"edit_mode", "start_bar", "end_bar",
+                                  "target_track_id", "music_length_ms"}):
+                raise ValueError("unsupported scoped edit parameters")
+            target = requested.get("target_track_id")
+            if not isinstance(target, str) or target not in {
+                track.get("track_id") for track in current_spec.get("tracks", [])}:
+                raise ValueError("repaint target track not found")
+            if kwargs.get("song_spec") != current_spec:
+                raise _conflict("repaint source SongSpec mismatch")
+            source_revision = saved["revision"]
+            artifacts = source_revision.get("outputArtifactIds") or []
+            if len(artifacts) != 1:
+                raise _conflict("repaint requires a single lawful base audio artifact")
+            source_pcm = project_audio_bytes(self.data_root, {
+                "projectId": project_id, "revisionId": base_revision_id,
+                "artifactId": artifacts[0]}, principal_id=principal)
+            _, source_frames = read_pcm16_wav(source_pcm)
+            region = bar_sample_window(current_spec, requested.get("start_bar"),
+                                       requested.get("end_bar"), source_frames)
+            # Section protection is evaluated on canonical integer ticks.
+            quarter_ticks = current_spec["timebase"]["ticks_per_quarter_note"]
+            first_tick = (requested["start_bar"] - 1) * 4 * quarter_ticks
+            final_tick = (requested["end_bar"] - 1) * 4 * quarter_ticks
+            for section in current_spec.get("structure", {}).get("sections", []):
+                if section.get("sonic_lock") is not True:
+                    continue
+                a, b = section.get("start_tick"), section.get("end_tick")
+                if type(a) is not int or type(b) is not int or b <= a:
+                    raise _conflict("locked section has invalid timing")
+                if first_tick < b and a < final_tick:
+                    raise _conflict("Sonic Lock protects the selected section")
+        elif ("target_bar_range" in requested or "target_sample_range" in requested
+              or requested.get("edit_mode") is not None):
             raise _conflict("Change ONLY This requires a qualified selective renderer")
         request_digest = _request_digest(kwargs)
         handle = self._lock(project_id)
@@ -379,8 +420,18 @@ class GenerationAttemptOwner:
                     finally:
                         os.close(fd)
             stage_path = stage_dir / "output.wav"
+            synth_params = dict(requested)
+            if region is not None:
+                source_path = stage_dir / "repaint-source.wav"
+                if source_path.exists() and source_path.read_bytes() != source_pcm:
+                    raise _conflict("repaint source staging identity mismatch")
+                if not source_path.exists():
+                    self.atomic_write_fn(source_path, source_pcm)
+                synth_params["_m045_repaint"] = {
+                    "start_sample": region[0], "end_sample": region[1],
+                    "source_sha256": hashlib.sha256(source_pcm).hexdigest()}
             try:
-                result = synthesize(stage_dir, kwargs.get("song_spec"), kwargs.get("prompt"), kwargs.get("lyrics"), int(kwargs.get("seed", 0)), kwargs.get("params") or {})
+                result = synthesize(stage_dir, kwargs.get("song_spec"), kwargs.get("prompt"), kwargs.get("lyrics"), int(kwargs.get("seed", 0)), synth_params)
                 result_path = Path(result)
                 if result_path != stage_path:
                     if not result_path.is_file():
@@ -388,6 +439,20 @@ class GenerationAttemptOwner:
                     self.atomic_write_fn(stage_path, result_path.read_bytes())
                 if not stage_path.is_file():
                     raise ValueError("synthesizer did not produce a WAV")
+                if region is not None:
+                    from m045_repaint import splice_exact_region
+                    merged, preservation = splice_exact_region(
+                        source_pcm, stage_path.read_bytes(), region[0], region[1])
+                    self.atomic_write_fn(stage_path, merged)
+                    receipt_path = stage_dir / "provider-receipt.json"
+                    if not receipt_path.is_file():
+                        raise ValueError("missing repaint provider provenance")
+                    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                    if receipt.get("preservation_tier") != "P2":
+                        raise ValueError("repaint provider must declare P2")
+                    receipt.update(preservation)
+                    receipt["audio_sha256"] = hashlib.sha256(merged).hexdigest()
+                    self.atomic_write_fn(receipt_path, _json_bytes(receipt))
                 media = _verify_wav(stage_path)
                 receipt_path = stage_dir / "provider-receipt.json"
                 if receipt_path.is_file():
@@ -399,7 +464,12 @@ class GenerationAttemptOwner:
                     origin = provenance.get("source_type")
                     if (origin not in expected_rights
                             or provenance.get("rights_status") != expected_rights[origin]
-                            or provenance.get("preservation_tier") != "P3"
+                            or provenance.get("preservation_tier") != ("P1" if region else "P3")
+                            or (region and (provenance.get("preservation_method") !=
+                                "EXACT_OUTSIDE_REGION_PCM_SPLICING"
+                                or provenance.get("start_sample") != region[0]
+                                or provenance.get("end_sample") != region[1]
+                                or provenance.get("source_audio_sha256") != hashlib.sha256(source_pcm).hexdigest()))
                             or provenance.get("model_id") != model_id
                             or provenance.get("model_version") != model_version
                             or provenance.get("audio_sha256") != media["sha256"]):
