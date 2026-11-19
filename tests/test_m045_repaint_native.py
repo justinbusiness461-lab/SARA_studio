@@ -121,6 +121,9 @@ class NativeRepaintTests(unittest.TestCase):
             result=owner.execute_attempt(**self.args())
         self.assertEqual(result["state"],"COMMITTED")
         self.assertEqual(result["attempt"]["provenance"]["preservation_tier"],"P1")
+        self.assertEqual(result["attempt"]["provenance"]["fade_samples"],220)
+        self.assertEqual(result["attempt"]["provenance"]["fade_curve"],
+                         "RAISED_COSINE_WITHIN_EDIT_ONLY")
         digest=result["attempt"]["artifact_digest"]
         r3=result["revision"]["revisionId"]
         self.assertEqual(studio.project_operation(self.f.root,{"projectId":self.f.pid})["manifest"]["currentRevisionId"],r3)
