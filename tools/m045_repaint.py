@@ -3,6 +3,8 @@ from __future__ import annotations
 from fractions import Fraction
 import hashlib
 import io
+import math
+import struct
 import wave
 
 RATE=44100
@@ -60,7 +62,23 @@ def splice_exact_region(base_wav,generated_wav,start_sample,end_sample):
         raise ValueError("REPAINT_LENGTH_OR_WINDOW_CONFLICT")
     left=start_sample*FRAME_BYTES
     right=end_sample*FRAME_BYTES
-    result=base[:left]+generated[left:right]+base[right:]
+    # The blend lives ENTIRELY inside the authorized edit interval. No fade
+    # samples are borrowed from either immutable surrounding audio region.
+    fade_samples = min(int(round(0.005 * RATE)), (end_sample-start_sample)//4)
+    result=bytearray(base[:left]+generated[left:right]+base[right:])
+    if fade_samples:
+        for index in range(fade_samples):
+            fade_in = 0.5*(1.0-math.cos(math.pi*(index+1)/(fade_samples+1)))
+            for frame, weight in (
+                    (start_sample+index, fade_in),
+                    (end_sample-fade_samples+index, 1.0-fade_in)):
+                offset=frame*FRAME_BYTES
+                for channel in (0, 2):
+                    old=struct.unpack_from("<h",base,offset+channel)[0]
+                    new=struct.unpack_from("<h",generated,offset+channel)[0]
+                    mixed=int(round((1.0-weight)*old+weight*new))
+                    struct.pack_into("<h",result,offset+channel,
+                                     max(-32768,min(32767,mixed)))
     if result[:left]!=base[:left] or result[right:]!=base[right:]:
         raise AssertionError("P1_OUTSIDE_REGION_CHANGED")
     b=io.BytesIO()
@@ -72,5 +90,6 @@ def splice_exact_region(base_wav,generated_wav,start_sample,end_sample):
         "outside_prefix_sha256":hashlib.sha256(base[:left]).hexdigest(),
         "outside_suffix_sha256":hashlib.sha256(base[right:]).hexdigest(),
         "start_sample":start_sample,"end_sample":end_sample,
+        "fade_samples":fade_samples,"fade_curve":"RAISED_COSINE_WITHIN_EDIT_ONLY",
         "source_audio_sha256":hashlib.sha256(base_wav).hexdigest()
     }
