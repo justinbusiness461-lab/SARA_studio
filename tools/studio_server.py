@@ -73,6 +73,87 @@ def configure_m045_generation(owner, synthesize_to_stage_fn):
     M045_ATTEMPT_OWNER = owner
     M045_SYNTHESIZE_TO_STAGE = synthesize_to_stage_fn
 
+def make_m045_native_owner(root):
+    """Bind M045 to the existing project, session, revision and CAS authorities."""
+    if GenerationAttemptOwner is None:
+        raise RuntimeError("M045_GENERATION_OWNER_UNAVAILABLE")
+    root = Path(root).resolve()
+
+    def authorize(principal_id, pid, capability):
+        if capability != "generate":
+            return False
+        project_owner_directory(root, project_id(pid), principal_id, allow_create=False)
+        # The current owner callback contract can only commit for the local
+        # principal. Other principals fail closed until principal-bound commits.
+        return principal_id == LOCAL_PRINCIPAL_ID
+
+    def read_revision(pid, rid):
+        request = {"projectId": project_id(pid)}
+        if rid != "CURRENT":
+            request["revisionId"] = rid
+        try:
+            return project_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID)["revision"]
+        except (ValueError, FileNotFoundError):
+            return None
+
+    def list_revisions(pid):
+        pid = project_id(pid)
+        directory = project_owner_directory(root, pid, LOCAL_PRINCIPAL_ID, allow_create=False)
+        manifest = project_operation(root, {"projectId": pid}, principal_id=LOCAL_PRINCIPAL_ID)["manifest"]
+        found = {}
+        for path in sorted((directory / "revisions").glob("*.json")):
+            revision, _, _ = project_revision(root, directory, pid, path.stem)
+            revision = dict(revision)
+            revision["is_current"] = (revision["revisionId"] == manifest["currentRevisionId"])
+            found[revision["revisionId"]] = revision
+        return found
+
+    def publish(data):
+        digest = hashlib.sha256(data).hexdigest()
+        _publish_cas_exact(root, digest, data)
+        return digest
+
+    def commit(**kwargs):
+        request = {
+            "projectId": kwargs["project_id"],
+            "expectedCurrentRevisionId": kwargs["expected_current_revision_id"],
+            "songSpec": kwargs["song_spec"],
+            "sourceAssetDigests": kwargs.get("source_asset_digests") or [],
+            "outputArtifactIds": [kwargs["artifact_digest"]],
+            "operationId": "m045:" + kwargs["attempt_id"],
+            "operationContext": {"kind": "m045_generation", "attemptId": kwargs["attempt_id"]},
+        }
+        return project_operation(root, request, commit=True, principal_id=LOCAL_PRINCIPAL_ID)
+
+    return GenerationAttemptOwner(
+        data_root=root,
+        resolve_session_principal=resolve_studio_session,
+        authorize_project=authorize,
+        read_revision=read_revision,
+        list_project_revisions=list_revisions,
+        publish_cas_object=publish,
+        associate_and_commit_revision=commit,
+        atomic_write_fn=atomic_write_bytes,
+    )
+
+
+def configure_m045_from_environment(root):
+    """Opt-in authorized providers. Missing credentials never enable generation."""
+    providers = {}
+    if os.environ.get("ELEVENLABS_API_KEY"):
+        from m045_eleven_music_provider import ElevenMusicProvider
+        provider = ElevenMusicProvider()
+        providers[provider.model_id] = provider
+    if os.environ.get("SARA_ACESTEP_ENDPOINT_URL"):
+        from m045_acestep_provider import AceStepProvider
+        provider = AceStepProvider()
+        providers[provider.model_id] = provider
+    if not providers:
+        return False
+    configure_m045_generation(make_m045_native_owner(root), providers)
+    return True
+
+
 def authorized_origin(origin, host):
     if host not in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"} or not origin:
         return False
@@ -1016,18 +1097,39 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
 
+        if path == "/api/m045/attempts/reconcile":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status": "BLOCKED", "error": "M045 attempt owner unavailable"})
+            try:
+                result = M045_ATTEMPT_OWNER.reconcile_attempt(
+                    headers=dict(self.headers),
+                    project_id=payload["project_id"],
+                    idempotency_key=payload["idempotency_key"])
+                return self._json(200, result)
+            except AttemptSecurityError as exc:
+                return self._json(403, {"status": "DENY", "error": str(exc)})
+            except ProjectConflict as exc:
+                return self._json(409, {"status": "CONFLICT", "error": str(exc)})
+            except (ValueError, KeyError, TypeError, OSError) as exc:
+                return self._json(400, {"status": "ERROR", "error": str(exc)})
+
         if path == "/api/m045/attempts":
-            if M045_ATTEMPT_OWNER is None or not callable(M045_SYNTHESIZE_TO_STAGE):
+            if M045_ATTEMPT_OWNER is None:
                 return self._json(503, {"status": "BLOCKED", "error": "M045 generation authority unavailable"})
             try:
                 fields = dict(payload)
-                configured_model = getattr(M045_SYNTHESIZE_TO_STAGE, "model_id", None)
-                configured_version = getattr(M045_SYNTHESIZE_TO_STAGE, "model_version", None)
+                provider = M045_SYNTHESIZE_TO_STAGE
+                if isinstance(provider, dict):
+                    provider = provider.get(fields.get("model_id"))
+                if not callable(provider):
+                    return self._json(503, {"status": "BLOCKED", "error": "M045 selected provider unavailable"})
+                configured_model = getattr(provider, "model_id", None)
+                configured_version = getattr(provider, "model_version", None)
                 if configured_model and (fields.get("model_id") != configured_model
                                          or fields.get("model_version") != configured_version):
                     return self._json(400, {"status": "DENY", "error": "host provider model mismatch"})
                 fields["headers"] = dict(self.headers)
-                fields["synthesize_to_stage_fn"] = M045_SYNTHESIZE_TO_STAGE
+                fields["synthesize_to_stage_fn"] = provider
                 result = M045_ATTEMPT_OWNER.execute_attempt(**fields)
                 return self._json(200, result)
             except AttemptSecurityError as e:
@@ -1188,6 +1290,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     durable_mkdir(EXPORT_ROOT)
+    configure_m045_from_environment(EXPORT_ROOT)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("127.0.0.1", PORT), StudioHandler) as httpd:
         print("=" * 72)
