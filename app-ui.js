@@ -472,7 +472,12 @@ async function verifyPlayableRevision(result, publishGuard = null, publishPresen
   });
   media.src = objectUrl;
   media.load();
-  await decoded;
+  try {
+    await decoded;
+  } catch (error) {
+    URL.revokeObjectURL(objectUrl);
+    throw error;
+  }
   if (!Number.isFinite(media.duration) || media.duration <= 0) {
     URL.revokeObjectURL(objectUrl);
     throw new Error('Audio unavailable: decoded WAV duration is invalid');
@@ -482,9 +487,12 @@ async function verifyPlayableRevision(result, publishGuard = null, publishPresen
     URL.revokeObjectURL(objectUrl);
     return null;
   }
-  verifiedPlayback = { projectId, revisionId, artifactId, wavSha256, media, objectUrl };
-  if (publishPresentation) publishVerifiedPlaybackPresentation(verifiedPlayback);
-  return verifiedPlayback;
+  const playback = { projectId, revisionId, artifactId, wavSha256, media, objectUrl };
+  if (publishPresentation) {
+    verifiedPlayback = playback;
+    publishVerifiedPlaybackPresentation(playback);
+  }
+  return playback;
 }
 
 function verifiedPlaybackProof(playback) {
@@ -636,123 +644,128 @@ async function applyVerse2BassOctave() {
   }
 }
 
+// Keep the comparison point across a failed or superseded load. A different
+// pair of revisions must get its own origin, including after opening a project.
+let abOrigin = null;
+let activeABSwitch = null;
+
+async function restoreABPosition(media, position, signal) {
+  if (!Number.isFinite(position) || position < 0 || position > media.duration) {
+    throw new Error('Selected audio does not cover the comparison position');
+  }
+  if (media.currentTime !== position) media.currentTime = position;
+  if (media.seeking) {
+    await new Promise((resolve, reject) => {
+      const listeners = new AbortController();
+      const options = { signal: listeners.signal };
+      function finish(error) {
+        clearTimeout(timeout);
+        listeners.abort();
+        if (error) reject(error);
+        else resolve();
+      }
+      const timeout = setTimeout(() => finish(new Error('Audio seek timed out')), 5000);
+      media.addEventListener('seeked', () => finish(), options);
+      media.addEventListener('error', () => finish(new Error('Audio seek failed')), options);
+      signal.addEventListener('abort', () => finish(new Error('Switch superseded')), options);
+    });
+  }
+  const actual = media.currentTime;
+  // Same 50 ms bound as the Studio desktop A/B qualification.
+  if (!Number.isFinite(actual) || Math.abs(actual - position) > 0.05) {
+    throw new Error('Could not restore the comparison position');
+  }
+  return actual;
+}
+
 async function selectABRevision(label) {
   const target = abRevisions[label.toLowerCase()];
   if (!target || !abRevisions.r2) return false;
   const requestGeneration = ++abRequestGeneration;
+  if (activeABSwitch) activeABSwitch.abort();
+  const operation = new AbortController();
+  activeABSwitch = operation;
+  const current = () => requestGeneration === abRequestGeneration && !operation.signal.aborted;
   const from = verifiedPlayback;
-  const position = from && from.media ? from.media.currentTime : 0;
-  const wasPlaying = !!(playing && from && from.media && !from.media.paused);
-  const fromRevisionId = from ? from.revisionId : null;
-  publishABSwitchState(requestGeneration, target, 'SWITCH_REQUESTED', {
-    fromRevisionId,
-    fromPositionSec: position
-  });
+  if (from || abOrigin?.pair !== abRevisions) {
+    abOrigin = {
+      pair: abRevisions,
+      revisionId: from?.revisionId ?? null,
+      artifactId: from?.artifactId ?? null,
+      position: from?.media.currentTime ?? 0,
+      resume: Boolean(playing && from && !from.media.paused),
+    };
+  }
+  const origin = abOrigin;
+  const scope = { fromRevisionId: origin.revisionId, fromPositionSec: origin.position };
+  window.__M044_AB_PROOF__ = null;
+  const status = $('abStatus');
+  status.textContent = 'Loading ' + label + '…';
+  publishABSwitchState(requestGeneration, target, 'SWITCH_REQUESTED', scope);
 
-  if (from && from.revisionId === target.revisionId) {
-    const proof = verifiedPlaybackProof(from);
+  let playback = from;
+  let staged = null;
+  let restoredPosition = origin.position;
+  try {
+    if (!from || from.projectId !== target.projectId || from.revisionId !== target.revisionId ||
+        from.artifactId !== target.artifactId) {
+      clearVerifiedPlayback();
+      playing = false;
+      publishABSwitchState(requestGeneration, target, 'TARGET_LOADING', scope);
+      const opened = await projectRequest('open', { projectId: target.projectId, revisionId: target.revisionId });
+      if (!current()) return false;
+      const ref = revisionRef(opened);
+      if (ref.projectId !== target.projectId || ref.revisionId !== target.revisionId ||
+          ref.artifactId !== target.artifactId) throw new Error('Opened audio does not match the selected revision');
+      staged = await verifyPlayableRevision(opened, current, false);
+      if (!current()) return false;
+      if (!staged) throw new Error('Selected audio could not be verified');
+      playback = staged;
+      operation.signal.addEventListener('abort', () => playback.media.pause(), { once: true });
+      publishABSwitchState(requestGeneration, target, 'TARGET_VERIFIED', scope);
+      restoredPosition = await restoreABPosition(playback.media, origin.position, operation.signal);
+      if (!current()) return false;
+      publishABSwitchState(requestGeneration, target, 'POSITION_RESTORED', { ...scope, toPositionSec: restoredPosition });
+      if (origin.resume) {
+        await playback.media.play();
+        if (!current()) return false;
+        playing = true;
+        window.__M044_PLAYBACK_STARTED__ = true;
+      }
+    }
+    // Publish the transport and both proofs together after the last await.
+    verifiedPlayback = playback;
+    const proof = verifiedPlaybackProof(playback);
     window.__M044_PLAYBACK_PROOF__ = proof;
     window.__M044_AB_PROOF__ = {
-      fromRevisionId,
-      toRevisionId: target.revisionId,
-      fromArtifactId: from.artifactId,
-      toArtifactId: target.artifactId,
-      fromPositionSec: position,
-      toPositionSec: position
+      ...scope, fromArtifactId: origin.artifactId, toRevisionId: playback.revisionId,
+      toArtifactId: playback.artifactId, toPositionSec: restoredPosition,
     };
     publishABSwitchState(requestGeneration, target, 'COMPLETE', {
-      fromRevisionId,
-      fromPositionSec: position,
-      toPositionSec: position,
-      transportSelectedRevision: target.revisionId,
-      proofRevisionId: target.revisionId
+      ...scope, toPositionSec: restoredPosition, transportSelectedRevision: proof.revisionId, proofRevisionId: proof.revisionId,
     });
-    if ($('abStatus')) $('abStatus').textContent =
-      label === 'R2' ? 'Selected R2 · current' : 'Selected R1 · historical';
+    $('btnPlay').disabled = false;
+    $('btnPlay').textContent = playing ? 'Stop' : 'Play';
+    setStatus(playing ? 'Playing verified revision · ' + playback.revisionId : 'Audio verified. Ready to hear.', 'ok');
+    status.textContent = label === 'R2' ? 'Selected R2 · current' : 'Selected R1 · historical';
     return true;
-  }
-
-  clearVerifiedPlayback();
-  publishABSwitchState(requestGeneration, target, 'TARGET_LOADING', {
-    fromRevisionId,
-    fromPositionSec: position
-  });
-  const opened = await projectRequest('open', {
-    projectId: target.projectId,
-    revisionId: target.revisionId
-  });
-  if (requestGeneration !== abRequestGeneration) return false;
-
-  const published = await verifyPlayableRevision(
-    opened,
-    () => requestGeneration === abRequestGeneration,
-    false
-  );
-  if (!published || requestGeneration !== abRequestGeneration) return false;
-  publishABSwitchState(requestGeneration, target, 'TARGET_VERIFIED', {
-    fromRevisionId,
-    fromPositionSec: position
-  });
-
-  const toPosition = Math.min(position, Math.max(0, verifiedPlayback.media.duration - 0.01));
-  verifiedPlayback.media.currentTime = toPosition;
-  publishABSwitchState(requestGeneration, target, 'POSITION_RESTORED', {
-    fromRevisionId,
-    fromPositionSec: position,
-    toPositionSec: verifiedPlayback.media.currentTime
-  });
-
-  if (wasPlaying) {
-    try {
-      await verifiedPlayback.media.play();
-      if (requestGeneration !== abRequestGeneration) {
-        verifiedPlayback.media.pause();
-        return false;
-      }
-      playing = true;
-      window.__M044_PLAYBACK_STARTED__ = true;
-    } catch (_) {
-      playing = false;
-      if (requestGeneration === abRequestGeneration) {
-        clearVerifiedPlayback();
-        publishABSwitchState(requestGeneration, target, 'FAILED', {
-          fromRevisionId,
-          error: 'browser playback failed'
-        });
-        if ($('abStatus')) $('abStatus').textContent = 'A/B unavailable · playback failed';
-      }
-      return false;
+  } catch (error) {
+    if (!current()) return false;
+    clearVerifiedPlayback();
+    playing = false;
+    origin.resume = false;
+    const reason = error.message || 'Selected audio is unavailable';
+    publishABSwitchState(requestGeneration, target, 'FAILED', { ...scope, error: reason });
+    status.textContent = 'A/B failed · ' + reason + ' · Select a revision to retry';
+    setStatus(status.textContent, 'warn');
+    return false;
+  } finally {
+    if (activeABSwitch === operation) activeABSwitch = null;
+    if (staged && verifiedPlayback !== staged) {
+      staged.media.pause();
+      URL.revokeObjectURL(staged.objectUrl);
     }
   }
-
-  if (requestGeneration !== abRequestGeneration) return false;
-  const playbackProof = verifiedPlaybackProof(verifiedPlayback);
-  const abProof = {
-    fromRevisionId,
-    toRevisionId: target.revisionId,
-    fromArtifactId: from ? from.artifactId : null,
-    toArtifactId: target.artifactId,
-    fromPositionSec: position,
-    toPositionSec: verifiedPlayback.media.currentTime
-  };
-
-  // One synchronous publication boundary: observers may treat COMPLETE as authoritative
-  // presentation completion only after transport and Proof describe the same target.
-  window.__M044_PLAYBACK_PROOF__ = playbackProof;
-  window.__M044_AB_PROOF__ = abProof;
-  publishABSwitchState(requestGeneration, target, 'COMPLETE', {
-    fromRevisionId,
-    fromPositionSec: position,
-    toPositionSec: verifiedPlayback.media.currentTime,
-    transportSelectedRevision: playbackProof.transportSelectedRevision,
-    proofRevisionId: abProof.toRevisionId
-  });
-  const play = $('btnPlay');
-  if (play) play.disabled = false;
-  setStatus('Audio verified. Ready to hear.', 'ok');
-  if ($('abStatus')) $('abStatus').textContent =
-    label === 'R2' ? 'Selected R2 · current' : 'Selected R1 · historical';
-  return true;
 }
 
 let durableProjectRef = null;
@@ -1423,6 +1436,8 @@ if ($('btnNewProject')) $('btnNewProject').onclick = () => {
   durableProjectRef = null; durableSourceAssets = [];
   abRevisions = { r1: null, r2: null };
   abRequestGeneration++;
+  if (activeABSwitch) activeABSwitch.abort();
+  window.__M044_AB_PROOF__ = null;
   window.__M044_AB_SWITCH__ = { state: 'IDLE', generation: abRequestGeneration, targetRevisionId: null };
   clearVerifiedPlayback();
   setABControls();

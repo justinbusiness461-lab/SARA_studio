@@ -257,3 +257,115 @@ test('A/B exposes completion only after transport, proof, artifact and position 
   assert.equal(second.sw.artifactId, r2.artifactId);
   assert.ok(Math.abs(second.ab.fromPositionSec - second.ab.toPositionSec) <= 0.05);
 });
+test('A/B failures and retries preserve position, history and truthful UI', { timeout: 150000 }, async t => {
+  const workspace = mkdtempSync(join(tmpdir(), 'songforge-ab-failure-'));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  const studio = await boot(workspace); t.after(studio.stop);
+  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH });
+  t.after(() => browser.close());
+  const page = await pageFor(browser, studio.url);
+  await page.locator('#prompt').fill('96 BPM E minor dark Southern hip-hop instrumental');
+  await page.locator('#btnCompile').click();
+  await page.waitForFunction(() => !!window.__M044_PLAYBACK_PROOF__, null, { timeout: 90000 });
+  const r1 = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+  await page.locator('#btnOctaveEdit').click();
+  await page.waitForFunction(id => window.__M044_PLAYBACK_PROOF__?.revisionId &&
+    window.__M044_PLAYBACK_PROOF__.revisionId !== id, r1.revisionId, { timeout: 90000 });
+  const r2 = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+  const select = label => page.evaluate(label => document.getElementById('btnAB' + label).onclick(), label);
+  const snapshot = () => page.evaluate(() => ({
+    state: window.__M044_AB_SWITCH__.state,
+    proof: window.__M044_AB_PROOF__, playback: window.__M044_PLAYBACK_PROOF__,
+    label: document.querySelector('#abStatus').textContent,
+    status: document.querySelector('#status').textContent,
+    disabled: document.querySelector('#btnPlay').disabled,
+  }));
+  async function assertFailed() {
+    const result = await snapshot();
+    assert.equal(result.state, 'FAILED');
+    assert.equal(result.proof, null);
+    assert.equal(result.playback, null);
+    assert.equal(result.disabled, true);
+    assert.doesNotMatch(result.label, /^(Selected R[12]|Loading)/i);
+    assert.match(result.label, /fail|unavailable/i);
+  }
+
+  for (const endpoint of ['open', 'audio']) {
+    await t.test(endpoint + ' request fails after successful selection', async () => {
+      await select('R2');
+      assert.equal((await snapshot()).proof.toArtifactId, r2.artifactId);
+      const route = '**/api/projects/' + endpoint;
+      await page.route(route, handler => handler.fulfill({ status: 503, json: { error: 'injected outage' } }));
+      try { await select('R1'); await assertFailed(); }
+      finally { await page.unroute(route); }
+    });
+  }
+
+  await t.test('active verification returns false', async () => {
+    await select('R2');
+    await page.evaluate(() => { window.savedVerifier = verifyPlayableRevision; verifyPlayableRevision = async () => false; });
+    try { await select('R1'); await assertFailed(); }
+    finally { await page.evaluate(() => { verifyPlayableRevision = window.savedVerifier; }); }
+  });
+
+  await t.test('pending request clears previous proof and late rejection preserves newer success', async () => {
+    await select('R2');
+    await page.evaluate(() => { verifiedPlayback.media.currentTime = 3; });
+    let release, started;
+    const gate = new Promise(resolve => { release = resolve; });
+    const pending = new Promise(resolve => { started = resolve; });
+    const route = '**/api/projects/open';
+    await page.route(route, async request => {
+      if (request.request().postDataJSON().revisionId !== r1.revisionId) return request.continue();
+      started(); await gate;
+      return request.fulfill({ status: 503, json: { error: 'late outage' } });
+    });
+    const old = select('R1');
+    try {
+      await pending;
+      const loading = await snapshot();
+      await select('R2');
+      const success = await snapshot();
+      release(); await old;
+      assert.deepEqual(await snapshot(), success);
+      assert.equal(loading.proof, null);
+      assert.doesNotMatch(loading.label, /Selected/);
+      assert.equal(success.state, 'COMPLETE');
+      assert.equal(success.proof.toArtifactId, r2.artifactId);
+      assert.ok(Math.abs(success.proof.toPositionSec - 3) <= 0.05);
+    } finally { release(); await old; await page.unroute(route); }
+  });
+
+  await t.test('opening another lawful revision cannot satisfy the requested binding', async () => {
+    await select('R2');
+    const other = await projectOpenInPage(page, { projectId: r2.projectId, revisionId: r2.revisionId });
+    await page.route('**/api/projects/open', request => request.fulfill({ json: other.body }));
+    try { await select('R1'); await assertFailed(); }
+    finally { await page.unroute('**/api/projects/open'); }
+  });
+
+  await t.test('correct WAV at wrong position fails, then recovers at original position', async () => {
+    await select('R2');
+    await page.evaluate(() => {
+      verifiedPlayback.media.currentTime = 3;
+      window.nativeSeek = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'currentTime');
+      Object.defineProperty(HTMLMediaElement.prototype, 'currentTime', {
+        ...window.nativeSeek, set() { window.nativeSeek.set.call(this, 0.99); },
+      });
+    });
+    try { await select('R1'); await assertFailed(); }
+    finally {
+      await page.evaluate(() => { Object.defineProperty(HTMLMediaElement.prototype, 'currentTime', window.nativeSeek); });
+    }
+    await select('R1');
+    const repaired = await snapshot();
+    assert.equal(repaired.state, 'COMPLETE');
+    assert.ok(Math.abs(repaired.proof.toPositionSec - 3) <= 0.05);
+  });
+
+  for (const source of [r1, r2]) {
+    const opened = await projectOpenInPage(page, { projectId: source.projectId, revisionId: source.revisionId });
+    assert.equal(opened.body.manifest.currentRevisionId, r2.revisionId);
+    assert.deepEqual(opened.body.revision.outputArtifactIds, [source.artifactId]);
+  }
+});
