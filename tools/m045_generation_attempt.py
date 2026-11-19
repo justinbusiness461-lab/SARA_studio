@@ -22,6 +22,9 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 
+M045_MAX_SECONDS = 210
+M045_MAX_WAV_BYTES = 40 * 1024 * 1024
+
 HEX64 = re.compile(r"^[a-f0-9]{64}$")
 SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
 
@@ -96,6 +99,8 @@ def _request_digest(kwargs: Dict[str, Any]) -> str:
 
 
 def _verify_wav(path: Path) -> Dict[str, Any]:
+    if path.stat().st_size > M045_MAX_WAV_BYTES:
+        raise ValueError("M045 artifact too large")
     try:
         with wave.open(str(path), "rb") as audio:
             channels = audio.getnchannels()
@@ -104,6 +109,10 @@ def _verify_wav(path: Path) -> Dict[str, Any]:
             frames = audio.getnframes()
             if audio.getcomptype() != "NONE" or channels not in (1, 2) or width != 2 or rate <= 0 or frames <= 0:
                 raise ValueError("unsupported physical WAV")
+            if frames > rate * M045_MAX_SECONDS:
+                raise ValueError("M045 duration boundary exceeded")
+            if frames * channels * width > M045_MAX_WAV_BYTES:
+                raise ValueError("M045 artifact too large")
             raw = audio.readframes(frames)
             if len(raw) != frames * channels * width:
                 raise ValueError("truncated physical WAV")
@@ -252,6 +261,18 @@ class GenerationAttemptOwner:
         if base_revision_id != expected_revision_id:
             raise _conflict("base and expected revisions differ")
         self._authorize(headers, project_id, "generate")
+        # Full-song renders cannot preserve any locked track's audio.
+        # Read saved project authority, never the request's mutable SongSpec.
+        from studio_server import project_operation
+        saved = project_operation(self.data_root, {"projectId": project_id}, principal_id=self.authenticate_bearer(headers))
+        current_spec = saved["songSpec"]
+        if any(track.get("sonic_lock") is True for track in current_spec.get("tracks", [])):
+            raise _conflict("Sonic Lock prevents full-song reconstruction")
+        requested = kwargs.get("params") or {}
+        if not isinstance(requested, dict):
+            raise ValueError("invalid generation params")
+        if "target_bar_range" in requested or "target_sample_range" in requested:
+            raise _conflict("Change ONLY This requires a qualified selective renderer")
         request_digest = _request_digest(kwargs)
         handle = self._lock(project_id)
         path = self._attempt_path(project_id, idempotency_key)
@@ -313,13 +334,24 @@ class GenerationAttemptOwner:
                 receipt_path = stage_dir / "provider-receipt.json"
                 if receipt_path.is_file():
                     provenance = json.loads(receipt_path.read_text(encoding="utf-8"))
-                    if (provenance.get("source_type") != "EXTERNAL_COMMERCIAL_PROVIDER"
-                            or provenance.get("rights_status") != "PROVIDER_TERMS_UNVERIFIED"
+                    expected_rights = {
+                        "EXTERNAL_COMMERCIAL_PROVIDER": "PROVIDER_TERMS_UNVERIFIED",
+                        "OPEN_WEIGHT_REMOTE_PROVIDER": "OPEN_WEIGHT_UNVERIFIED_TRAINING_DATA",
+                    }
+                    origin = provenance.get("source_type")
+                    if (origin not in expected_rights
+                            or provenance.get("rights_status") != expected_rights[origin]
                             or provenance.get("preservation_tier") != "P3"
                             or provenance.get("model_id") != model_id
                             or provenance.get("model_version") != model_version
                             or provenance.get("audio_sha256") != media["sha256"]):
                         raise ValueError("provider provenance mismatch")
+                    if origin == "OPEN_WEIGHT_REMOTE_PROVIDER":
+                        checkpoint = provenance.get("checkpoint_sha256", "")
+                        if (not isinstance(checkpoint, str)
+                                or not HEX64.fullmatch(checkpoint)
+                                or provenance.get("seed") != int(kwargs.get("seed", 0))):
+                            raise ValueError("checkpoint provenance mismatch")
                     attempt["provenance"] = provenance
                 artifact_digest = self.publish_cas_object(stage_path.read_bytes())
                 if artifact_digest != media["sha256"] or not HEX64.fullmatch(artifact_digest):
