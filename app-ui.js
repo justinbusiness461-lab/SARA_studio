@@ -830,62 +830,76 @@ async function saveJSON(announce = true) {
   return result;
 }
 
+// Only the latest open may publish into this browser's selected project.
+let projectOpenGeneration = 0;
+
 async function restoreProjectFromStorage() {
+  const generation = ++projectOpenGeneration;
+  const current = () => generation === projectOpenGeneration;
+  resetProjectComparison();
   let id = $('projectId') && $('projectId').value.trim();
   if (!id) {
     // Cache contains an address only, never the song or the authoritative pointer.
     try { id = JSON.parse(localStorage.getItem('sf_project_ref') || '{}').projectId; } catch (_) {}
   }
-  if (!id) throw new Error('Enter a durable project ID');
-  const result = await projectRequest('open', { projectId: id });
-  const loaded = loadProjectObject(result.songSpec);
-  if (!loaded.ok) throw new Error(loaded.error);
-  showProjectAuthority(result);
-  if ($('title')) $('title').value = result.songSpec.title || '';
-  if ($('prompt')) $('prompt').value = result.songSpec.prompt || '';
-  render();
-  resetProjectComparison();
-  setStatus('Opened durable revision · ' + result.revision.revisionId + ' · Verifying audio…', 'warn');
+  let staged = null;
+  let result;
   try {
-    await verifyPlayableRevision(result);
-    const outputs = result.revision.outputArtifactIds || [];
-    if (outputs.length === 1) {
-      let ancestorId = result.revision.parentRevisionId;
-      let previousPlayable = null;
-      const seen = new Set();
-      while (ancestorId && !seen.has(ancestorId)) {
-        seen.add(ancestorId);
-        const ancestor = await projectRequest('open', {
-          projectId: result.manifest.projectId,
-          revisionId: ancestorId
-        });
-        const ancestorOutputs = ancestor.revision.outputArtifactIds || [];
-        if (ancestorOutputs.length === 1) {
-          previousPlayable = ancestor;
-          break;
-        }
-        ancestorId = ancestor.revision.parentRevisionId;
-      }
-      if (previousPlayable) {
-        abRevisions = {
-          r1: revisionRef(previousPlayable),
-          r2: revisionRef(result)
-        };
-        setABControls();
-        if ($('abStatus')) $('abStatus').textContent = 'Selected R2 · current';
-      } else {
-        abRevisions = { r1: revisionRef(result), r2: null };
-        setABControls();
-      }
-    } else {
-      abRevisions = { r1: null, r2: null };
-      setABControls();
+    if (!id) throw new Error('Enter a durable project ID');
+    setStatus('Opening project…', 'warn');
+    result = await projectRequest('open', { projectId: id });
+    if (!current()) return;
+    if (result.manifest.projectId !== id || result.manifest.currentRevisionId !== result.revision.revisionId) {
+      throw new Error('Open response does not match the requested project and current revision');
     }
+    const loaded = loadProjectObject(result.songSpec);
+    if (!loaded.ok) throw new Error(loaded.error);
+    showProjectAuthority(result);
+    if ($('title')) $('title').value = result.songSpec.title || '';
+    if ($('prompt')) $('prompt').value = result.songSpec.prompt || '';
+    render();
+    setStatus('Opened durable revision · ' + result.revision.revisionId + ' · Verifying audio…', 'warn');
+
+    staged = await verifyPlayableRevision(result, current, false);
+    if (!current()) return;
+    if (!staged) throw new Error('Audio unavailable: revision could not be verified');
+    let ancestorId = result.revision.parentRevisionId;
+    let previousPlayable = null;
+    const seen = new Set();
+    while (ancestorId && !seen.has(ancestorId)) {
+      seen.add(ancestorId);
+      const ancestor = await projectRequest('open', { projectId: id, revisionId: ancestorId });
+      if (!current()) return;
+      if (ancestor.manifest.projectId !== id || ancestor.revision.revisionId !== ancestorId) {
+        throw new Error('Opened ancestor does not match the requested revision');
+      }
+      if (ancestor.revision.outputArtifactIds?.length === 1) {
+        previousPlayable = ancestor;
+        break;
+      }
+      ancestorId = ancestor.revision.parentRevisionId;
+    }
+
+    // Publish the verified WAV, its Proof and its comparison pair in one turn.
+    abRevisions = previousPlayable
+      ? { r1: revisionRef(previousPlayable), r2: revisionRef(result) }
+      : { r1: revisionRef(result), r2: null };
+    verifiedPlayback = staged;
+    staged = null;
+    publishVerifiedPlaybackPresentation(verifiedPlayback);
+    setABControls();
+    if (previousPlayable && $('abStatus')) $('abStatus').textContent = 'Selected R2 · current';
   } catch (error) {
+    if (!current()) return;
     clearVerifiedPlayback();
     abRevisions = { r1: null, r2: null };
     setABControls();
-    setStatus(String(error && error.message || error), 'warn');
+    setStatus('Open failed: ' + String(error && error.message || error), 'warn');
+  } finally {
+    if (staged) {
+      staged.media.pause();
+      URL.revokeObjectURL(staged.objectUrl);
+    }
   }
   return result;
 }
@@ -1445,6 +1459,7 @@ setABControls();
 // Project address survives independently of browser cache; enter it on any fresh client.
 if ($('btnOpenProject')) $('btnOpenProject').onclick = () => restoreProjectFromStorage().catch(e => setStatus('Open failed: ' + e.message, 'warn'));
 if ($('btnNewProject')) $('btnNewProject').onclick = () => {
+  projectOpenGeneration++;
   durableProjectRef = null; durableSourceAssets = [];
   resetProjectComparison();
   renderLyricAuthority(null);

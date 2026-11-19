@@ -441,4 +441,70 @@ test('opening a different project supersedes outstanding A/B transport work', { 
       }
     });
   }
+
+  // Both projects and both WAVs come from Studio. Only response order is controlled.
+  const selection = () => page.evaluate(() => ({
+    project: durableProjectRef,
+    address: document.querySelector('#projectId').value,
+    cache: localStorage.getItem('sf_project_ref'),
+    title: document.querySelector('#title').value,
+    prompt: document.querySelector('#prompt').value,
+    specTitle: skeleton.title,
+    revisions: abRevisions,
+    playback: window.__M044_PLAYBACK_PROOF__,
+    transport: verifiedPlayback && verifiedPlaybackProof(verifiedPlayback),
+    comparison: window.__M044_AB_PROOF__,
+    playDisabled: document.querySelector('#btnPlay').disabled,
+    revisionLabel: document.querySelector('#projectRevision').textContent,
+    status: document.querySelector('#status').textContent,
+    abStatus: document.querySelector('#abStatus').textContent,
+  }));
+  for (const [edge, outcome, next] of [
+    ['open', 'success', 'B'], ['audio', 'success', 'B'], ['ancestry', 'success', 'B'],
+    ['open', 'failure', 'B'], ['audio', 'failure', 'B'], ['ancestry', 'failure', 'B'],
+    ['open', 'success', 'new draft'],
+  ]) {
+    await t.test('outstanding ' + edge + ' ' + outcome + ' preserves ' + next, async () => {
+      const held = Promise.withResolvers();
+      const released = Promise.withResolvers();
+      const path = '**/api/projects/' + (edge === 'audio' ? 'audio' : 'open');
+      await page.route(path, async route => {
+        const request = route.request().postDataJSON();
+        if (request.projectId !== original.projectId ||
+            (edge === 'ancestry' && !request.revisionId) ||
+            (edge === 'open' && request.revisionId)) return route.continue();
+        held.resolve();
+        await released.promise;
+        if (outcome === 'failure') return route.fulfill({status: 503, json: {error: 'obsolete request failed'}});
+        return route.continue();
+      });
+      const stale = open(original.projectId);
+      try {
+        await held.promise;
+        if (next === 'B') await open(destination.projectId);
+        else await page.locator('#btnNewProject').click();
+        const winner = await selection();
+        assert.deepEqual(winner.transport, next === 'B' ? destination : null);
+        assert.equal(winner.address, next === 'B' ? destination.projectId : '');
+        released.resolve();
+        await stale;
+        assert.deepEqual(await selection(), winner);
+      } finally {
+        released.resolve();
+        await stale;
+        await page.unroute(path);
+      }
+    });
+  }
+
+  await t.test('failure of the currently requested project remains visible', async () => {
+    await open(destination.projectId);
+    await open('missing-project');
+    const failed = await selection();
+    assert.match(failed.status, /Open failed/i);
+    assert.equal(failed.transport, null);
+    assert.equal(failed.playDisabled, true);
+    await open(destination.projectId);
+    assert.deepEqual((await selection()).transport, destination);
+  });
 });
