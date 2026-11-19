@@ -1,0 +1,19 @@
+✔ render completion retains captured revision and publishes one durable transaction (2.579668ms)
+✔ render path refuses legacy split write/commit publication (0.968896ms)
+✔ shared ScoreCore loads in a browser without CommonJS (4.48963ms)
+✔ prompt UI uses qualified intent and saves only after successful compile (3.285339ms)
+✔ release packaging retains shared browser adapter (0.389635ms)
+✔ intent retains prompt, explicit musical constraints and reproducible seed (5.595402ms)
+✔ unsupported meter and contradictory explicit tempo fail rather than silently coerce (0.551028ms)
+✔ unsupported keys and invalid seeds fail explicitly (0.223396ms)
+✔ bass octave edit changes only notes starting inside the chosen section (6.797669ms)
+✔ invalid target, ambiguous IDs and out of range pitches fail atomically (1.454016ms)
+✔ section end is exclusive and straddling-note edits require explicit later policy (1.367435ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 204.942621

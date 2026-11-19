@@ -1,0 +1,158 @@
+▶ A/B failures and retries preserve position, history and truthful UI
+  ✖ open request fails after successful selection (20.803698ms)
+  ✖ audio request fails after successful selection (217.51397ms)
+  ✖ active verification returns false (190.578253ms)
+  ✖ pending request clears previous proof and late rejection preserves newer success (397.586065ms)
+  ✖ opening another lawful revision cannot satisfy the requested binding (251.355053ms)
+  ✖ correct WAV at wrong position fails, then recovers at original position (189.175037ms)
+✖ A/B failures and retries preserve position, history and truthful UI (8511.798468ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8931.366617
+
+✖ failing tests:
+
+test at tests/r2-ab.browser.cjs:294:13
+✖ open request fails after successful selection (20.803698ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'TARGET_LOADING'
+  - 'FAILED'
+  
+      at assertFailed (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:285:12)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:299:33)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:294:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'TARGET_LOADING',
+    expected: 'FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:294:13
+✖ audio request fails after successful selection (217.51397ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'TARGET_LOADING'
+  - 'FAILED'
+  
+      at assertFailed (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:285:12)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:299:33)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:294:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'TARGET_LOADING',
+    expected: 'FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:304:11
+✖ active verification returns false (190.578253ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'TARGET_LOADING'
+  - 'FAILED'
+  
+      at assertFailed (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:285:12)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:307:31)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:304:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'TARGET_LOADING',
+    expected: 'FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:311:11
+✖ pending request clears previous proof and late rejection preserves newer success (397.586065ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      disabled: false,
+      label: 'Selected R2 · current',
+      playback: {
+        artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  ...
+      state: 'COMPLETE',
+  +   status: 'A/B failed: late outage'
+  -   status: 'Audio verified. Ready to hear.'
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:330:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:311:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: 'COMPLETE', proof: { fromRevisionId: null, toRevisionId: 'e1f9f07b98973c06ebd5b5748796134d207cbb25bf68e41d74b5016f808333db', fromArtifactId: null, toArtifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', fromPositionSec: 0, toPositionSec: 0 }, playback: { projectId: 'ccf8c1407c40411ea7045e6eed96b3b4', revisionId: 'e1f9f07b98973c06ebd5b5748796134d207cbb25bf68e41d74b5016f808333db', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: 'e1f9f07b98973c06ebd5b5748796134d207cbb25bf68e41d74b5016f808333db' }, label: 'Selected R2 · current', status: 'A/B failed: late outage', disabled: false },
+    expected: { state: 'COMPLETE', proof: { fromRevisionId: null, toRevisionId: 'e1f9f07b98973c06ebd5b5748796134d207cbb25bf68e41d74b5016f808333db', fromArtifactId: null, toArtifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', fromPositionSec: 0, toPositionSec: 0 }, playback: { projectId: 'ccf8c1407c40411ea7045e6eed96b3b4', revisionId: 'e1f9f07b98973c06ebd5b5748796134d207cbb25bf68e41d74b5016f808333db', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: 'e1f9f07b98973c06ebd5b5748796134d207cbb25bf68e41d74b5016f808333db' }, label: 'Selected R2 · current', status: 'Audio verified. Ready to hear.', disabled: false },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:339:11
+✖ opening another lawful revision cannot satisfy the requested binding (251.355053ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'COMPLETE'
+  - 'FAILED'
+  
+      at assertFailed (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:285:12)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:343:31)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:339:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'COMPLETE',
+    expected: 'FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:347:11
+✖ correct WAV at wrong position fails, then recovers at original position (189.175037ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'COMPLETE'
+  - 'FAILED'
+  
+      at assertFailed (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:285:12)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:356:31)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/ns-baseline/tests/r2-ab.browser.cjs:347:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'COMPLETE',
+    expected: 'FAILED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
