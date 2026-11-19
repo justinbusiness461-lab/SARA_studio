@@ -1,7 +1,7 @@
 """Host-registered Eleven Music transport for Studio's native GenerationAttempt.
 
 No project/revision/CAS authority lives here. No fixture or silent fallback.
-The current 16 MiB Studio artifact ceiling limits this adapter to <= 90 s.
+M045 has a bounded 210-second PCM16 allowance; generic Studio exports remain unchanged.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ ENDPOINT = "https://api.elevenlabs.io/v1/music"
 MODEL_ID = "music_v2_5"
 MODEL_VERSION = "elevenlabs-music-v2.5"
 MAX_UPSTREAM_BYTES = 20 * 1024 * 1024
-MAX_WAV_BYTES = 16 * 1024 * 1024
+MAX_WAV_BYTES = 40 * 1024 * 1024
 
 class ProviderUnavailable(RuntimeError):
     pass
@@ -49,7 +49,7 @@ class ElevenMusicProvider:
         if not isinstance(params, dict) or set(params) - {"music_length_ms", "force_instrumental"}:
             raise ValueError("UNSUPPORTED_PROVIDER_PARAMETERS")
         duration_ms = params.get("music_length_ms", 15000)
-        if type(duration_ms) is not int or not 3000 <= duration_ms <= 90000:
+        if type(duration_ms) is not int or not 3000 <= duration_ms <= 210000:
             raise ValueError("DURATION_OUTSIDE_NATIVE_ARTIFACT_LIMIT")
         if type(params.get("force_instrumental", False)) is not bool:
             raise ValueError("INVALID_INSTRUMENTAL_PARAMETER")
@@ -97,7 +97,7 @@ class ElevenMusicProvider:
                 ["ffmpeg", "-nostdin", "-y", "-hide_banner", "-loglevel", "error",
                  "-f", "mp3", "-i", "pipe:0", "-vn",
                  "-ac", "2", "-ar", "44100", "-c:a", "pcm_s16le",
-                 "-t", "90", "-f", "wav", str(decoded_path)],
+                 "-t", "210", "-f", "wav", str(decoded_path)],
                 input=raw, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 check=False, timeout=45,
             )
