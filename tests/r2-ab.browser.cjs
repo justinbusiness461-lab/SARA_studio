@@ -369,3 +369,76 @@ test('A/B failures and retries preserve position, history and truthful UI', { ti
     assert.deepEqual(opened.body.revision.outputArtifactIds, [source.artifactId]);
   }
 });
+
+test('opening a different project supersedes outstanding A/B transport work', { timeout: 150000 }, async t => {
+  const workspace = mkdtempSync(join(tmpdir(), 'songforge-ab-open-'));
+  const studio = await boot(workspace);
+  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH });
+  t.after(async () => {
+    await browser.close();
+    await studio.stop();
+    rmSync(workspace, { recursive: true, force: true });
+  });
+  const page = await pageFor(browser, studio.url);
+  async function generate(prompt) {
+    await page.locator('#prompt').fill(prompt);
+    await page.locator('#btnCompile').click();
+    await page.waitForFunction(() => !!window.__M044_PLAYBACK_PROOF__, null, { timeout: 90000 });
+    return page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
+  }
+  async function open(id) {
+    await page.locator('#projectId').fill(id);
+    await page.evaluate(() => document.querySelector('#btnOpenProject').onclick());
+  }
+  const destination = await generate('84 BPM A minor country instrumental');
+  await page.locator('#btnNewProject').click();
+  const original = await generate('96 BPM E minor dark Southern hip-hop instrumental');
+  assert.notEqual(original.projectId, destination.projectId);
+  await page.locator('#btnOctaveEdit').click();
+  await page.waitForFunction(id => window.__M044_PLAYBACK_PROOF__ &&
+    window.__M044_PLAYBACK_PROOF__.revisionId !== id, original.revisionId, { timeout: 90000 });
+
+  const state = () => page.evaluate(() => ({
+    project: document.querySelector('#projectId').value,
+    transport: verifiedPlayback && verifiedPlaybackProof(verifiedPlayback),
+    playback: window.__M044_PLAYBACK_PROOF__,
+    comparison: window.__M044_AB_PROOF__,
+    phase: window.__M044_AB_SWITCH__.state,
+    label: document.querySelector('#abStatus').textContent,
+    playDisabled: document.querySelector('#btnPlay').disabled,
+  }));
+  for (const lateResult of ['success', 'failure']) {
+    await t.test('late ' + lateResult + ' preserves the opened project', async () => {
+      await open(original.projectId);
+      const held = Promise.withResolvers();
+      const release = Promise.withResolvers();
+      const path = '**/api/projects/audio';
+      await page.route(path, async route => {
+        const request = route.request().postDataJSON();
+        if (request.projectId !== original.projectId || request.revisionId !== original.revisionId) {
+          return route.continue();
+        }
+        held.resolve();
+        await release.promise;
+        if (lateResult === 'success') return route.continue();
+        return route.fulfill({ status: 503, json: { error: 'delayed audio failure' } });
+      });
+      const old = page.evaluate(() => document.querySelector('#btnABR1').onclick());
+      try {
+        await held.promise;
+        await open(destination.projectId);
+        const before = await state();
+        assert.deepEqual(before.playback, destination);
+        release.resolve();
+        await old;
+        assert.deepEqual(await state(), before);
+        assert.equal(before.phase, 'IDLE');
+        assert.equal(before.comparison, null);
+        assert.deepEqual(before.transport, destination);
+        assert.equal(before.playDisabled, false);
+      } finally {
+        release.resolve(); await old; await page.unroute(path);
+      }
+    });
+  }
+});

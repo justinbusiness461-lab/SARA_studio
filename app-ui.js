@@ -649,6 +649,18 @@ async function applyVerse2BassOctave() {
 let abOrigin = null;
 let activeABSwitch = null;
 
+function resetProjectComparison() {
+  abRevisions = { r1: null, r2: null };
+  abOrigin = null;
+  abRequestGeneration++;
+  if (activeABSwitch) activeABSwitch.abort();
+  window.__M044_AB_PROOF__ = null;
+  window.__M044_AB_SWITCH__ = { state: 'IDLE', generation: abRequestGeneration, targetRevisionId: null };
+  clearVerifiedPlayback();
+  playing = false;
+  setABControls();
+}
+
 async function restoreABPosition(media, position, signal) {
   if (!Number.isFinite(position) || position < 0 || position > media.duration) {
     throw new Error('Selected audio does not cover the comparison position');
@@ -832,7 +844,7 @@ async function restoreProjectFromStorage() {
   if ($('title')) $('title').value = result.songSpec.title || '';
   if ($('prompt')) $('prompt').value = result.songSpec.prompt || '';
   render();
-  clearVerifiedPlayback();
+  resetProjectComparison();
   setStatus('Opened durable revision · ' + result.revision.revisionId + ' · Verifying audio…', 'warn');
   try {
     await verifyPlayableRevision(result);
@@ -1434,13 +1446,7 @@ setABControls();
 if ($('btnOpenProject')) $('btnOpenProject').onclick = () => restoreProjectFromStorage().catch(e => setStatus('Open failed: ' + e.message, 'warn'));
 if ($('btnNewProject')) $('btnNewProject').onclick = () => {
   durableProjectRef = null; durableSourceAssets = [];
-  abRevisions = { r1: null, r2: null };
-  abRequestGeneration++;
-  if (activeABSwitch) activeABSwitch.abort();
-  window.__M044_AB_PROOF__ = null;
-  window.__M044_AB_SWITCH__ = { state: 'IDLE', generation: abRequestGeneration, targetRevisionId: null };
-  clearVerifiedPlayback();
-  setABControls();
+  resetProjectComparison();
   renderLyricAuthority(null);
   if ($('projectId')) $('projectId').value = '';
   if ($('projectRevision')) $('projectRevision').textContent = 'Unsaved draft — no durable project yet';
