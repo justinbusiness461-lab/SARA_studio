@@ -39,13 +39,13 @@ jobs:
           set -euo pipefail
           PYTHONPATH=tools:tests python3 -m unittest discover -s tests -p 'test_*.py' -v 2>&1 | tee /tmp/m045-python.log
           ! grep -E 'skipped=[1-9][0-9]*' /tmp/m045-python.log
-      - name: All 21 Node tests, including Playwright
+      - name: All 22 Node tests, including Playwright
         shell: bash
         run: |
           set -euo pipefail
           node --test --test-concurrency=1 tests/*.cjs 2>&1 | tee /tmp/m045-node.log
-          grep -Eq '^# tests 21$' /tmp/m045-node.log
-          grep -Eq '^# pass 21$' /tmp/m045-node.log
+          grep -Eq '^# tests 22$' /tmp/m045-node.log
+          grep -Eq '^# pass 22$' /tmp/m045-node.log
           grep -Eq '^# fail 0$' /tmp/m045-node.log
           grep -Eq '^# skipped 0$' /tmp/m045-node.log
       - name: Retain exact regression logs
