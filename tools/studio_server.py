@@ -106,6 +106,29 @@ def make_m045_native_owner(root):
             revision = dict(revision)
             revision["is_current"] = (revision["revisionId"] == manifest["currentRevisionId"])
             found[revision["revisionId"]] = revision
+        # Consume Studio's lawful historical-render association authority.
+        # These receipts are not an alternative CAS owner or current pointer.
+        history = directory / "historical-renders"
+        if history.is_dir():
+            for receipt_file in sorted(history.glob("m045:*.json")):
+                receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+                operation_id = (receipt.get("operation") or {}).get("id")
+                rid = receipt.get("revisionId")
+                if (not isinstance(operation_id, str) or not operation_id.startswith("m045:att_")
+                        or receipt_file.name != operation_id + ".json"
+                        or receipt.get("projectId") != pid or rid not in found
+                        or receipt.get("songSpecDigest") != found[rid]["songSpecDigest"]
+                        or receipt.get("productionTimelineDigest") != found[rid]["productionTimelineDigest"]):
+                    raise ProjectConflict("M045 historical identity mismatch")
+                authorized = project_operation(root, {"projectId": pid, "revisionId": rid},
+                                               principal_id=LOCAL_PRINCIPAL_ID)
+                authorized_digests = {binding["artifactId"] for binding in
+                                      authorized.get("historicalOutputBindings", [])}
+                if (not isinstance(receipt.get("artifactIds"), list)
+                        or len(receipt["artifactIds"]) != 1
+                        or receipt["artifactIds"][0] not in authorized_digests):
+                    raise ProjectConflict("M045 historical binding invalid")
+                found[rid].setdefault("historicalGenerationAttempts", []).append(operation_id[5:])
         return found
 
     def publish(data):
@@ -123,6 +146,17 @@ def make_m045_native_owner(root):
             "operationId": "m045:" + kwargs["attempt_id"],
             "operationContext": {"kind": "m045_generation", "attemptId": kwargs["attempt_id"]},
         }
+        current = project_operation(root, {"projectId": kwargs["project_id"]},
+                                    principal_id=LOCAL_PRINCIPAL_ID)["manifest"]["currentRevisionId"]
+        if current != kwargs["expected_current_revision_id"]:
+            # Historical renders may bind to an ancestor but never promote it.
+            # project_operation verifies ancestry, exact source SongSpec, digest
+            # identity, media validity and durable historical association.
+            request["operationContext"] = {
+                "kind": "render",
+                "sourceRevisionId": kwargs["expected_current_revision_id"],
+                "attemptId": kwargs["attempt_id"],
+            }
         return project_operation(root, request, commit=True, principal_id=LOCAL_PRINCIPAL_ID)
 
     return GenerationAttemptOwner(
