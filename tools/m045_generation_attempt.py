@@ -218,7 +218,8 @@ class GenerationAttemptOwner:
     def _find_revision(self, project_id: str, attempt_id: str, idempotency_key: str) -> Optional[Dict[str, Any]]:
         for revision in self.list_project_revisions(project_id).values():
             operation = revision.get("operation") or {}
-            if (revision.get("attemptId") == attempt_id
+            if (attempt_id in revision.get("historicalGenerationAttempts", [])
+                    or revision.get("attemptId") == attempt_id
                     or revision.get("idempotencyKey") == idempotency_key
                     or operation.get("id") == "m045:" + attempt_id):
                 return revision
