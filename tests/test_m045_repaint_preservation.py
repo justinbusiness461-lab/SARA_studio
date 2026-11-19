@@ -33,3 +33,45 @@ class RepaintPreservationTests(unittest.TestCase):
             bar_sample_window({**spec,"timebase":{**spec["timebase"],"initial_bpm":0}},2,3,441000)
         with self.assertRaisesRegex(ValueError,"METER"):
             bar_sample_window({**spec,"timebase":{**spec["timebase"],"meter":"6/8"}},2,3,441000)
+
+class RepaintCrossfadeTests(unittest.TestCase):
+    def test_five_ms_cosine_removes_dc_boundary_step_without_touching_outside(self):
+        import struct
+        start, end = 500, 1500
+        base = wav(2000, struct.pack('<hh', 0, 0))
+        candidate = wav(2000, struct.pack('<hh', 16000, 16000))
+        output, proof = splice_exact_region(base, candidate, start, end)
+        original, _ = read_pcm16_wav(base)
+        result, _ = read_pcm16_wav(output)
+        self.assertEqual(proof['fade_samples'], 220)
+        self.assertEqual(result[:start*4], original[:start*4])
+        self.assertEqual(result[end*4:], original[end*4:])
+        channel = [struct.unpack_from('<h',result,i*4)[0] for i in range(2000)]
+        self.assertLess(max(abs(channel[i]-channel[i-1]) for i in range(start-1,start+221)),120)
+        self.assertLess(max(abs(channel[i]-channel[i-1]) for i in range(end-221,end+1)),120)
+        self.assertEqual(channel[start+221], 16000)
+        self.assertEqual(channel[end-221], 16000)
+
+    def test_short_window_clamps_fades_without_overlapping_or_bleed(self):
+        import struct
+        base = wav(100,struct.pack('<hh',-1000,-1000))
+        candidate = wav(100,struct.pack('<hh',1000,1000))
+        for width in (1,2,3,4,5,8,9,16):
+            start = 40
+            end = start+width
+            output, proof=splice_exact_region(base,candidate,start,end)
+            a,_=read_pcm16_wav(base)
+            b,_=read_pcm16_wav(output)
+            self.assertEqual(proof['fade_samples'],width//4)
+            self.assertEqual(b[:start*4],a[:start*4])
+            self.assertEqual(b[end*4:],a[end*4:])
+            self.assertEqual(len(b),len(a))
+
+    def test_signed_pcm16_extremes_do_not_overflow(self):
+        import struct
+        base=wav(1000,struct.pack('<hh',-32768,32767))
+        candidate=wav(1000,struct.pack('<hh',32767,-32768))
+        out,proof=splice_exact_region(base,candidate,300,700)
+        pcm,_=read_pcm16_wav(out)
+        self.assertEqual(len(pcm),4000)
+        self.assertEqual(proof['fade_samples'],100)
