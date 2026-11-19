@@ -1,0 +1,95 @@
+✔ Studio loads ScoreCore, persists Generate, and reopens the exact revision (4471.699014ms)
+✔ Installed Studio precaches the matching ScoreCore adapter (730.715918ms)
+✔ Generate reaches verified revision-bound WAV before Play is enabled (5025.512848ms)
+✔ audio retrieval failure never presents Generate as playable (3897.256668ms)
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53892)
+Traceback (most recent call last):
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 1029, in do_POST
+    return self._json(200, project_operation(EXPORT_ROOT, payload, commit=not path.endswith("/open"), lyric=path.endswith("/lyrics"), principal_id=principal_id))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 750, in project_operation
+    revision, spec, timeline = project_revision(root, directory, pid, rid)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 306, in project_revision
+    revision = json.loads(path.read_text())
+                          ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/songforge-r1-reopen-WZlWfF/projects/6aa056b63caf45f38e3ad2d377f93a14/revisions/8239e5078187a067575d6c5209808b948de86ee8acdc6a5600e49652f06bb3c0.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 923, in __init__
+    super().__init__(*args, directory=str(ROOT), **kwargs)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/server.py", line 676, in __init__
+    super().__init__(*args, **kwargs)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 766, in __init__
+    self.handle()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/server.py", line 440, in handle
+    self.handle_one_request()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/server.py", line 428, in handle_one_request
+    method()
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 1033, in do_POST
+    return self._json(400, {"status": "ERROR", "error": "invalid or unavailable project authority"})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 979, in _json
+    self.wfile.write(body)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+✖ fresh Studio process reopens exact R1 and refetches same authorized WAV (4217.346217ms)
+✔ Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec (7545.189745ms)
+✔ R1/R2 A-B selects exact revision audio and preserves musical position (7481.022354ms)
+✔ late R1 A-B response cannot replace newer R2 selection (7656.766887ms)
+✔ A/B exposes completion only after transport, proof, artifact and position agree (7469.448714ms)
+▶ A/B failures and retries preserve position, history and truthful UI
+  ✔ open request fails after successful selection (11.093936ms)
+  ✔ audio request fails after successful selection (245.002736ms)
+  ✔ active verification returns false (297.383256ms)
+  ✔ pending request clears previous proof and late rejection preserves newer success (479.669458ms)
+  ✔ opening another lawful revision cannot satisfy the requested binding (78.501501ms)
+  ✔ correct WAV at wrong position fails, then recovers at original position (436.38818ms)
+✔ A/B failures and retries preserve position, history and truthful UI (8660.118749ms)
+▶ opening a different project supersedes outstanding A/B transport work
+  ✔ late success preserves the opened project (698.575559ms)
+  ✔ late failure preserves the opened project (546.70203ms)
+  ✔ outstanding open success preserves B (242.412833ms)
+  ✔ outstanding audio success preserves B (332.302887ms)
+  ✔ outstanding ancestry success preserves B (471.214238ms)
+  ✔ outstanding open failure preserves B (220.60861ms)
+  ✔ outstanding audio failure preserves B (320.328618ms)
+  ✔ outstanding ancestry failure preserves B (359.571083ms)
+  ✔ outstanding open success preserves new draft (73.860695ms)
+  ✔ failure of the currently requested project remains visible (454.272155ms)
+✔ opening a different project supersedes outstanding A/B transport work (14075.180709ms)
+✔ fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B (8662.44658ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 27
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59058.501713
+
+✖ failing tests:
+
+test at tests/r1-playback.browser.cjs:108:1
+✖ fresh Studio process reopens exact R1 and refetches same authorized WAV (4217.346217ms)
+  TypeError [Error]: Cannot read properties of null (reading 'projectId')
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r1-playback.browser.cjs:138:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)

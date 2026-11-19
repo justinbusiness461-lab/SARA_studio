@@ -1,0 +1,23 @@
+✔ render completion retains captured revision and publishes one durable transaction (2.612808ms)
+✔ render path refuses legacy split write/commit publication (0.908906ms)
+✔ positive control: sequential A then B selects B (3.005979ms)
+✔ newer project B wins when older project A open response arrives last (0.563236ms)
+NS001 audited app-ui.js Git blob: b1459e23966ea419cf2f00c4a48063fd75ba4636
+✔ older project A audio verification cannot overwrite B transport (9.321853ms)
+✔ shared ScoreCore loads in a browser without CommonJS (4.534406ms)
+✔ prompt UI uses qualified intent and saves only after successful compile (3.506431ms)
+✔ release packaging retains shared browser adapter (0.728555ms)
+✔ intent retains prompt, explicit musical constraints and reproducible seed (5.969033ms)
+✔ unsupported meter and contradictory explicit tempo fail rather than silently coerce (0.777018ms)
+✔ unsupported keys and invalid seeds fail explicitly (0.401373ms)
+✔ bass octave edit changes only notes starting inside the chosen section (5.786899ms)
+✔ invalid target, ambiguous IDs and out of range pitches fail atomically (1.704653ms)
+✔ section end is exclusive and straddling-note edits require explicit later policy (1.626995ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 243.190698
