@@ -61,6 +61,7 @@ class ElevenProviderTests(unittest.TestCase):
             result = self._run(p, "idem-eleven-valid")
         self.assertEqual(result["state"], "COMMITTED")
         self.assertEqual(result["attempt"]["provenance"]["preservation_tier"], "P3")
+        self.assertEqual(result["attempt"]["provenance"]["rights_status"], "PROVIDER_TERMS_UNVERIFIED")
         self.assertEqual(result["attempt"]["provenance"]["model_id"], "music_v2_5")
         self.assertEqual(result["attempt"]["provenance"]["provider_song_id"], "song-provider-1")
         self.assertEqual(result["attempt"]["media"]["sample_rate"], 44100)
