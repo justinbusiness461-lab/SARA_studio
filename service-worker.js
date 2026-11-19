@@ -1,5 +1,5 @@
 /* SongForge PWA — 2.20.0 M043 candidate */
-const CACHE_NAME = 'pulseforge-songforge-v2.20.0-m044-prompt';
+const CACHE_NAME = 'pulseforge-songforge-v2.20.0-m044-ab-overlapping-opens';
 const ASSETS = [
   './',
   './index.html',

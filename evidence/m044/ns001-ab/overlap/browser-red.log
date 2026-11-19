@@ -1,0 +1,511 @@
+▶ opening a different project supersedes outstanding A/B transport work
+  ✔ late success preserves the opened project (694.507406ms)
+  ✔ late failure preserves the opened project (485.221773ms)
+  ✖ outstanding open success preserves B (504.658305ms)
+  ✖ outstanding audio success preserves B (537.970301ms)
+  ✖ outstanding ancestry success preserves B (459.772133ms)
+  ✖ outstanding open failure preserves B (211.068172ms)
+  ✖ outstanding audio failure preserves B (261.678366ms)
+  ✖ outstanding ancestry failure preserves B (334.64616ms)
+  ✖ outstanding open success preserves new draft (279.736182ms)
+  ✖ failure of the currently requested project remains visible (184.987906ms)
+✖ opening a different project supersedes outstanding A/B transport work (15122.127742ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 2
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15595.426316
+
+✖ failing tests:
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding open success preserves B (504.658305ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   abStatus: 'Selected R2 · current',
+  +   address: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +   cache: '{"projectId":"75ebbb0a3c1c4a4493618fddb98fa0ab","revisionId":"0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb"}',
+  -   abStatus: 'A/B unavailable until R2 is verified',
+  -   address: 'cf27d677c42d44fb8bfa7717437effac',
+  -   cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+      playDisabled: false,
+      playback: {
+  +     artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87'
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+      },
+      project: {
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb'
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+      },
+  +   prompt: '96 BPM E minor dark Southern hip-hop instrumental',
+  +   revisionLabel: 'Saved revision: 0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  -   prompt: '84 BPM A minor country instrumental',
+  -   revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+      revisions: {
+        r1: {
+  +       artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '4ff23a2dd0e0dac3dd852ccc15cc899515cf477dbfa0f127f5217f66726832f5'
+  -       artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -       projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -       revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+        },
+  +     r2: {
+  +       artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb'
+  +     }
+  -     r2: null
+      },
+      specTitle: 'BAD HABIT',
+      status: 'Audio verified. Ready to hear.',
+      title: 'BAD HABIT',
+      transport: {
+  +     artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87'
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+      }
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, address: '75ebbb0a3c1c4a4493618fddb98fa0ab', cache: '{"projectId":"75ebbb0a3c1c4a4493618fddb98fa0ab","revisionId":"0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb"}', title: 'BAD HABIT', prompt: '96 BPM E minor dark Southern hip-hop instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: [Object] }, playback: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, transport: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', status: 'Audio verified. Ready to hear.', abStatus: 'Selected R2 · current' },
+    expected: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding audio success preserves B (537.970301ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+  +   abStatus: 'Selected R2 · current',
+  -   abStatus: 'A/B unavailable until R2 is verified',
+      address: 'cf27d677c42d44fb8bfa7717437effac',
+      cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+      playDisabled: false,
+      playback: {
+  +     artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87'
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+      },
+      project: {
+        projectId: 'cf27d677c42d44fb8bfa7717437effac',
+        revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+      },
+  ...
+        r1: {
+  +       artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '4ff23a2dd0e0dac3dd852ccc15cc899515cf477dbfa0f127f5217f66726832f5'
+  -       artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -       projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -       revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+        },
+  +     r2: {
+  +       artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb'
+  +     }
+  -     r2: null
+      },
+      specTitle: 'BAD HABIT',
+      status: 'Audio verified. Ready to hear.',
+      title: 'BAD HABIT',
+      transport: {
+  +     artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87'
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+      }
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: [Object] }, playback: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, transport: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'Selected R2 · current' },
+    expected: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding ancestry success preserves B (459.772133ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+  +   abStatus: 'Selected R2 · current',
+  -   abStatus: 'A/B unavailable until R2 is verified',
+      address: 'cf27d677c42d44fb8bfa7717437effac',
+      cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+      playDisabled: false,
+      playback: {
+  ...
+        r1: {
+  +       artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '4ff23a2dd0e0dac3dd852ccc15cc899515cf477dbfa0f127f5217f66726832f5'
+  -       artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -       projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -       revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+        },
+  +     r2: {
+  +       artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb'
+  +     }
+  -     r2: null
+      },
+      specTitle: 'BAD HABIT',
+      status: 'Audio verified. Ready to hear.',
+      title: 'BAD HABIT',
+      transport: {
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: [Object] }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'Selected R2 · current' },
+    expected: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding open failure preserves B (211.068172ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      abStatus: 'A/B unavailable until R2 is verified',
+      address: 'cf27d677c42d44fb8bfa7717437effac',
+      cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+  ...
+      specTitle: 'BAD HABIT',
+  +   status: 'Open failed: obsolete request failed',
+  -   status: 'Audio verified. Ready to hear.',
+      title: 'BAD HABIT',
+      transport: {
+        artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+        durationSec: 57.642857,
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Open failed: obsolete request failed', abStatus: 'A/B unavailable until R2 is verified' },
+    expected: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding audio failure preserves B (261.678366ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      abStatus: 'A/B unavailable until R2 is verified',
+      address: 'cf27d677c42d44fb8bfa7717437effac',
+      cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+  +   playDisabled: true,
+  +   playback: null,
+  -   playDisabled: false,
+  -   playback: {
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -     decodedWavValidity: true,
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  -   },
+      project: {
+        projectId: 'cf27d677c42d44fb8bfa7717437effac',
+        revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+      },
+      prompt: '84 BPM A minor country instrumental',
+      revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+      revisions: {
+  +     r1: null,
+  -     r1: {
+  -       artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -       projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -       revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+  -     },
+        r2: null
+      },
+      specTitle: 'BAD HABIT',
+  +   status: 'Audio unavailable: obsolete request failed',
+  -   status: 'Audio verified. Ready to hear.',
+      title: 'BAD HABIT',
+  +   transport: null
+  -   transport: {
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -     decodedWavValidity: true,
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  -   }
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: null, r2: null }, playback: null, transport: null, comparison: null, playDisabled: true, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio unavailable: obsolete request failed', abStatus: 'A/B unavailable until R2 is verified' },
+    expected: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding ancestry failure preserves B (334.64616ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      abStatus: 'A/B unavailable until R2 is verified',
+      address: 'cf27d677c42d44fb8bfa7717437effac',
+      cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+  +   playDisabled: true,
+  +   playback: null,
+  -   playDisabled: false,
+  -   playback: {
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -     decodedWavValidity: true,
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  -   },
+      project: {
+        projectId: 'cf27d677c42d44fb8bfa7717437effac',
+        revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+      },
+      prompt: '84 BPM A minor country instrumental',
+      revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+      revisions: {
+  +     r1: null,
+  -     r1: {
+  -       artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -       projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -       revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0'
+  -     },
+        r2: null
+      },
+      specTitle: 'BAD HABIT',
+  +   status: 'obsolete request failed',
+  -   status: 'Audio verified. Ready to hear.',
+      title: 'BAD HABIT',
+  +   transport: null
+  -   transport: {
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -     decodedWavValidity: true,
+  -     durationSec: 57.642857,
+  -     projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  -     revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  -   }
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: null, r2: null }, playback: null, transport: null, comparison: null, playDisabled: true, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'obsolete request failed', abStatus: 'A/B unavailable until R2 is verified' },
+    expected: { project: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, address: 'cf27d677c42d44fb8bfa7717437effac', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: null }, playback: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, transport: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', status: 'Audio verified. Ready to hear.', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:467:13
+✖ outstanding open success preserves new draft (279.736182ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   abStatus: 'Selected R2 · current',
+  +   address: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +   cache: '{"projectId":"75ebbb0a3c1c4a4493618fddb98fa0ab","revisionId":"0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb"}',
+  -   abStatus: 'A/B unavailable until R2 is verified',
+  -   address: '',
+  -   cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}',
+      comparison: null,
+  +   playDisabled: false,
+  +   playback: {
+  +     artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +     decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87'
+  +   },
+  +   project: {
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb'
+  +   },
+  +   prompt: '96 BPM E minor dark Southern hip-hop instrumental',
+  +   revisionLabel: 'Saved revision: 0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  -   playDisabled: true,
+  -   playback: null,
+  -   project: null,
+  -   prompt: '84 BPM A minor country instrumental',
+  -   revisionLabel: 'Unsaved draft — no durable project yet',
+      revisions: {
+  +     r1: {
+  +       artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '4ff23a2dd0e0dac3dd852ccc15cc899515cf477dbfa0f127f5217f66726832f5'
+  +     },
+  +     r2: {
+  +       artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +       projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +       revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb'
+  +     }
+  -     r1: null,
+  -     r2: null
+      },
+      specTitle: 'BAD HABIT',
+  +   status: 'Audio verified. Ready to hear.',
+  -   status: 'New project draft · Save to create a durable project',
+      title: 'BAD HABIT',
+  +   transport: {
+  +     artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +     decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab',
+  +     revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb',
+  +     wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87'
+  +   }
+  -   transport: null
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:491:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:467:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, address: '75ebbb0a3c1c4a4493618fddb98fa0ab', cache: '{"projectId":"75ebbb0a3c1c4a4493618fddb98fa0ab","revisionId":"0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb"}', title: 'BAD HABIT', prompt: '96 BPM E minor dark Southern hip-hop instrumental', specTitle: 'BAD HABIT', revisions: { r1: [Object], r2: [Object] }, playback: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, transport: { projectId: '75ebbb0a3c1c4a4493618fddb98fa0ab', revisionId: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', artifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', wavSha256: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb' }, comparison: null, playDisabled: false, revisionLabel: 'Saved revision: 0040b4e9eb0503d5aace3629d28d14d39a729ba686d9d36d3c760a4528af29cb', status: 'Audio verified. Ready to hear.', abStatus: 'Selected R2 · current' },
+    expected: { project: null, address: '', cache: '{"projectId":"cf27d677c42d44fb8bfa7717437effac","revisionId":"37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0"}', title: 'BAD HABIT', prompt: '84 BPM A minor country instrumental', specTitle: 'BAD HABIT', revisions: { r1: null, r2: null }, playback: null, transport: null, comparison: null, playDisabled: true, revisionLabel: 'Unsaved draft — no durable project yet', status: 'New project draft · Save to create a durable project', abStatus: 'A/B unavailable until R2 is verified' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:500:11
+✖ failure of the currently requested project remains visible (184.987906ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  +   decodedWavValidity: true,
+  +   durationSec: 57.642857,
+  +   projectId: 'cf27d677c42d44fb8bfa7717437effac',
+  +   revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  +   transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0',
+  +   wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:505:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:500:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { projectId: 'cf27d677c42d44fb8bfa7717437effac', revisionId: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: '37cecc42b39fc499d7943fa4cc1f39bf2cddc5fc123d0646d683026c4cd7dfa0' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

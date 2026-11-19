@@ -1,0 +1,30 @@
+✔ Studio loads ScoreCore, persists Generate, and reopens the exact revision (4074.138509ms)
+✔ Installed Studio precaches the matching ScoreCore adapter (326.661527ms)
+✔ Generate reaches verified revision-bound WAV before Play is enabled (4288.910324ms)
+✔ audio retrieval failure never presents Generate as playable (3700.338169ms)
+✔ fresh Studio process reopens exact R1 and refetches same authorized WAV (4141.065481ms)
+✔ Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec (7385.839224ms)
+✔ R1/R2 A-B selects exact revision audio and preserves musical position (8281.358779ms)
+✔ late R1 A-B response cannot replace newer R2 selection (9584.764841ms)
+✔ A/B exposes completion only after transport, proof, artifact and position agree (7036.472011ms)
+▶ A/B failures and retries preserve position, history and truthful UI
+  ✔ open request fails after successful selection (12.920562ms)
+  ✔ audio request fails after successful selection (256.259188ms)
+  ✔ active verification returns false (274.175641ms)
+  ✔ pending request clears previous proof and late rejection preserves newer success (298.611306ms)
+  ✔ opening another lawful revision cannot satisfy the requested binding (81.254112ms)
+  ✔ correct WAV at wrong position fails, then recovers at original position (481.182921ms)
+✔ A/B failures and retries preserve position, history and truthful UI (7998.412035ms)
+▶ opening a different project supersedes outstanding A/B transport work
+  ✔ late success preserves the opened project (949.673964ms)
+  ✔ late failure preserves the opened project (545.823903ms)
+✔ opening a different project supersedes outstanding A/B transport work (12122.269725ms)
+✔ fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B (9128.395523ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57596.192903

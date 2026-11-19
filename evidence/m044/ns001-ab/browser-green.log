@@ -1,0 +1,74 @@
+✔ Studio loads ScoreCore, persists Generate, and reopens the exact revision (3914.841677ms)
+✔ Installed Studio precaches the matching ScoreCore adapter (311.247335ms)
+✔ Generate reaches verified revision-bound WAV before Play is enabled (3967.279694ms)
+✔ audio retrieval failure never presents Generate as playable (3073.162547ms)
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 56538)
+Traceback (most recent call last):
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 1029, in do_POST
+    return self._json(200, project_operation(EXPORT_ROOT, payload, commit=not path.endswith("/open"), lyric=path.endswith("/lyrics"), principal_id=principal_id))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 750, in project_operation
+    revision, spec, timeline = project_revision(root, directory, pid, rid)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 306, in project_revision
+    revision = json.loads(path.read_text())
+                          ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/songforge-r1-reopen-6FGOpi/projects/a0a1482f2caf4d398ff8ab45590206a1/revisions/5f6edcf12c4b0eb9ebb8234f83836d87d514f5ee86064c7c8b12ea80795981be.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 923, in __init__
+    super().__init__(*args, directory=str(ROOT), **kwargs)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/server.py", line 676, in __init__
+    super().__init__(*args, **kwargs)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 766, in __init__
+    self.handle()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/server.py", line 440, in handle
+    self.handle_one_request()
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/http/server.py", line 428, in handle_one_request
+    method()
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 1033, in do_POST
+    return self._json(400, {"status": "ERROR", "error": "invalid or unavailable project authority"})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/35b18be2b628/Studio/tools/studio_server.py", line 979, in _json
+    self.wfile.write(body)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+✔ fresh Studio process reopens exact R1 and refetches same authorized WAV (3984.464049ms)
+✔ Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec (6870.102845ms)
+✔ R1/R2 A-B selects exact revision audio and preserves musical position (7275.820525ms)
+✔ late R1 A-B response cannot replace newer R2 selection (7372.514786ms)
+✔ A/B exposes completion only after transport, proof, artifact and position agree (7125.177586ms)
+▶ A/B failures and retries preserve position, history and truthful UI
+  ✔ open request fails after successful selection (9.0128ms)
+  ✔ audio request fails after successful selection (204.74557ms)
+  ✔ active verification returns false (247.07914ms)
+  ✔ pending request clears previous proof and late rejection preserves newer success (392.265855ms)
+  ✔ opening another lawful revision cannot satisfy the requested binding (75.730368ms)
+  ✔ correct WAV at wrong position fails, then recovers at original position (498.40031ms)
+✔ A/B failures and retries preserve position, history and truthful UI (7794.186053ms)
+✔ fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B (7630.308609ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60678.565219

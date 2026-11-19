@@ -1,0 +1,129 @@
+▶ opening a different project supersedes outstanding A/B transport work
+  ✖ late success preserves the opened project (812.522954ms)
+  ✖ late failure preserves the opened project (520.424744ms)
+✖ opening a different project supersedes outstanding A/B transport work (12106.562612ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12538.766945
+
+✖ failing tests:
+
+test at tests/r2-ab.browser.cjs:411:13
+✖ late success preserves the opened project (812.522954ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   comparison: {
+  +     fromArtifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87',
+  +     fromPositionSec: 0,
+  +     fromRevisionId: 'b5c0dabd7205686ca2f58946ec42635fbb0cd4d94308a5ac50118a5dcaa3c7b0',
+  +     toArtifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  +     toPositionSec: 0,
+  +     toRevisionId: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95'
+  +   },
+  +   label: 'Selected R1 · historical',
+  +   phase: 'COMPLETE',
+  -   comparison: null,
+  -   label: 'A/B unavailable until R2 is verified',
+  -   phase: 'TARGET_LOADING',
+      playDisabled: false,
+      playback: {
+  +     artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '2e4f655cedc14afeb78346551fe17890',
+  +     revisionId: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95',
+  +     transportSelectedRevision: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95',
+  +     wavSha256: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b'
+  -     durationSec: 57.642857,
+  -     projectId: '358ff757eeed47879fe86f7b5620aaa5',
+  -     revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+      },
+      project: '358ff757eeed47879fe86f7b5620aaa5',
+      transport: {
+  +     artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b',
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+        decodedWavValidity: true,
+  +     durationSec: 50.5,
+  +     projectId: '2e4f655cedc14afeb78346551fe17890',
+  +     revisionId: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95',
+  +     transportSelectedRevision: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95',
+  +     wavSha256: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b'
+  -     durationSec: 57.642857,
+  -     projectId: '358ff757eeed47879fe86f7b5620aaa5',
+  -     revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+      }
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:434:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:411:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: '358ff757eeed47879fe86f7b5620aaa5', transport: { projectId: '2e4f655cedc14afeb78346551fe17890', revisionId: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95', artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b', wavSha256: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95' }, playback: { projectId: '2e4f655cedc14afeb78346551fe17890', revisionId: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95', artifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b', wavSha256: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b', decodedWavValidity: true, durationSec: 50.5, transportSelectedRevision: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95' }, comparison: { fromRevisionId: 'b5c0dabd7205686ca2f58946ec42635fbb0cd4d94308a5ac50118a5dcaa3c7b0', fromPositionSec: 0, fromArtifactId: 'b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87', toRevisionId: '77df31eb220cb1750be3f45ede9b807cf26f49d5a1887072dfd03f1220acbc95', toArtifactId: '81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b', toPositionSec: 0 }, phase: 'COMPLETE', label: 'Selected R1 · historical', playDisabled: false },
+    expected: { project: '358ff757eeed47879fe86f7b5620aaa5', transport: { projectId: '358ff757eeed47879fe86f7b5620aaa5', revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca' }, playback: { projectId: '358ff757eeed47879fe86f7b5620aaa5', revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca' }, comparison: null, phase: 'TARGET_LOADING', label: 'A/B unavailable until R2 is verified', playDisabled: false },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/r2-ab.browser.cjs:411:13
+✖ late failure preserves the opened project (520.424744ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      comparison: null,
+  +   label: 'A/B failed · Audio unavailable: delayed audio failure · Select a revision to retry',
+  +   phase: 'FAILED',
+  +   playDisabled: true,
+  +   playback: null,
+  -   label: 'A/B unavailable until R2 is verified',
+  -   phase: 'TARGET_LOADING',
+  -   playDisabled: false,
+  -   playback: {
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -     decodedWavValidity: true,
+  -     durationSec: 57.642857,
+  -     projectId: '358ff757eeed47879fe86f7b5620aaa5',
+  -     revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  -   },
+      project: '358ff757eeed47879fe86f7b5620aaa5',
+  +   transport: null
+  -   transport: {
+  -     artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7',
+  -     decodedWavValidity: true,
+  -     durationSec: 57.642857,
+  -     projectId: '358ff757eeed47879fe86f7b5620aaa5',
+  -     revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca',
+  -     wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7'
+  -   }
+    }
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:434:16)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/r2-ab.browser.cjs:411:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { project: '358ff757eeed47879fe86f7b5620aaa5', transport: null, playback: null, comparison: null, phase: 'FAILED', label: 'A/B failed · Audio unavailable: delayed audio failure · Select a revision to retry', playDisabled: true },
+    expected: { project: '358ff757eeed47879fe86f7b5620aaa5', transport: { projectId: '358ff757eeed47879fe86f7b5620aaa5', revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca' }, playback: { projectId: '358ff757eeed47879fe86f7b5620aaa5', revisionId: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca', artifactId: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', wavSha256: '057b247ebd5a0598c15491ac2e02d6adca26a81ce7d26017ee5a09336e0a9da7', decodedWavValidity: true, durationSec: 57.642857, transportSelectedRevision: 'e0bb605d973a403f051f2f844ca26c95ac300e8a33742e6798a2ca12878770ca' }, comparison: null, phase: 'TARGET_LOADING', label: 'A/B unavailable until R2 is verified', playDisabled: false },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

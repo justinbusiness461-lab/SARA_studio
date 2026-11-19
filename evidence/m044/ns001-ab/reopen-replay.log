@@ -1,0 +1,12 @@
+✔ Generate reaches verified revision-bound WAV before Play is enabled (4255.889782ms)
+✔ audio retrieval failure never presents Generate as playable (3417.37049ms)
+✔ fresh Studio process reopens exact R1 and refetches same authorized WAV (3906.858245ms)
+✔ fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B (9020.446779ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12083.834492

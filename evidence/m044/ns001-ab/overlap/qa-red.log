@@ -1,0 +1,48 @@
+✔ positive control: sequential A then B selects B (1.618463ms)
+✖ RED: newer project B wins when older project A open response arrives last (1.171271ms)
+NS001 audited app-ui.js Git blob: db0220fceb9ef61076e5b1149802ccf3bc8b4c92
+✖ RED: older project A audio verification cannot overwrite B transport (5.26928ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 136.954794
+
+✖ failing tests:
+
+test at tests/ns001-overlapping-project-open.test.cjs:125:1
+✖ RED: newer project B wins when older project A open response arrives last (1.171271ms)
+  AssertionError [ERR_ASSERTION]: Older open response must not replace latest selected project
+  
+  'A' !== 'B'
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/ns001-overlapping-project-open.test.cjs:137:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'A',
+    expected: 'B',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/ns001-overlapping-project-open.test.cjs:141:1
+✖ RED: older project A audio verification cannot overwrite B transport (5.26928ms)
+  AssertionError [ERR_ASSERTION]: Late A audio must not overwrite verified B transport
+  
+  'A' !== 'B'
+  
+      at TestContext.<anonymous> (/workspace/scratch/35b18be2b628/Studio/tests/ns001-overlapping-project-open.test.cjs:158:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'A',
+    expected: 'B',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

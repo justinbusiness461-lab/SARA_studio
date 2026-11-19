@@ -1,0 +1,38 @@
+✔ Studio loads ScoreCore, persists Generate, and reopens the exact revision (4106.648312ms)
+✔ Installed Studio precaches the matching ScoreCore adapter (301.650475ms)
+✔ Generate reaches verified revision-bound WAV before Play is enabled (3989.038371ms)
+✔ audio retrieval failure never presents Generate as playable (3393.764491ms)
+✔ fresh Studio process reopens exact R1 and refetches same authorized WAV (4538.610039ms)
+✔ Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec (7262.459151ms)
+✔ R1/R2 A-B selects exact revision audio and preserves musical position (7485.056995ms)
+✔ late R1 A-B response cannot replace newer R2 selection (7352.864476ms)
+✔ A/B exposes completion only after transport, proof, artifact and position agree (7156.300096ms)
+▶ A/B failures and retries preserve position, history and truthful UI
+  ✔ open request fails after successful selection (12.559903ms)
+  ✔ audio request fails after successful selection (259.788322ms)
+  ✔ active verification returns false (269.236504ms)
+  ✔ pending request clears previous proof and late rejection preserves newer success (416.114433ms)
+  ✔ opening another lawful revision cannot satisfy the requested binding (97.458526ms)
+  ✔ correct WAV at wrong position fails, then recovers at original position (612.083557ms)
+✔ A/B failures and retries preserve position, history and truthful UI (8501.589466ms)
+▶ opening a different project supersedes outstanding A/B transport work
+  ✔ late success preserves the opened project (823.609797ms)
+  ✔ late failure preserves the opened project (596.215127ms)
+  ✔ outstanding open success preserves B (260.38433ms)
+  ✔ outstanding audio success preserves B (323.985412ms)
+  ✔ outstanding ancestry success preserves B (503.665641ms)
+  ✔ outstanding open failure preserves B (267.596546ms)
+  ✔ outstanding audio failure preserves B (267.567678ms)
+  ✔ outstanding ancestry failure preserves B (396.528144ms)
+  ✔ outstanding open success preserves new draft (91.992866ms)
+  ✔ failure of the currently requested project remains visible (434.689473ms)
+✔ opening a different project supersedes outstanding A/B transport work (13711.448049ms)
+✔ fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B (8340.998983ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56609.54432

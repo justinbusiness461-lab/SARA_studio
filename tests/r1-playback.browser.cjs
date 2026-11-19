@@ -132,6 +132,8 @@ test('fresh Studio process reopens exact R1 and refetches same authorized WAV', 
   const audio = await audioP;
   const bytes = await audio.body();
   const digest = crypto.createHash('sha256').update(bytes).digest('hex');
+  // Receiving bytes precedes decode, revision-history lookup and transport publication.
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Audio verified. Ready to hear.');
   const second = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
 
   assert.equal(opened.revision.revisionId, first.revisionId);
