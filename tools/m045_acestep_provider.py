@@ -27,9 +27,13 @@ MODEL_NAME = "acestep-v15-turbo"
 class ProviderUnavailable(RuntimeError):
     pass
 
+class RemoteSubmissionUncertain(ProviderUnavailable):
+    pass
+
 class AceStepProvider:
     model_id = "ace-step-1.5"
     model_version = "ace-step-1.5"
+    supports_remote_resume = True
 
     def __init__(self, *, endpoint_url=None, checkpoint_dir=None, checkpoint_sha256=None,
                  api_key=None, timeout=300, poll_interval=1, max_polls=180):
@@ -123,14 +127,37 @@ class AceStepProvider:
               "thinking":False, **self._music_attributes(song_spec)}
         stage=pathlib.Path(stage_dir)
         started=time.monotonic()
-        released=self._request("/release_task",body)
-        if not isinstance(released,dict) or not isinstance(released.get("task_id"),str) or not released["task_id"]:
-            raise ValueError("ACE_STEP_MISSING_TASK_ID")
-        task_id=released["task_id"]
-        # Durable remote job identity prevents blind retry when polling/download fails.
-        native_atomic_write_bytes(stage/"upstream-task.json",json.dumps(
-            {"task_id":task_id,"provider":"ace_step_native","request_sha256":hashlib.sha256(
-                json.dumps(body,sort_keys=True).encode()).hexdigest()},sort_keys=True).encode())
+        identity = {
+            "endpoint_url": self.endpoint.rstrip("/"),
+            "checkpoint_sha256": self.checkpoint_sha256,
+            "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest(),
+            "provider": "ace_step_native",
+        }
+        task_path = stage / "upstream-task.json"
+        if task_path.is_file():
+            saved = json.loads(task_path.read_text(encoding="utf-8"))
+            if (not isinstance(saved, dict)
+                    or any(saved.get(k) != v for k, v in identity.items())
+                    or not isinstance(saved.get("task_id"), str)
+                    or not saved["task_id"]):
+                raise ValueError("ACE_STEP_REMOTE_TASK_IDENTITY_CONFLICT")
+            task_id = saved["task_id"]
+        else:
+            try:
+                released = self._request("/release_task", body)
+            except ProviderUnavailable as exc:
+                # Upstream might have accepted the task before our connection failed.
+                # No task ID means no lawful way to resume; do not blindly retry.
+                raise RemoteSubmissionUncertain("ACE_STEP_SUBMISSION_OUTCOME_UNKNOWN") from exc
+            if not isinstance(released, dict) or not isinstance(released.get("task_id"), str) or not released["task_id"]:
+                raise RemoteSubmissionUncertain("ACE_STEP_SUBMISSION_MISSING_TASK_ID")
+            task_id = released["task_id"]
+            try:
+                native_atomic_write_bytes(task_path, json.dumps({
+                    **identity, "task_id": task_id
+                }, sort_keys=True).encode("utf-8"))
+            except OSError as exc:
+                raise RemoteSubmissionUncertain("ACE_STEP_ACCEPTED_BUT_TASK_ID_NOT_DURABLE") from exc
         result=None
         for _ in range(self.max_polls):
             rows=self._request("/query_result",{"task_id_list":[task_id]})
