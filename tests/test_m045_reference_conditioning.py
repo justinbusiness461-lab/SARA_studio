@@ -82,7 +82,9 @@ class ReferenceConditioningTests(unittest.TestCase):
             for count in (0,5,True,"3"):
                 with self.assertRaisesRegex(ValueError,"batch_count"):
                     owner.execute_attempt(**{**self.kwargs(),"batch_count":count})
-            with self.assertRaisesRegex(Exception,"MULTI_TAKE_OWNER_NOT_YET_QUALIFIED"):
+            # Valid batch count is now admitted, but source authorization is
+            # still enforced before any remote call.
+            with self.assertRaisesRegex(Exception,"reference audio is not bound"):
                 owner.execute_attempt(**{**self.kwargs(),"batch_count":3})
             network.assert_not_called()
 
