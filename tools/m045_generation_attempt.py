@@ -37,6 +37,7 @@ class AttemptLifecycleState(str, Enum):
     PREPARING = "PREPARING"
     POLL_INTERRUPTED = "POLL_INTERRUPTED"
     SUBMISSION_UNCERTAIN = "SUBMISSION_UNCERTAIN"
+    AWAITING_TAKE_SELECTION = "AWAITING_TAKE_SELECTION"
     FAILED_PRE_COMMIT = "FAILED_PRE_COMMIT"
     ARTIFACT_DURABLE = "ARTIFACT_DURABLE"
     COMMITTED = "COMMITTED"
@@ -164,7 +165,12 @@ class GenerationAttemptOwner:
         self._thread_locks_guard = threading.Lock()
 
     def authenticate_bearer(self, headers: Dict[str, str]) -> str:
-        value = headers.get("Authorization", "")
+        # HTTP field names are case insensitive. The transport may preserve
+        # lowercase names when forwarding headers into the owner dictionary.
+        values = [v for k,v in headers.items() if isinstance(k,str) and k.lower()=="authorization"]
+        if len(values) != 1:
+            raise AttemptSecurityError("authentication required")
+        value = values[0]
         if not isinstance(value, str) or not value.startswith("Bearer ") or not value[7:]:
             raise AttemptSecurityError("authentication required")
         try:
@@ -283,6 +289,244 @@ class GenerationAttemptOwner:
         # key. Never submit a second task: the provider verifies its saved task ID.
         return self.execute_attempt(**retry_fields)
 
+    def read_take_audio(self, *, headers, project_id, idempotency_key, take_index):
+        project_id = _safe(project_id, "project_id")
+        idempotency_key = _safe(idempotency_key, "idempotency_key")
+        self._authorize(headers, project_id, "generate")
+        if type(take_index) is not int:
+            raise ValueError("invalid take index")
+        handle = self._lock(project_id)
+        try:
+            record_path = self._attempt_path(project_id, idempotency_key)
+            attempt = self._load_attempt(record_path)
+            if attempt.get("project_id") != project_id or attempt.get("batch_count",1) <= 1:
+                raise _conflict("multi-take association missing")
+            takes = attempt.get("takes") or []
+            if len(takes) != attempt["batch_count"] or not 0 <= take_index < len(takes):
+                raise _conflict("take unavailable")
+            selected = takes[take_index]
+            if selected.get("take_index") != take_index:
+                raise _conflict("take identity mismatch")
+            digest = selected["artifact_digest"]
+            if not isinstance(digest,str) or not HEX64.fullmatch(digest):
+                raise _conflict("take digest invalid")
+            from studio_server import artifact_bytes, validate_render_audio
+            validate_render_audio(self.data_root, digest)
+            data = artifact_bytes(self.data_root, digest)
+            if hashlib.sha256(data).hexdigest() != digest:
+                raise _conflict("take integrity mismatch")
+            return data
+        finally:
+            self._unlock(handle)
+
+    def select_take(self, *, headers, project_id, idempotency_key,
+                    take_index, expected_current_revision_id):
+        project_id = _safe(project_id, "project_id")
+        idempotency_key = _safe(idempotency_key, "idempotency_key")
+        expected_current_revision_id = _safe(expected_current_revision_id,"expected_current_revision_id")
+        self._authorize(headers, project_id, "generate")
+        if type(take_index) is not int:
+            raise ValueError("invalid take_index")
+        handle = self._lock(project_id)
+        try:
+            path = self._attempt_path(project_id, idempotency_key)
+            attempt = self._load_attempt(path)
+            if attempt.get("project_id") != project_id or attempt.get("batch_count",1) <= 1:
+                raise _conflict("multi-take attempt missing")
+            takes = attempt.get("takes",[])
+            if (len(takes) != attempt["batch_count"]
+                    or not 0 <= take_index < len(takes)
+                    or takes[take_index].get("take_index") != take_index
+                    or attempt.get("state") not in ("AWAITING_TAKE_SELECTION","TAKE_SELECTED","SELECTION_UNCERTAIN")):
+                raise _conflict("take selection not available")
+            existing = (attempt.get("selections") or {}).get(str(take_index))
+            operation_attempt = attempt["attempt_id"] + "-take-" + str(take_index)
+            recovered = self._find_revision(project_id, operation_attempt, idempotency_key+":take:"+str(take_index))
+            if existing or recovered:
+                revision = recovered or self.read_revision(project_id, existing["revision_id"])
+                if revision is None or revision.get("outputArtifactIds") != [takes[take_index]["artifact_digest"]]:
+                    raise _conflict("selected take revision identity mismatch")
+                return {"state":"TAKE_SELECTED","revision":revision,"attempt":attempt,"reconciled":True}
+            current = self.read_revision(project_id, "CURRENT")
+            if not current or current.get("revisionId") != expected_current_revision_id:
+                raise _conflict("stale expected revision")
+            # A take belongs to the SongSpec captured at generation. Only its
+            # original base or a previously selected sibling can be its parent.
+            # Unrelated revisions require a separate explicit rebase operation.
+            lawful_heads={attempt["base_revision_id"]}
+            lawful_heads.update(binding["revision_id"] for binding in
+                               attempt.get("selections",{}).values())
+            if expected_current_revision_id not in lawful_heads:
+                raise _conflict("take selection requires explicit rebase from unrelated revision")
+            from studio_server import project_operation,validate_render_audio
+            principal=self.authenticate_bearer(headers)
+            snapshot=project_operation(self.data_root, {"projectId":project_id},principal_id=principal)
+            if snapshot["revision"]["revisionId"] != expected_current_revision_id:
+                raise _conflict("stale expected revision")
+            digest=takes[take_index]["artifact_digest"]
+            validate_render_audio(self.data_root,digest)
+            attempt["selection_intent"]={"take_index":take_index,
+                "expected_revision_id":expected_current_revision_id}
+            self._save_attempt(path,attempt)
+            try:
+                committed=self.associate_and_commit_revision(
+                    project_id=project_id,expected_current_revision_id=expected_current_revision_id,
+                    base_revision_id=expected_current_revision_id,attempt_id=operation_attempt,
+                    idempotency_key=idempotency_key+":take:"+str(take_index),
+                    artifact_digest=digest,song_spec=snapshot["songSpec"],
+                    source_asset_digests=snapshot["revision"].get("sourceAssetDigests",[]))
+            except Exception as exc:
+                found=self._find_revision(project_id,operation_attempt,idempotency_key+":take:"+str(take_index))
+                if found is None:
+                    attempt["state"]="SELECTION_UNCERTAIN"
+                    self._save_attempt(path,attempt)
+                    raise _conflict("take commit uncertain; reread canonical revision") from exc
+                committed=found
+            revision = committed.get("revision") if isinstance(committed,dict) and "revision" in committed else committed
+            if revision.get("outputArtifactIds") != [digest]:
+                raise _conflict("take commit returned conflicting artifact")
+            attempt.setdefault("selections",{})[str(take_index)]={"revision_id":revision["revisionId"],
+                "artifact_digest":digest}
+            attempt.pop("selection_intent",None)
+            attempt["state"]="TAKE_SELECTED"
+            self._save_attempt(path,attempt)
+            return {"state":"TAKE_SELECTED","revision":revision,"attempt":attempt,"reconciled":False}
+        finally:
+            self._unlock(handle)
+
+    def _execute_multi(self, kwargs, *, project_id, base_revision_id,
+                       expected_revision_id, idempotency_key, model_id, model_version,
+                       synthesize, requested, reference_audio, reference_digest, reference_strength):
+        if not getattr(synthesize,"supports_multitake",False):
+            raise _conflict("multi-take provider not qualified")
+        count=kwargs["batch_count"]
+        digest=_request_digest(kwargs)
+        handle=self._lock(project_id)
+        try:
+            path=self._attempt_path(project_id,idempotency_key)
+            resume=False
+            if path.is_file():
+                attempt=self._load_attempt(path)
+                if attempt.get("request_digest") != digest:
+                    raise _conflict("idempotency key payload conflict")
+                if attempt.get("state") in ("AWAITING_TAKE_SELECTION","TAKE_SELECTED"):
+                    return {"state":attempt["state"],"attempt":attempt,"revision":None,"replayed":True}
+                stage=self._attempt_dir(project_id)/(attempt["attempt_id"]+".stage")
+                saved_task=stage/"upstream-task.json"
+                if (not getattr(synthesize,"supports_remote_resume",False)
+                        or not saved_task.is_file() or saved_task.is_symlink()):
+                    raise _conflict("multi-take completion unknown; no blind retry")
+                resume=True
+            else:
+                current=self.read_revision(project_id,"CURRENT")
+                if not current or current.get("revisionId")!=expected_revision_id:
+                    raise _conflict("stale expected revision")
+                attempt={"attempt_id":"att_"+uuid.uuid4().hex,"project_id":project_id,
+                   "base_revision_id":base_revision_id,"expected_current_revision_id":expected_revision_id,
+                   "idempotency_key":idempotency_key,"request_digest":digest,
+                   "model_id":model_id,"model_version":model_version,"batch_count":count,
+                   "resume_request":{k:kwargs.get(k) for k in (
+                       "project_id","base_revision_id","expected_current_revision_id",
+                       "idempotency_key","model_id","model_version","seed",
+                       "song_spec","prompt","lyrics","params","batch_count",
+                       "reference_artifact_digest","audio_cover_strength")},
+                   "state":"PREPARING","takes":[],"selections":{}}
+                self._save_attempt(path,attempt)
+            stage=self._attempt_dir(project_id)/(attempt["attempt_id"]+".stage")
+            stage.mkdir(parents=True,exist_ok=True)
+            if getattr(synthesize,"supports_remote_resume",False):
+                for directory in (stage.parent,stage):
+                    fd=os.open(directory,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+                    try: os.fsync(fd)
+                    finally: os.close(fd)
+            params={**requested,"_m045_batch_count":count}
+            if reference_audio is not None:
+                source=stage/"reference-source.wav"
+                if source.exists() and source.read_bytes()!=reference_audio:
+                    raise _conflict("reference identity drift")
+                if not source.exists(): self.atomic_write_fn(source,reference_audio)
+                params["_m045_reference"]={"reference_sha256":reference_digest,
+                                           "audio_cover_strength":float(reference_strength)}
+            try:
+                paths=synthesize(stage,kwargs.get("song_spec"),kwargs.get("prompt"),
+                                 kwargs.get("lyrics"),int(kwargs.get("seed",0)),params)
+                if not isinstance(paths,(tuple,list)) or len(paths)!=count:
+                    raise ValueError("multi-take provider returned wrong take count")
+                takes=[]
+                digests=set()
+                expected_frames=None
+                requires_proof=getattr(synthesize,"requires_batch_provenance",False)
+                batch_proof=None
+                if requires_proof:
+                    proof_path=stage/"provider-takes.json"
+                    if not proof_path.is_file() or proof_path.is_symlink():
+                        raise ValueError("multi-take provider provenance missing")
+                    batch_proof=json.loads(proof_path.read_text(encoding="utf-8"))
+                    if not isinstance(batch_proof,list) or len(batch_proof)!=count:
+                        raise ValueError("multi-take provenance cardinality mismatch")
+                for i,source in enumerate(paths):
+                    path_i=Path(source)
+                    if path_i.parent.resolve()!=stage.resolve() or not path_i.is_file() or path_i.is_symlink():
+                        raise ValueError("multi-take staged output invalid")
+                    media=_verify_wav(path_i)
+                    if media["channels"]!=2 or media["sample_rate"]!=44100 or media["sample_width"]!=2:
+                        raise ValueError("multi-take canonical PCM16 required")
+                    raw=path_i.read_bytes()
+                    if expected_frames is None:
+                        expected_frames=media["frames"]
+                    elif media["frames"]!=expected_frames:
+                        raise ValueError("multi-take sample length mismatch")
+                    if batch_proof is not None:
+                        receipt=batch_proof[i]
+                        if (not isinstance(receipt,dict) or receipt.get("take_index")!=i
+                                or receipt.get("artifact_digest")!=media["sha256"]
+                                or receipt.get("model_id")!=model_id
+                                or receipt.get("model_version")!=model_version
+                                or receipt.get("preservation_tier")!="P3"
+                                or receipt.get("rights_status")!="OPEN_WEIGHT_UNVERIFIED_TRAINING_DATA"
+                                or not HEX64.fullmatch(str(receipt.get("checkpoint_sha256","")))):
+                            raise ValueError("multi-take provider proof mismatch")
+                    # Durable ownership precedes CAS publication, so an abrupt
+                    # crash after write cannot create ownerless content.
+                    intents=attempt.setdefault("publication_intents",[])
+                    intent={"take_index":i,"artifact_digest":media["sha256"],
+                            "state":"PUBLICATION_REQUESTED"}
+                    previous=next((v for v in intents if v.get("take_index")==i),None)
+                    if previous is not None and previous.get("artifact_digest")!=media["sha256"]:
+                        raise _conflict("take publication identity drift")
+                    if previous is None:
+                        intents.append(intent)
+                    self._save_attempt(path,attempt)
+                    sha=self.publish_cas_object(raw)
+                    if sha!=media["sha256"] or sha in digests:
+                        raise ValueError("multi-take digest collision or alias")
+                    digests.add(sha)
+                    from m045_repaint import read_pcm16_wav
+                    pcm,frames=read_pcm16_wav(raw)
+                    takes.append({"take_index":i,"artifact_digest":sha,
+                        "pcm_sha256":hashlib.sha256(pcm).hexdigest(),
+                        "duration_sec":frames/44100,
+                        "provenance":batch_proof[i] if batch_proof is not None else
+                                     {"source_type":"TEST_PROVIDER_UNVERIFIED","preservation_tier":"P3"}})
+                    attempt["takes"]=list(takes)
+                    self._save_attempt(path,attempt)
+                attempt["state"]="AWAITING_TAKE_SELECTION"
+                self._save_attempt(path,attempt)
+                return {"state":attempt["state"],"attempt":attempt,"revision":None,"replayed":False}
+            except Exception as exc:
+                remote=stage/"upstream-task.json"
+                if remote.is_file():
+                    attempt["state"]="POLL_INTERRUPTED"
+                elif exc.__class__.__name__=="RemoteSubmissionUncertain":
+                    attempt["state"]="SUBMISSION_UNCERTAIN"
+                else:
+                    attempt["state"]="FAILED_PRE_COMMIT"
+                attempt["error_code"]=str(exc)
+                self._save_attempt(path,attempt)
+                raise
+        finally:
+            self._unlock(handle)
+
     def execute_attempt(self, **kwargs: Any) -> Dict[str, Any]:
         headers = kwargs.get("headers") or {}
         project_id = _safe(kwargs.get("project_id"), "project_id")
@@ -313,8 +557,7 @@ class GenerationAttemptOwner:
         batch_count=kwargs.get("batch_count",1)
         if type(batch_count) is not int or not 1 <= batch_count <= 4:
             raise ValueError("batch_count must be an integer from 1 to 4")
-        if batch_count != 1:
-            raise _conflict("MULTI_TAKE_OWNER_NOT_YET_QUALIFIED")
+
         reference_digest=kwargs.get("reference_artifact_digest")
         reference_audio=None
         reference_strength=kwargs.get("audio_cover_strength",1.0)
@@ -380,6 +623,14 @@ class GenerationAttemptOwner:
         elif ("target_bar_range" in requested or "target_sample_range" in requested
               or requested.get("edit_mode") is not None):
             raise _conflict("Change ONLY This requires a qualified selective renderer")
+        if batch_count > 1:
+            if selective:
+                raise _conflict("multi-take repaint unqualified")
+            return self._execute_multi(kwargs,project_id=project_id,
+                base_revision_id=base_revision_id,expected_revision_id=expected_revision_id,
+                idempotency_key=idempotency_key,model_id=model_id,model_version=model_version,
+                synthesize=synthesize,requested=requested,reference_audio=reference_audio,
+                reference_digest=reference_digest,reference_strength=reference_strength)
         request_digest = _request_digest(kwargs)
         handle = self._lock(project_id)
         path = self._attempt_path(project_id, idempotency_key)
