@@ -78,7 +78,43 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
       <label for="platformProfileHandle">Public @handle</label><input id="platformProfileHandle" autocomplete="off"/>
       <label for="platformProfileName">Display name</label><input id="platformProfileName" maxlength="80"/>
       <label for="platformBio">Bio</label><textarea id="platformBio" maxlength="1200"></textarea>
-      <button id="platformSaveProfile" type="button">Save profile</button><div id="platformProfileStatus" role="status" aria-live="polite">LOADING</div></section>
+      <button id="platformSaveProfile" type="button">Save profile</button><div id="platformProfileStatus" role="status" aria-live="polite">LOADING</div>
+      <div class="platform-wave2-hub">
+        <h3>Playlists</h3>
+        <label for="platformPlaylistTitle">New private playlist</label><input id="platformPlaylistTitle" maxlength="100" placeholder="My First Mix"/>
+        <button id="platformCreatePlaylist" type="button">Create playlist</button>
+        <p id="platformPlaylistStatus" role="status">READY · Private by default</p><div id="platformMyPlaylists" class="platform-cards"></div>
+        <h3>Albums</h3>
+        <label for="platformAlbumTitle">Draft album title</label><input id="platformAlbumTitle" maxlength="100" placeholder="My Album"/>
+        <button id="platformCreateAlbum" type="button">Create private album draft</button><p id="platformAlbumStatus" role="status">READY · Albums do not auto-publish music</p>
+        <h3>Collaborative workspaces</h3>
+        <label for="platformWorkspaceName">Workspace name</label><input id="platformWorkspaceName" maxlength="120" placeholder="Producer Team"/>
+        <button id="platformCreateWorkspace" type="button">Create workspace</button>
+        <label for="platformWorkspaceSelect">Choose workspace</label><select id="platformWorkspaceSelect" aria-label="Workspace to invite into"></select>
+        <label for="platformWorkspaceInviteHandle">Invite artist handle</label><input id="platformWorkspaceInviteHandle" placeholder="artist_handle"/>
+        <label for="platformWorkspaceInviteRole">Role</label><select id="platformWorkspaceInviteRole"><option value="viewer">Viewer</option><option value="editor">Editor</option></select>
+        <button id="platformWorkspaceInvite" type="button">Invite artist</button>
+        <button id="platformWorkspaceRevoke" type="button">Revoke artist access</button>
+        <p id="platformWorkspaceStatus" role="status">READY · Access remains private</p><div id="platformMyWorkspaces" class="platform-cards"></div>
+        <h3>Credits</h3>
+        <p>Local pilot: credit spending and payment grants remain blocked until a verified provider is connected.</p>
+        <button id="platformCreditsRefresh" type="button">Check credit balance</button><p id="platformCreditsStatus" role="status">LOADING</p>
+        <h3>Social</h3>
+        <label for="platformSocialHandle">Artist handle</label><input id="platformSocialHandle" placeholder="artist_handle"/>
+        <button id="platformFollow" type="button">Follow artist</button><button id="platformBlock" type="button">Block artist</button>
+        <p id="platformSocialStatus" role="status">READY</p>
+        <h3>Notifications</h3><button id="platformNotificationsRefresh" type="button">Refresh notifications</button>
+        <p id="platformNotificationsStatus" role="status">LOADING</p><div id="platformNotifications" class="platform-cards"></div>
+      </div>
+    </section>
+    <section id="platformChatPanel" aria-label="S.A.R.A. platform chat" hidden>
+      <h2>Ask S.A.R.A.</h2><p>Search public songs, create a private playlist, check credits or prepare a publication review. Create/Studio has the music editing controls.</p>
+      <label for="platformChatInstruction">Your instruction</label>
+      <textarea id="platformChatInstruction" rows="3" placeholder="Search dark Southern rock songs"></textarea>
+      <button id="platformChatSend" type="button">Ask S.A.R.A.</button>
+      <p id="platformChatStatus" role="status" aria-live="polite">READY · Bounded verified platform commands</p>
+      <pre id="platformChatResult" class="platform-chat-result"></pre>
+    </section>
   </main>
   <div id="platformMiniPlayer" class="platform-mini-player" aria-label="Persistent music player"><span id="platformNowPlaying">Not playing</span><audio id="platformAudio" controls preload="none" aria-label="Public song player"></audio></div>
   <nav id="platformNavigation" aria-label="Platform navigation">
