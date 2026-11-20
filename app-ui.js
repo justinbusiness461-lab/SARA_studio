@@ -1813,3 +1813,71 @@ if ($('btnAlignLyrics')) $('btnAlignLyrics').onclick = async () => {
     await saveLyricChange({ action: 'candidate', sourceArtifactId: saved.sha256, knownTranscript, language: 'en' });
   } catch (e) { setStatus('Lyrics not saved: ' + e.message, 'warn'); }
 };
+/** RS-001/002 responsive presentation bridge. Canonical Studio controls own every action. */
+function initStudioResponsiveShell() {
+  const byId = id => document.getElementById(id);
+  const sourcePlay = byId('btnPlay');
+  const sourceStop = byId('btnStop');
+  const sourceGenerate = byId('btnM045Generate');
+  const projectInput = byId('projectId');
+  const projectRevision = byId('projectRevision');
+  const headerProject = byId('studioHeaderProjectId');
+  const headerRevision = byId('studioHeaderRevision');
+  const dockPlay = byId('dockPlay');
+
+  function syncFromAuthority() {
+    // Display is derived strictly from canonical fields, never separate project state.
+    const rawId = (projectInput && projectInput.value || '').trim();
+    headerProject.textContent = rawId || 'Unsaved';
+    const revisionText = projectRevision && projectRevision.textContent || '';
+    const match = revisionText.match(/Saved revision:\s*([a-f0-9]{64})/i);
+    headerRevision.textContent = match ? match[1].slice(0, 12) : 'Draft';
+    dockPlay.disabled = !sourcePlay || sourcePlay.disabled;
+    dockPlay.textContent = sourcePlay && /stop/i.test(sourcePlay.textContent || '') ? '■ Stop' : '▶ Play';
+  }
+  function delegate(buttonId, originalId) {
+    const button=byId(buttonId);
+    const original=byId(originalId);
+    if (!button || !original) return;
+    button.addEventListener('click', () => {
+      if (original.disabled) return;
+      original.click();
+      queueMicrotask(syncFromAuthority);
+    });
+  }
+  delegate('dockPlay','btnPlay');
+  delegate('dockStop','btnStop');
+  delegate('dockGenerate','btnM045Generate');
+  const modeButtons=[...document.querySelectorAll('#studioModeTabs [data-studio-target]')];
+  function activateMode(button) {
+    for (const candidate of modeButtons) {
+      if (candidate === button) candidate.setAttribute('aria-current','page');
+      else candidate.removeAttribute('aria-current');
+    }
+    const surface=byId(button.dataset.studioTarget);
+    if (!surface) return;
+    surface.scrollIntoView({behavior:'auto',block:'start'});
+    surface.focus({preventScroll:true});
+  }
+  for (const button of modeButtons) {
+    button.addEventListener('click',()=>activateMode(button));
+  }
+  const change=byId('dockChangeOnly');
+  if (change) change.addEventListener('click',()=>{
+    const proof=byId('studioModeProof');
+    if (proof) activateMode(proof);
+    const target=byId('m045TargetTrack');
+    if (target) target.focus({preventScroll:true});
+  });
+  // Never synthesize progress/Proof. Only observe existing owner-controlled fields.
+  const observer=new MutationObserver(syncFromAuthority);
+  if (projectRevision) observer.observe(projectRevision,{childList:true,characterData:true,subtree:true});
+  if (sourcePlay) observer.observe(sourcePlay,{attributes:true,attributeFilter:['disabled'],childList:true,subtree:true});
+  if (projectInput) projectInput.addEventListener('input',syncFromAuthority);
+  document.addEventListener('focusin',event=>{
+    if (event.target===projectInput) syncFromAuthority();
+  });
+  syncFromAuthority();
+  if (modeButtons[0]) modeButtons[0].setAttribute('aria-current','page');
+}
+initStudioResponsiveShell();
