@@ -52,6 +52,10 @@ test('Scratch Surgeon grid saves exact DJ event and restores via canonical revis
  const saved=page.waitForResponse(r=>r.url().endsWith('/api/projects/commit'));
  await page.locator('#btnSave').click();
  assert.equal((await saved).status(),200);
+ // The HTTP response can resolve before the UI installs the saved revision.
+ // Assert observable committed authority, not a scheduling coincidence.
+ await page.waitForFunction(previous =>
+   document.querySelector('#projectRevision').textContent !== previous, before);
  const after=await page.locator('#projectRevision').innerText();
  assert.notEqual(after,before);
  await page.reload();
