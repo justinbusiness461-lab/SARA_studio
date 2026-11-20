@@ -509,9 +509,11 @@ def _render_operation_id(value):
 
 
 def _render_data_bytes(raw):
+    if type(raw) is bytes:
+        return raw  # Trusted server-internal media only; JSON cannot supply bytes.
     if isinstance(raw, list) and all(type(v) is int and 0 <= v <= 255 for v in raw):
         return bytes(raw)
-    raise ValueError("render data_bytes must be byte list")
+    raise ValueError("render data_bytes must be byte list or trusted bytes")
 
 
 def render_authoritative_revision_bytes(spec):
@@ -555,6 +557,8 @@ def _render_commit_request(root, directory, pid, attempt):
         "operationId": attempt["operationId"],
         "operationContext": {"kind": "render", "sourceRevisionId": attempt["sourceRevisionId"]},
     }
+    if attempt.get("masterProvenance") is not None:
+        request["operationContext"]["masterProvenance"] = attempt["masterProvenance"]
     meaning = {k: v for k, v in request.items() if k != "operationId"}
     if hashlib.sha256(project_json(meaning)).hexdigest() != attempt["operationMeaningDigest"]:
         raise ValueError("render attempt meaning mismatch")
@@ -662,7 +666,7 @@ def reconcile_render_attempts(root, directory, pid, manifest):
             raise ValueError("unknown render attempt state")
 
 
-def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
+def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID, master_provenance=None):
     root = Path(root).resolve()
     pid = project_id(request.get("projectId"))
     operation_id = _render_operation_id(request.get("operationId"))
@@ -690,6 +694,32 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
             raise ValueError("artifact too large")
         validate_render_audio_bytes(data)
         digest = hashlib.sha256(data).hexdigest()
+        if master_provenance is not None:
+            from m045_wave4_mastering_provenance import CanonicalProvenanceRecord
+            if not isinstance(master_provenance, CanonicalProvenanceRecord):
+                raise ValueError("MASTER_PROVENANCE_TYPE_DENIED")
+            master_provenance.validate()
+            # Physical PCM identity and lawful source binding must match the
+            # claimed provenance, not a client/path/digest-only assertion.
+            with wave.open(io.BytesIO(data), "rb") as verified_pcm:
+                true_pcm_hash = hashlib.sha256(
+                    verified_pcm.readframes(verified_pcm.getnframes())).hexdigest()
+            if true_pcm_hash != master_provenance.pcm_sha256:
+                raise ValueError("MASTER_PCM_PROVENANCE_MISMATCH")
+            project_audio_bytes(root, {"projectId":pid,
+                "revisionId":source_revision,
+                "artifactId":master_provenance.parent_artifact_sha256s[0]},
+                principal_id=principal_id)
+            if (master_provenance.artifact_sha256 != digest
+                    or master_provenance.project_id != pid
+                    or master_provenance.revision_id != source_revision
+                    or master_provenance.rights_status != "UNVERIFIED_HELD"
+                    or master_provenance.origin_type != "DSP_TRANSFORM"
+                    or master_provenance.parent_artifact_sha256s[0] == digest):
+                raise ValueError("MASTER_PROVENANCE_MISMATCH")
+            provenanced = master_provenance.to_dict()
+        else:
+            provenanced = None
         commit_request = {
             "projectId": pid,
             "expectedCurrentRevisionId": source_revision,
@@ -699,6 +729,8 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
             "operationId": operation_id,
             "operationContext": {"kind": "render", "sourceRevisionId": source_revision},
         }
+        if provenanced is not None:
+            commit_request["operationContext"]["masterProvenance"] = provenanced
         meaning = {k: v for k, v in commit_request.items() if k != "operationId"}
         meaning_digest = hashlib.sha256(project_json(meaning)).hexdigest()
         attempts = directory / "render-attempts"
@@ -720,6 +752,8 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
             "filename": filename,
             "subdirectory": subdirectory,
         }
+        if provenanced is not None:
+            identity["masterProvenance"] = provenanced
         if attempt_path.exists():
             attempt = json.loads(attempt_path.read_text())
             for key, value in identity.items():
@@ -1244,7 +1278,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master"}:
             try:
                 principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
             except ProjectConflict as e:
@@ -1258,6 +1292,16 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload,dict): raise ValueError("object required")
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
+
+        if path == "/api/m045/master":
+            try:
+                from m045_wave4_service import authorized_master
+                return self._json(200, authorized_master(EXPORT_ROOT, payload, principal_id))
+            except (ProjectConflict, PermissionError) as exc:
+                status = 409 if isinstance(exc, ProjectConflict) and "stale" in str(exc) else 403
+                return self._json(status, {"status":"DENY","error":str(exc)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
 
         if path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth"}:
             # No client-provided PCM, CAS path, note list or revision publication.
