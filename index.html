@@ -51,6 +51,45 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <link rel="stylesheet" href="studio-shell.css"/>
 </head>
 <body>
+<section id="platformAuth" class="platform-auth" aria-label="S.A.R.A. Studio sign in" hidden>
+  <div class="platform-auth-card">
+    <p class="platform-eyebrow">S.A.R.A. Studio™ · Private artist account</p>
+    <h2>Welcome to your creative home</h2>
+    <p>Sign in to access your own projects, profile and library. This local pilot uses a password account; external sign-in providers are not connected yet.</p>
+    <label for="platformHandle">Artist handle</label><input id="platformHandle" autocomplete="username" minlength="3" maxlength="30" placeholder="your_artist_name"/>
+    <label for="platformPassword">Password (12+ characters)</label><input id="platformPassword" type="password" autocomplete="current-password" minlength="12"/>
+    <label for="platformDisplayName">Artist display name (for new accounts)</label><input id="platformDisplayName" placeholder="Artist name" maxlength="80"/>
+    <div class="platform-auth-actions"><button id="platformSignIn" type="button">Sign In</button><button id="platformSignUp" type="button" class="secondary">Create Account</button></div>
+    <p id="platformAuthStatus" role="status" aria-live="polite">READY · Sign in or create your account</p>
+  </div>
+</section>
+<section id="platformShell" aria-label="S.A.R.A. connected artist platform" hidden>
+  <header class="platform-top"><strong>S.A.R.A. Studio™</strong><span id="platformActiveArtist">Artist workspace</span><button type="button" id="platformLogout" class="secondary">Sign out</button></header>
+  <main class="platform-pages" id="platformPages">
+    <section id="platformHomePanel" aria-label="Home" hidden><h2>Home</h2><div id="platformHomeStatus" role="status">LOADING</div><p>Your private project workspace and public music discovery are connected through your account.</p><button type="button" id="platformStartCreating">Open Studio</button></section>
+    <section id="platformExplorePanel" aria-label="Explore" hidden><h2>Explore music</h2>
+      <label for="platformSearch">Search published music</label><input id="platformSearch" placeholder="Search songs or artists"/>
+      <button id="platformDoSearch" type="button" class="secondary">Search</button>
+      <div id="platformExploreStatus" role="status" aria-live="polite">LOADING</div>
+      <div id="platformExploreSongs" class="platform-cards"></div></section>
+    <section id="platformLibraryPanel" aria-label="Library" hidden><h2>My Library</h2>
+      <div id="platformLibraryStatus" role="status" aria-live="polite">LOADING</div><div id="platformLibraryProjects" class="platform-cards"></div></section>
+    <section id="platformProfilePanel" aria-label="Artist Profile" hidden><h2>Artist Profile</h2>
+      <label for="platformProfileHandle">Public @handle</label><input id="platformProfileHandle" autocomplete="off"/>
+      <label for="platformProfileName">Display name</label><input id="platformProfileName" maxlength="80"/>
+      <label for="platformBio">Bio</label><textarea id="platformBio" maxlength="1200"></textarea>
+      <button id="platformSaveProfile" type="button">Save profile</button><div id="platformProfileStatus" role="status" aria-live="polite">LOADING</div></section>
+  </main>
+  <div id="platformMiniPlayer" class="platform-mini-player" aria-label="Persistent music player"><span id="platformNowPlaying">Not playing</span><audio id="platformAudio" controls preload="none" aria-label="Public song player"></audio></div>
+  <nav id="platformNavigation" aria-label="Platform navigation">
+    <button id="platformNavHome" data-platform-view="home" type="button">Home</button>
+    <button id="platformNavExplore" data-platform-view="explore" type="button">Explore</button>
+    <button id="platformNavStudio" data-platform-view="studio" type="button">Create</button>
+    <button id="platformNavLibrary" data-platform-view="library" type="button">Library</button>
+    <button id="platformNavProfile" data-platform-view="profile" type="button">Profile</button>
+    <button id="platformNavChat" data-platform-view="chat" type="button">Chat</button>
+  </nav>
+</section>
 <div class="app">
 <header id="studioProjectBar" class="studio-project-bar" aria-label="Studio project and revision">
 <div class="studio-project-identity">
@@ -63,6 +102,7 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 </div>
 <canvas id="studioWaveformPreview" width="280" height="44" role="img" aria-label="Verified audio waveform preview; empty until lawful audio is ready"></canvas>
 </header>
+<div id="platformPublishPanel" hidden><button type="button" id="platformPublishCurrent" class="secondary">Review & Publish Verified Song</button><div id="platformPublishStatus" role="status" aria-live="polite">No public release approved</div></div>
 <h1>S.A.R.A. <span>Sound Forge</span></h1>
 <p class="sub">Sound™ · Shelves · Flux · OTIO-inspired · Local</p>
 <div id="status" class="status ok">Type a prompt → Compile → Play</div>
@@ -267,6 +307,7 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <script src="scorecore.js"></script>
 <script src="app-ui.js"></script>
 <script src="app-cinema.js"></script>
+<script src="platform-ui.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   if (window.pulseForgeCinemaSync) window.pulseForgeCinemaSync.init();
