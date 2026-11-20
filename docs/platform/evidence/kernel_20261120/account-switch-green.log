@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: shared-device account B never reads cached A project/attempt pointer
+ok 1 - shared-device account B never reads cached A project/attempt pointer
+  ---
+  duration_ms: 1692.866884
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2084.781377
