@@ -1,0 +1,28 @@
+test_provenance_pcm_digest_matches_decoded_audio_not_fixed_header_offset (tests.test_m045_wave4_mastering.MasterHTTPTests) ... FAIL
+test_sonic_lock_blocks_global_master (tests.test_m045_wave4_mastering.MasterHTTPTests) ... FAIL
+
+======================================================================
+FAIL: test_provenance_pcm_digest_matches_decoded_audio_not_fixed_header_offset (tests.test_m045_wave4_mastering.MasterHTTPTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3-wave004/SARA_studio-7f5470a6bf3ba65ddad9763660d6da4e3b89e9e4/tests/test_m045_wave4_mastering.py", line 118, in test_provenance_pcm_digest_matches_decoded_audio_not_fixed_header_offset
+    self.assertEqual(provenance['pcm_sha256'],hashlib.sha256(pcm).hexdigest())
+AssertionError: '90f7b0b2d7d646e0fbe600ed785011d50b81baa6252fe959efd3d98663bacdab' != 'ebd4ba29a220a1b3a40df0a8c0452c0dc5c987c69bc4b29ee4a4aa0024b1802c'
+- 90f7b0b2d7d646e0fbe600ed785011d50b81baa6252fe959efd3d98663bacdab
++ ebd4ba29a220a1b3a40df0a8c0452c0dc5c987c69bc4b29ee4a4aa0024b1802c
+
+
+======================================================================
+FAIL: test_sonic_lock_blocks_global_master (tests.test_m045_wave4_mastering.MasterHTTPTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3-wave004/SARA_studio-7f5470a6bf3ba65ddad9763660d6da4e3b89e9e4/tests/test_m045_wave4_mastering.py", line 127, in test_sonic_lock_blocks_global_master
+    self.assertIn(status,(403,409),result)
+AssertionError: 200 not found in (403, 409) : {'status': 'SUCCESS', 'projectId': '18eb7ead82d94293a2fa44dc2ea721a8', 'sourceRevisionId': '331b843f42eef578b8479ba4d5e7b830537f0e1cdad9fa652c61b82da03d8183', 'sourceArtifactId': 'bb58bcf86e90af70f4b2f7474b6980f1a80b2a7398256aacb498de104a30017b', 'revisionId': '067057c01697cbe5e1b437061887c7fc864a2c623ec03dfa21c996e82275a5a0', 'artifactId': '0f4a0954ac69da108012455a77d5d6253344735b7d2da74c09654fce9dc808a9', 'operationId': 'master-d20b09edbd691af81d559a0cbe0f1a52b0e95b4c', 'rightsStatus': 'UNVERIFIED_HELD', 'releaseCleared': False, 'preservationTier': 'P3', 'audioStatus': 'RENDERED_BOUND_NOT_CREATIVELY_APPROVED', 'telemetry': {'method': 'ffmpeg-loudnorm-ebu-r128-bs1770-based', 'meterConformance': 'NOT_INDEPENDENTLY_CERTIFIED', 'target_lufs': -14.0, 'true_peak_ceiling_dbtp': -1.0, 'input_lufs': -17.75, 'input_true_peak_dbtp': -17.72, 'measured_output_lufs': -13.98, 'measured_output_true_peak_dbtp': -13.97, 'true_peak_verified': True, 'targetStatus': 'TARGET_REACHED', 'mastered_wav_sha256': '0f4a0954ac69da108012455a77d5d6253344735b7d2da74c09654fce9dc808a9'}}
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.937s
+
+FAILED (failures=2)
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
