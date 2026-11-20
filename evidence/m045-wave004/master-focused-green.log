@@ -1,0 +1,23 @@
+test_denies_missing_session_foreign_and_unbound_CAS (tests.test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_lawful_master_revision_historical_and_provenance_readback (tests.test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_provenance_pcm_digest_matches_decoded_audio_not_fixed_header_offset (tests.test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_sonic_lock_blocks_global_master (tests.test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_stale_revision_and_no_false_p0 (tests.test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_deterministic_gain_and_presets (tests.test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_fails_closed_on_silent_or_invalid_presets (tests.test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_measured_accurate_ceiling_and_physical_output (tests.test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_rights_held_without_evidence (tests.test_m045_wave4_mastering.MasterProcessorTests) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 2.921s
+
+OK
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 409 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 400 -

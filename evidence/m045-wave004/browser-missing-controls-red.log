@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+not ok 1 - Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+  ---
+  duration_ms: 1678.55511
+  type: 'test'
+  location: '/tmp/sj3-wave004/SARA_studio-7f5470a6bf3ba65ddad9763660d6da4e3b89e9e4/tests/m045-wave4-ui.browser.cjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    missing m045Wave4Preview at 360
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3-wave004/SARA_studio-7f5470a6bf3ba65ddad9763660d6da4e3b89e9e4/tests/m045-wave4-ui.browser.cjs:22:11)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2217.437901

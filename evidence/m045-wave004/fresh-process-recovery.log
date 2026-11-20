@@ -1,0 +1,7 @@
+test_master_survives_fresh_owner_process_and_historical_audio_remains_lawful (tests.test_m045_wave4_mastering.MasterHTTPTests) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.930s
+
+OK
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -

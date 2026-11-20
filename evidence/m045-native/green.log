@@ -1,0 +1,24 @@
+test_cold_restart_recovers_historical_revision_and_audio_binding (tests.test_m045_native_attempt.NativeAttemptTests.test_cold_restart_recovers_historical_revision_and_audio_binding) ... ok
+test_divergent_payload_reusing_idempotency_key_is_rejected (tests.test_m045_native_attempt.NativeAttemptTests.test_divergent_payload_reusing_idempotency_key_is_rejected) ... ok
+test_identical_idempotency_submissions_execute_once (tests.test_m045_native_attempt.NativeAttemptTests.test_identical_idempotency_submissions_execute_once) ... ok
+test_missing_auth_and_spoofed_principal_are_rejected (tests.test_m045_native_attempt.NativeAttemptTests.test_missing_auth_and_spoofed_principal_are_rejected) ... ok
+test_post_commit_exception_reconciles_lost_response (tests.test_m045_native_attempt.NativeAttemptTests.test_post_commit_exception_reconciles_lost_response) ... ok
+test_stale_expected_revision_is_rejected (tests.test_m045_native_attempt.NativeAttemptTests.test_stale_expected_revision_is_rejected) ... ok
+test_synthesis_failure_is_durable_failed_pre_commit (tests.test_m045_native_attempt.NativeAttemptTests.test_synthesis_failure_is_durable_failed_pre_commit) ... ok
+test_changed_payload_same_id_rejects (test_m044_operations.OperationTests.test_changed_payload_same_id_rejects) ... ok
+test_crash_before_history_bind_recovers_without_replay (test_m044_operations.OperationTests.test_crash_before_history_bind_recovers_without_replay) ... ok
+test_interruption_before_pointer_promotion_keeps_previous_authority (test_m044_operations.OperationTests.test_interruption_before_pointer_promotion_keeps_previous_authority) ... ok
+test_invalid_operation_id_rejects (test_m044_operations.OperationTests.test_invalid_operation_id_rejects) ... ok
+test_late_render_binds_historical_artifact_to_r1 (test_m044_operations.OperationTests.test_late_render_binds_historical_artifact_to_r1)
+Late R1 render must not promote R2, but must remain retrievable on R1. ... ok
+test_malformed_historical_wav_rejected (test_m044_operations.OperationTests.test_malformed_historical_wav_rejected) ... ok
+test_replay_after_later_revision_does_not_reselect_old_revision (test_m044_operations.OperationTests.test_replay_after_later_revision_does_not_reselect_old_revision) ... ok
+test_same_request_replay_returns_original_revision_without_advancing (test_m044_operations.OperationTests.test_same_request_replay_returns_original_revision_without_advancing) ... ok
+test_stale_non_render_still_rejects (test_m044_operations.OperationTests.test_stale_non_render_still_rejects) ... ok
+test_stale_render_cannot_bind_to_new_composition (test_m044_operations.OperationTests.test_stale_render_cannot_bind_to_new_composition) ... ok
+test_uncertain_result_after_promotion_recovers_by_replay (test_m044_operations.OperationTests.test_uncertain_result_after_promotion_recovers_by_replay) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.417s
+
+OK

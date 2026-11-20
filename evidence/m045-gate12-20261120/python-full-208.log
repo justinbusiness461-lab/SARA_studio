@@ -1,0 +1,267 @@
+test_bad_sample_ranges_source_and_containment (test_lyric_authority.Lyrics) ... ok
+test_concurrent_lyric_writers_one_winner (test_lyric_authority.Lyrics) ... ok
+test_crash_before_lyric_promotion (test_lyric_authority.Lyrics) ... ok
+test_death_after_promotion_reopens_valid_R2 (test_lyric_authority.Lyrics) ... ok
+test_missing_evidence_and_tampered_audio_fail_closed (test_lyric_authority.Lyrics) ... ok
+test_new_process_restart (test_lyric_authority.Lyrics) ... ok
+test_no_replacement_of_corrected_truth (test_lyric_authority.Lyrics) ... ok
+test_reference_fences_include_lyrics_evidence_and_audio (test_lyric_authority.Lyrics) ... ok
+test_regular_save_preserves_lyric_truth (test_lyric_authority.Lyrics) ... ok
+test_revision_loop_audio_and_history (test_lyric_authority.Lyrics) ... ok
+test_stale_project_and_stale_lyric (test_lyric_authority.Lyrics) ... ok
+test_tampered_audio_fail_closed (test_lyric_authority.Lyrics) ... ok
+test_unicode_punctuation_and_occurrences (test_lyric_authority.Lyrics) ... ok
+test_unknown_without_known_transcript (test_lyric_authority.Lyrics) ... ok
+test_bad_origins (test_m040.SecurityAndObjects) ... ok
+test_concurrent_processes_keep_history (test_m040.SecurityAndObjects) ... ok
+test_corrupt_ledger_not_reset (test_m040.SecurityAndObjects) ... ok
+test_exact_origin (test_m040.SecurityAndObjects) ... ok
+test_foreign_origin (test_m040.SecurityAndObjects) ... ok
+test_history (test_m040.SecurityAndObjects) ... ok
+test_tampered_object_rejected (test_m040.SecurityAndObjects) ... ok
+test_traversal (test_m040.SecurityAndObjects) ... ok
+test_wrong_port (test_m040.SecurityAndObjects) ... ok
+test_changed_payload_same_id_rejects (test_m044_operations.OperationTests) ... ok
+test_crash_before_history_bind_recovers_without_replay (test_m044_operations.OperationTests) ... ok
+test_interruption_before_pointer_promotion_keeps_previous_authority (test_m044_operations.OperationTests) ... ok
+test_invalid_operation_id_rejects (test_m044_operations.OperationTests) ... ok
+test_late_render_binds_historical_artifact_to_r1 (test_m044_operations.OperationTests)
+Late R1 render must not promote R2, but must remain retrievable on R1. ... ok
+test_malformed_historical_wav_rejected (test_m044_operations.OperationTests) ... ok
+test_replay_after_later_revision_does_not_reselect_old_revision (test_m044_operations.OperationTests) ... ok
+test_same_request_replay_returns_original_revision_without_advancing (test_m044_operations.OperationTests) ... ok
+test_stale_non_render_still_rejects (test_m044_operations.OperationTests) ... ok
+test_stale_render_cannot_bind_to_new_composition (test_m044_operations.OperationTests) ... ok
+test_uncertain_result_after_promotion_recovers_by_replay (test_m044_operations.OperationTests) ... ok
+test_render_endpoint_can_derive_exact_wav_from_authoritative_revision (test_m044_r1_connected.ConnectedR1RenderTests) ... ok
+test_changed_payload_same_id_rejects (test_m044_operations.OperationTests) ... ok
+test_crash_before_history_bind_recovers_without_replay (test_m044_operations.OperationTests) ... ok
+test_interruption_before_pointer_promotion_keeps_previous_authority (test_m044_operations.OperationTests) ... ok
+test_invalid_operation_id_rejects (test_m044_operations.OperationTests) ... ok
+test_late_render_binds_historical_artifact_to_r1 (test_m044_operations.OperationTests)
+Late R1 render must not promote R2, but must remain retrievable on R1. ... ok
+test_malformed_historical_wav_rejected (test_m044_operations.OperationTests) ... ok
+test_replay_after_later_revision_does_not_reselect_old_revision (test_m044_operations.OperationTests) ... ok
+test_same_request_replay_returns_original_revision_without_advancing (test_m044_operations.OperationTests) ... ok
+test_stale_non_render_still_rejects (test_m044_operations.OperationTests) ... ok
+test_stale_render_cannot_bind_to_new_composition (test_m044_operations.OperationTests) ... ok
+test_uncertain_result_after_promotion_recovers_by_replay (test_m044_operations.OperationTests) ... ok
+test_concurrent_first_owner_claim_is_immutable (test_m044_r3_durability.R3RenderDurability) ... ok
+test_crash_a_identity_is_durable_before_cas_and_history_stays_empty (test_m044_r3_durability.R3RenderDurability) ... ok
+test_crash_b_cas_is_denied_until_fresh_open_reconciles_exactly_once (test_m044_r3_durability.R3RenderDurability) ... ok
+test_crash_c_bound_history_survives_without_duplicate_or_current_change (test_m044_r3_durability.R3RenderDurability) ... ok
+test_digest_knowledge_alone_is_never_authorization (test_m044_r3_durability.R3RenderDurability) ... ok
+test_first_owner_claim_recovers_after_process_death_before_owner_file (test_m044_r3_durability.R3RenderDurability) ... ok
+test_http_denies_orphan_then_serves_exact_bytes_after_reconciliation (test_m044_r3_durability.R3RenderDurability) ... ok
+test_two_principal_http_audio_authorization (test_m044_r3_durability.R3RenderDurability) ... ok
+test_legacy_custom_infer_endpoint_is_not_native_api (test_m045_acestep_admission.AceStepAdmissionTests) ... ok
+test_local_checkpoint_without_qualified_runtime_fails_closed (test_m045_acestep_admission.AceStepAdmissionTests) ... ok
+test_missing_checkpoint_and_endpoint_fails_closed (test_m045_acestep_admission.AceStepAdmissionTests) ... ok
+test_foreign_audio_url_rejected (test_m045_acestep_official_api.OfficialAPIContractTests) ... ok
+test_missing_checkpoint_identity_blocks_before_remote_submission (test_m045_acestep_official_api.OfficialAPIContractTests) ... ok
+test_official_three_take_release_query_download_and_no_auto_promotion (test_m045_acestep_official_api.OfficialAPIContractTests) ... ok
+test_release_query_download_and_canonical_revision (test_m045_acestep_official_api.OfficialAPIContractTests) ... ok
+test_three_take_interrupted_poll_cold_reconcile_reuses_original_upstream_task (test_m045_acestep_official_api.OfficialAPIContractTests) ... ok
+test_forged_sample_clock_or_technique_rejected (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_locked_dj_track_cannot_be_bypassed_by_direct_project_commit (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_locked_section_cannot_accept_new_dj_marker_via_direct_commit (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_valid_marker_commits_with_exact_sample_index (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_180_second_cas_revision_and_cold_restart_historical_source (test_m045_full_length_mastering.FullLengthMasterBoundary) ... ok
+test_210_second_pcm_stereo_master_is_physically_decodable_and_measured (test_m045_full_length_mastering.FullLengthMasterBoundary) ... ok
+test_change_only_this_requires_qualified_backend (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_http_reconcile_requires_bearer_and_returns_committed (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_locked_track_blocks_synthesis (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_more_than_210_seconds_rejected_before_decoding (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_provider_supports_210_seconds_not_211 (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_three_minute_native_cas_and_authorized_audio_reopen (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_three_minutes_accepted (test_m045_full_song_boundary.FullSongBoundaryTests) ... ok
+test_late_ace_generation_preserves_newer_current_revision (test_m045_historical_late_result.HistoricalLateResultTests) ... ok
+test_factory_commits_against_real_studio_revision_store (test_m045_host_bootstrap.NativeHostBootstrapTests) ... ok
+test_frame_mapping_rational_and_exact_section_start (test_m045_hvc003_grant_issuer.GrantIssuerContract) ... ok
+test_host_signed_15_second_historical_r1_binding_and_no_promotion (test_m045_hvc003_grant_issuer.GrantIssuerContract) ... ok
+test_numeric_start_and_end_from_client_are_rejected (test_m045_hvc003_grant_issuer.GrantIssuerContract) ... ok
+test_rights_and_wrong_artifact_reject (test_m045_hvc003_grant_issuer.GrantIssuerContract) ... ok
+test_signature_cannot_be_edited_or_revoked (test_m045_hvc003_grant_issuer.GrantIssuerContract) ... ok
+test_cas_same_digest_different_owner_does_not_grant (test_m045_hvc003_http_endpoint.Hvc003HttpEndpoint) ... ok
+test_client_sample_override_rejected_and_no_valid_grant (test_m045_hvc003_http_endpoint.Hvc003HttpEndpoint) ... ok
+test_host_configured_returns_200_and_signature_cannot_synthesize_cinema (test_m045_hvc003_http_endpoint.Hvc003HttpEndpoint) ... ok
+test_host_not_configured_returns_503_blocked (test_m045_hvc003_http_endpoint.Hvc003HttpEndpoint) ... ok
+test_missing_or_foreign_session_is_403 (test_m045_hvc003_http_endpoint.Hvc003HttpEndpoint) ... ok
+test_deployment_requires_pinned_upstream_auth_and_gpu_limits (test_m045_modal_deployment.ModalDeploymentTests) ... ok
+test_manifest_digests_change_only_with_model_bytes (test_m045_modal_deployment.ModalDeploymentTests) ... ok
+test_unqualified_and_symlinked_weights_fail_closed (test_m045_modal_deployment.ModalDeploymentTests) ... ok
+test_artist_selection_two_revisions_stale_denied_and_cold_reopen (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_cas_publication_has_durable_owner_intent_before_write (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_case_insensitive_authorization_header_from_http_transport (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_mismatched_take_frame_counts_are_rejected (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_three_takes_wait_for_artist_current_is_unchanged (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_unauthorized_take_audio_denied (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_unrelated_revision_cannot_silently_rebase_generated_takes (test_m045_multitake_comping.MultiTakeTests) ... ok
+test_cold_restart_recovers_historical_revision_and_audio_binding (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_divergent_payload_reusing_idempotency_key_is_rejected (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_http_endpoint_uses_bearer_session_and_returns_fenced_conflict (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_identical_idempotency_submissions_execute_once (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_missing_auth_and_spoofed_principal_are_rejected (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_post_commit_exception_reconciles_lost_response (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_stale_expected_revision_is_rejected (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_synthesis_failure_is_durable_failed_pre_commit (test_m045_native_attempt.NativeAttemptTests) ... ok
+test_changed_payload_same_id_rejects (test_m044_operations.OperationTests) ... ok
+test_crash_before_history_bind_recovers_without_replay (test_m044_operations.OperationTests) ... ok
+test_interruption_before_pointer_promotion_keeps_previous_authority (test_m044_operations.OperationTests) ... ok
+test_invalid_operation_id_rejects (test_m044_operations.OperationTests) ... ok
+test_late_render_binds_historical_artifact_to_r1 (test_m044_operations.OperationTests)
+Late R1 render must not promote R2, but must remain retrievable on R1. ... ok
+test_malformed_historical_wav_rejected (test_m044_operations.OperationTests) ... ok
+test_replay_after_later_revision_does_not_reselect_old_revision (test_m044_operations.OperationTests) ... ok
+test_same_request_replay_returns_original_revision_without_advancing (test_m044_operations.OperationTests) ... ok
+test_stale_non_render_still_rejects (test_m044_operations.OperationTests) ... ok
+test_stale_render_cannot_bind_to_new_composition (test_m044_operations.OperationTests) ... ok
+test_uncertain_result_after_promotion_recovers_by_replay (test_m044_operations.OperationTests) ... ok
+test_malformed_upstream_rejected_before_cas_or_revision (test_m045_provider_adapter.ElevenProviderTests) ... ok
+test_missing_credential_persists_failed_pre_commit (test_m045_provider_adapter.ElevenProviderTests) ... ok
+test_real_mp3_transport_normalizes_and_survives_cold_restart (test_m045_provider_adapter.ElevenProviderTests) ... ok
+test_user_model_spoof_rejected_by_native_http_route (test_m045_provider_adapter.ElevenProviderTests) ... ok
+test_accepted_reference_is_sent_as_official_multipart (test_m045_reference_conditioning.ReferenceConditioningTests) ... ok
+test_invalid_batch_count_is_rejected_without_submission (test_m045_reference_conditioning.ReferenceConditioningTests) ... ok
+test_legacy_request_fingerprint_is_unchanged_for_unconditioned_attempts (test_m045_reference_conditioning.ReferenceConditioningTests) ... ok
+test_unbound_digest_fails_before_remote_submit (test_m045_reference_conditioning.ReferenceConditioningTests) ... ok
+test_unknown_reference_strength_and_unqualified_lego_fail_closed (test_m045_reference_conditioning.ReferenceConditioningTests) ... ok
+test_crash_after_task_record_before_first_poll_recovers (test_m045_remote_resume.ResumeTests) ... ok
+test_divergent_payload_and_unauthorized_recovery_denied (test_m045_remote_resume.ResumeTests) ... ok
+test_failure_after_audio_download_before_cas_resumes_original_task (test_m045_remote_resume.ResumeTests) ... ok
+test_poll_failure_reconciles_without_second_release_task (test_m045_remote_resume.ResumeTests) ... ok
+test_tampered_task_id_rejected_without_network (test_m045_remote_resume.ResumeTests) ... ok
+test_uncertain_submission_without_task_id_refuses_duplicate (test_m045_remote_resume.ResumeTests) ... ok
+test_locked_section_intersection_denies_repaint_before_remote_call (test_m045_repaint_native.NativeRepaintTests) ... ok
+test_official_multipart_repaint_splices_exact_outside_samples_and_recovers (test_m045_repaint_native.NativeRepaintTests) ... ok
+test_repaint_requires_lawful_source_audio_before_remote_call (test_m045_repaint_native.NativeRepaintTests) ... ok
+test_sonic_lock_denies_repaint_before_remote_call (test_m045_repaint_native.NativeRepaintTests) ... ok
+test_five_ms_cosine_removes_dc_boundary_step_without_touching_outside (test_m045_repaint_preservation.RepaintCrossfadeTests) ... ok
+test_short_window_clamps_fades_without_overlapping_or_bleed (test_m045_repaint_preservation.RepaintCrossfadeTests) ... ok
+test_signed_pcm16_extremes_do_not_overflow (test_m045_repaint_preservation.RepaintCrossfadeTests) ... ok
+test_invalid_length_and_tempo_fail_closed (test_m045_repaint_preservation.RepaintPreservationTests) ... ok
+test_rational_bar_boundaries_and_exact_non_target_bytes (test_m045_repaint_preservation.RepaintPreservationTests) ... ok
+test_rate_digest_and_missing_source_rejected (test_m045_scratch_dsp.ScratchDSPTests) ... ok
+test_reverse_fractional_position_and_silent_source (test_m045_scratch_dsp.ScratchDSPTests) ... ok
+test_samples_outside_scheduled_windows_are_bit_exact (test_m045_scratch_dsp.ScratchDSPTests) ... ok
+test_simultaneous_decks_sum_before_clamp (test_m045_scratch_dsp.ScratchDSPTests) ... ok
+test_forged_sample_clock_or_technique_rejected (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_locked_dj_track_cannot_be_bypassed_by_direct_project_commit (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_locked_section_cannot_accept_new_dj_marker_via_direct_commit (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_valid_marker_commits_with_exact_sample_index (test_m045_dj_event_authority.ScratchAuthorityTests) ... ok
+test_authenticated_revision_source_yields_lawful_pcm16_output_and_preserves_other_samples (test_m045_scratch_publication.ScratchPublicationTests) ... ok
+test_unbound_source_and_wrong_base_artifact_fail_without_publication (test_m045_scratch_publication.ScratchPublicationTests) ... ok
+test_wrong_project_principal_denied (test_m045_scratch_publication.ScratchPublicationTests) ... ok
+test_exact_master_reconstruction_and_creative_truth (test_m045_stem_reconstruction.StemReconstructionTests) ... ok
+test_float64_nans_and_stem_misalignment_fail_closed (test_m045_stem_reconstruction.StemReconstructionTests) ... ok
+test_fresh_process_regenerates_exact_same_whole_wav_sha256 (test_m045_stem_reconstruction.StemReconstructionTests) ... ok
+test_order_tamper_and_wrong_revision_are_rejected (test_m045_stem_reconstruction.StemReconstructionTests) ... ok
+test_mismatched_proposal_rejected_before_remote_submission_or_new_attempt (test_m045_typed_edit_integration.TypedEditOwnerTests) ... ok
+test_valid_proposal_commits_and_cold_reopens (test_m045_typed_edit_integration.TypedEditOwnerTests) ... ok
+test_false_p0_and_track_level_preservation_rejected (test_m045_typed_edit_proposal.TypedEditProposalTests) ... ok
+test_malformed_extra_key_and_incomplete_complement_rejected (test_m045_typed_edit_proposal.TypedEditProposalTests) ... ok
+test_protected_track_and_locked_section_reject (test_m045_typed_edit_proposal.TypedEditProposalTests) ... ok
+test_valid_repaint_exact_complement_passes_without_promising_track_isolation (test_m045_typed_edit_proposal.TypedEditProposalTests) ... ok
+test_wrong_rational_time_and_client_floats_rejected (test_m045_typed_edit_proposal.TypedEditProposalTests) ... ok
+test_camelot_and_half_time (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_four_operator_fm_deterministic_decodable (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_invalid_synth_input (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_musicxml_valid_and_title_escaped (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_smf_0_1_headers (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_stereo_crossfade_determinism (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_transcribe_wrong_rate_rejected (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_transcription_not_false_p0 (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_triplet_and_swing_sample_clock (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_triplet_monotonic_and_invalid_bpm (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_velocity_tiers_and_duplicate_identity (test_m045_wave3_absorption.Wave3Tests) ... ok
+test_authorized_preview_uses_canonical_song_notes_and_does_not_publish (test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_authorized_transcribe_is_p3_candidate_not_revision_promotion (test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_preview_denies_foreign_actor_and_unsupported_client_notes (test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_reject_missing_foreign_session_and_unbound_artifact_with_http403 (test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_compound_plan_is_source_bound_and_no_commit (test_m045_wave4_compound_http.CompoundSampleHTTP) ... ok
+test_sample_preview_is_bound_unpublished_and_auth_checked (test_m045_wave4_compound_http.CompoundSampleHTTP) ... ok
+test_ambiguous_and_locked_fail_atomically (test_m045_wave4_compound_sample.CompoundSample) ... ok
+test_filter_comb_varispeed_and_graph (test_m045_wave4_compound_sample.CompoundSample) ... ok
+test_fx_graph_rejects_cycles_and_duplicates (test_m045_wave4_compound_sample.CompoundSample) ... ok
+test_natural_compound_scope_and_immutable_spec (test_m045_wave4_compound_sample.CompoundSample) ... ok
+test_selected_frame_slice_does_not_expand_source (test_m045_wave4_compound_sample.CompoundSample) ... ok
+test_denies_missing_session_foreign_and_unbound_CAS (test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_lawful_master_revision_historical_and_provenance_readback (test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_master_survives_fresh_owner_process_and_historical_audio_remains_lawful (test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_provenance_pcm_digest_matches_decoded_audio_not_fixed_header_offset (test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_sonic_lock_blocks_global_master (test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_stale_revision_and_no_false_p0 (test_m045_wave4_mastering.MasterHTTPTests) ... ok
+test_deterministic_gain_and_presets (test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_fails_closed_on_silent_or_invalid_presets (test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_measured_accurate_ceiling_and_physical_output (test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_rights_held_without_evidence (test_m045_wave4_mastering.MasterProcessorTests) ... ok
+test_48k_is_explicitly_unsupported_not_silently_certified (test_m045_wave4_parity.Wave4Parity) ... ok
+test_quarter_rate_intersample_peak_output_is_bounded_and_physically_decoded (test_m045_wave4_parity.Wave4Parity) ... ok
+test_full_scale (test_mix.PeakMath) ... ok
+test_half_scale (test_mix.PeakMath) ... ok
+test_silence (test_mix.PeakMath) ... ok
+test_bad_output_and_lyric_rejected (test_project_authority.ProjectAuthority) ... ok
+test_chain_history_and_output (test_project_authority.ProjectAuthority) ... ok
+test_cold_process_no_cache (test_project_authority.ProjectAuthority) ... ok
+test_corrupt_project_fail_closed (test_project_authority.ProjectAuthority) ... ok
+test_crash_before_and_after_promotion (test_project_authority.ProjectAuthority) ... ok
+test_one_of_two_stale_writers (test_project_authority.ProjectAuthority) ... ok
+test_reference_namespace_fenced_before_pointer (test_project_authority.ProjectAuthority) ... ok
+test_stale_rejected (test_project_authority.ProjectAuthority) ... ok
+test_uncommitted_revision_not_history (test_project_authority.ProjectAuthority) ... ok
+
+----------------------------------------------------------------------
+Ran 208 tests in 50.990s
+
+OK
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 503 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/soundtrack-grant HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 409 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/compound-plan HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/compound-plan HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/compound-plan HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/sample-preview HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/sample-preview HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/sample-preview HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/sample-preview HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 409 -
+[Studio-Server] "POST /api/m045/master HTTP/1.1" 400 -

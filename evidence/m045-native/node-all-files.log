@@ -1,0 +1,204 @@
+TAP version 13
+# Subtest: render completion retains captured revision and publishes one durable transaction
+ok 1 - render completion retains captured revision and publishes one durable transaction
+  ---
+  duration_ms: 2.916707
+  type: 'test'
+  ...
+# Subtest: render path refuses legacy split write/commit publication
+ok 2 - render path refuses legacy split write/commit publication
+  ---
+  duration_ms: 0.790183
+  type: 'test'
+  ...
+# node:internal/modules/cjs/loader:1433
+#   throw err;
+#   ^
+# Error: Cannot find module 'playwright'
+# Require stack:
+# - /tmp/sara-1122-main/tests/prompt-generate.browser.cjs
+#     at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+#     at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)
+#     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)
+#     at Function._load (node:internal/modules/cjs/loader:1216:25)
+#     at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+#     at Module.require (node:internal/modules/cjs/loader:1527:12)
+#     at require (node:internal/modules/helpers:147:16)
+#     at Object.<anonymous> (/tmp/sara-1122-main/tests/prompt-generate.browser.cjs:9:22)
+#     at Module._compile (node:internal/modules/cjs/loader:1781:14)
+#     at Object..js (node:internal/modules/cjs/loader:1913:10) {
+#   code: 'MODULE_NOT_FOUND',
+#   requireStack: [ '/tmp/sara-1122-main/tests/prompt-generate.browser.cjs' ]
+# }
+# Node.js v22.23.4
+# Subtest: tests/prompt-generate.browser.cjs
+not ok 2 - tests/prompt-generate.browser.cjs
+  ---
+  duration_ms: 63.428964
+  type: 'test'
+  location: '/tmp/sara-1122-main/tests/prompt-generate.browser.cjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: shared ScoreCore loads in a browser without CommonJS
+ok 4 - shared ScoreCore loads in a browser without CommonJS
+  ---
+  duration_ms: 4.08697
+  type: 'test'
+  ...
+# Subtest: prompt UI uses qualified intent and saves only after successful compile
+ok 5 - prompt UI uses qualified intent and saves only after successful compile
+  ---
+  duration_ms: 6.280398
+  type: 'test'
+  ...
+# Subtest: release packaging retains shared browser adapter
+ok 6 - release packaging retains shared browser adapter
+  ---
+  duration_ms: 0.477728
+  type: 'test'
+  ...
+# node:internal/modules/cjs/loader:1433
+#   throw err;
+#   ^
+# Error: Cannot find module 'playwright'
+# Require stack:
+# - /tmp/sara-1122-main/tests/r1-playback.browser.cjs
+#     at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+#     at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)
+#     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)
+#     at Function._load (node:internal/modules/cjs/loader:1216:25)
+#     at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+#     at Module.require (node:internal/modules/cjs/loader:1527:12)
+#     at require (node:internal/modules/helpers:147:16)
+#     at Object.<anonymous> (/tmp/sara-1122-main/tests/r1-playback.browser.cjs:11:22)
+#     at Module._compile (node:internal/modules/cjs/loader:1781:14)
+#     at Object..js (node:internal/modules/cjs/loader:1913:10) {
+#   code: 'MODULE_NOT_FOUND',
+#   requireStack: [ '/tmp/sara-1122-main/tests/r1-playback.browser.cjs' ]
+# }
+# Node.js v22.23.4
+# Subtest: tests/r1-playback.browser.cjs
+not ok 4 - tests/r1-playback.browser.cjs
+  ---
+  duration_ms: 72.135565
+  type: 'test'
+  location: '/tmp/sara-1122-main/tests/r1-playback.browser.cjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/cjs/loader:1433
+#   throw err;
+#   ^
+# Error: Cannot find module 'playwright'
+# Require stack:
+# - /tmp/sara-1122-main/tests/r2-ab.browser.cjs
+#     at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+#     at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)
+#     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)
+#     at Function._load (node:internal/modules/cjs/loader:1216:25)
+#     at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+#     at Module.require (node:internal/modules/cjs/loader:1527:12)
+#     at require (node:internal/modules/helpers:147:16)
+#     at Object.<anonymous> (/tmp/sara-1122-main/tests/r2-ab.browser.cjs:10:22)
+#     at Module._compile (node:internal/modules/cjs/loader:1781:14)
+#     at Object..js (node:internal/modules/cjs/loader:1913:10) {
+#   code: 'MODULE_NOT_FOUND',
+#   requireStack: [ '/tmp/sara-1122-main/tests/r2-ab.browser.cjs' ]
+# }
+# Node.js v22.23.4
+# Subtest: tests/r2-ab.browser.cjs
+not ok 5 - tests/r2-ab.browser.cjs
+  ---
+  duration_ms: 59.728465
+  type: 'test'
+  location: '/tmp/sara-1122-main/tests/r2-ab.browser.cjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/cjs/loader:1433
+#   throw err;
+#   ^
+# Error: Cannot find module 'playwright'
+# Require stack:
+# - /tmp/sara-1122-main/tests/r2-cold-reopen.browser.cjs
+#     at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+#     at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)
+#     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)
+#     at Function._load (node:internal/modules/cjs/loader:1216:25)
+#     at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+#     at Module.require (node:internal/modules/cjs/loader:1527:12)
+#     at require (node:internal/modules/helpers:147:16)
+#     at Object.<anonymous> (/tmp/sara-1122-main/tests/r2-cold-reopen.browser.cjs:10:22)
+#     at Module._compile (node:internal/modules/cjs/loader:1781:14)
+#     at Object..js (node:internal/modules/cjs/loader:1913:10) {
+#   code: 'MODULE_NOT_FOUND',
+#   requireStack: [ '/tmp/sara-1122-main/tests/r2-cold-reopen.browser.cjs' ]
+# }
+# Node.js v22.23.4
+# Subtest: tests/r2-cold-reopen.browser.cjs
+not ok 6 - tests/r2-cold-reopen.browser.cjs
+  ---
+  duration_ms: 69.622027
+  type: 'test'
+  location: '/tmp/sara-1122-main/tests/r2-cold-reopen.browser.cjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: intent retains prompt, explicit musical constraints and reproducible seed
+ok 10 - intent retains prompt, explicit musical constraints and reproducible seed
+  ---
+  duration_ms: 11.866989
+  type: 'test'
+  ...
+# Subtest: unsupported meter and contradictory explicit tempo fail rather than silently coerce
+ok 11 - unsupported meter and contradictory explicit tempo fail rather than silently coerce
+  ---
+  duration_ms: 0.649959
+  type: 'test'
+  ...
+# Subtest: unsupported keys and invalid seeds fail explicitly
+ok 12 - unsupported keys and invalid seeds fail explicitly
+  ---
+  duration_ms: 0.301444
+  type: 'test'
+  ...
+# Subtest: bass octave edit changes only notes starting inside the chosen section
+ok 13 - bass octave edit changes only notes starting inside the chosen section
+  ---
+  duration_ms: 4.772351
+  type: 'test'
+  ...
+# Subtest: invalid target, ambiguous IDs and out of range pitches fail atomically
+ok 14 - invalid target, ambiguous IDs and out of range pitches fail atomically
+  ---
+  duration_ms: 1.459088
+  type: 'test'
+  ...
+# Subtest: section end is exclusive and straddling-note edits require explicit later policy
+ok 15 - section end is exclusive and straddling-note edits require explicit later policy
+  ---
+  duration_ms: 1.128976
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 11
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 203.519258

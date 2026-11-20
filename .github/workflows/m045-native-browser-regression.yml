@@ -1,0 +1,59 @@
+name: M045 Native + Browser Full Regression
+on:
+  push:
+    branches:
+      - feat/m045-native-generation-attempt
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-browser-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install repository dependencies
+        run: npm ci
+      - name: Install browser-test Playwright without modifying lockfile
+        run: npm install --no-save --package-lock=false playwright@1.56.1
+      - name: Install Chromium browser and OS dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Verify Chromium binary and Playwright import
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "CHROMIUM_PATH=$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
+          node -e "const {chromium}=require('playwright'); console.log('Playwright Chromium:',chromium.executablePath())"
+      - name: Python repository tests with zero skips
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=tools:tests python3 -m unittest discover -s tests -p 'test_*.py' -v 2>&1 | tee /tmp/m045-python.log
+          ! grep -E 'skipped=[1-9][0-9]*' /tmp/m045-python.log
+      - name: All 22 Node tests, including Playwright
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test --test-concurrency=1 tests/*.cjs 2>&1 | tee /tmp/m045-node.log
+          grep -Eq '^# tests 22$' /tmp/m045-node.log
+          grep -Eq '^# pass 22$' /tmp/m045-node.log
+          grep -Eq '^# fail 0$' /tmp/m045-node.log
+          grep -Eq '^# skipped 0$' /tmp/m045-node.log
+      - name: Retain exact regression logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m045-browser-and-python-regression
+          path: |
+            /tmp/m045-node.log
+            /tmp/m045-python.log
+          if-no-files-found: warn

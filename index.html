@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
-<meta name="theme-color" content="#7c6cf0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#101624"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml"/>
@@ -48,18 +48,83 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 .meter>div{height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--a2))}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 </style>
+<link rel="stylesheet" href="studio-shell.css"/>
 </head>
 <body>
 <div class="app">
+<header id="studioProjectBar" class="studio-project-bar" aria-label="Studio project and revision">
+<div class="studio-project-identity">
+  <div class="studio-wave-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div><strong>S.A.R.A. Studio™</strong><small>Sound Forge · Production workspace</small></div>
+</div>
+<div class="studio-project-live">
+  <span class="studio-live-key">Project <b id="studioHeaderProjectId">Unsaved</b></span>
+  <span class="studio-live-key">Revision <b id="studioHeaderRevision">Draft</b></span>
+</div>
+<canvas id="studioWaveformPreview" width="280" height="44" role="img" aria-label="Verified audio waveform preview; empty until lawful audio is ready"></canvas>
+</header>
 <h1>S.A.R.A. <span>Sound Forge</span></h1>
 <p class="sub">Sound™ · Shelves · Flux · OTIO-inspired · Local</p>
 <div id="status" class="status ok">Type a prompt → Compile → Play</div>
 <p class="hint" style="font-size:0.72rem;color:var(--m);margin:0 0 10px">Flux: <span id="fluxReadout">—</span> · shelves on master bus</p>
 <div id="canvas-viseme-viewport" class="canvas-container" aria-label="Viseme viewport"></div>
-<div class="card">
-<h3>Generative prompt</h3>
+<div class="card" id="studioPromptSurface" tabindex="-1">
+<h3>Chat · Creative Command</h3>
 <textarea id="prompt" class="prompt" placeholder="e.g. dark 102 BPM alt hip-hop, F# minor, guitar plucks, male verse…"></textarea>
 <button class="full" id="btnCompile">Compile Production Prompt</button>
+</div>
+<div class="card" id="m045StudioControls" tabindex="-1">
+<h3>Generation Attempt · Preservation Proof</h3>
+<p class="hint">Generate only from a saved revision. Full-song replacement is P3; Sonic Lock blocks it. Scoped repaint requires lawful source audio, a compatible ACE-Step endpoint, and audition. Exact outside-window PCM is verified; musical isolation is not guaranteed.</p>
+<label for="m045Provider">Provider</label>
+<select id="m045Provider"><option value="eleven">Eleven Music (requires approved key)</option><option value="ace">ACE-Step (requires qualified remote endpoint)</option></select>
+<label for="m045Duration">Duration, seconds (3–210)</label>
+<input type="number" id="m045Duration" min="3" max="210" value="180"/>
+<label for="m045BatchCount">Generation takes (1–4; selection required for multiple)</label>
+<select id="m045BatchCount"><option value="1">1 take</option><option value="2">2 takes</option><option value="3">3 takes</option><option value="4">4 takes</option></select>
+<label for="m045TargetTrack">Target track (full-mix repaint; locked tracks block)</label>
+<select id="m045TargetTrack"><option value="">Select an unlocked track</option></select>
+<label for="m045BarStart">Change ONLY This™ — starting bar (1-based)</label>
+<input type="number" id="m045BarStart" min="1" step="1" placeholder="Full-song generation"/>
+<label for="m045BarEnd">Ending bar, exclusive</label>
+<input type="number" id="m045BarEnd" min="2" step="1" placeholder="Requires selective renderer"/>
+<button class="full" id="btnM045Generate" type="button">Generate from saved revision</button>
+<section id="m045Wave4Controls" class="m045-wave4-controls" aria-label="Wave 004 native artist operations">
+<h4>DJ Rhythm · MIDI Candidate · Mastering</h4>
+<p class="hint">Preview is temporary. Audio-to-MIDI creates a P3 estimated symbolic candidate, never P0 proof. Mastering creates a new revision only with authorized audio; rights remain held until verified.</p>
+<label for="m045Wave4Section">Preview section</label><select id="m045Wave4Section" aria-label="Select a section for FM preview"></select>
+<label for="m045Wave4Track">Preview track</label><select id="m045Wave4Track" aria-label="Select instrument track for FM preview"></select>
+<button id="m045Wave4Preview" class="secondary" type="button">Audition FM Preview</button>
+<audio id="m045Wave4Audio" controls preload="none" aria-label="Temporary FM preview; not an accepted master"></audio>
+<button id="m045Wave4Transcribe" class="secondary" type="button">Audio → MIDI (P3 Candidate)</button>
+<label for="m045Wave4Preset">Mastering loudness</label>
+<select id="m045Wave4Preset" aria-label="Select measured loudness target"><option value="-14">Streaming · −14 LUFS</option><option value="-9">Club · −9 LUFS</option></select>
+<button id="m045Wave4Master" class="secondary" type="button">Master Verified Revision</button>
+<div id="m045Hvc003GrantPanel" role="group" aria-label="Studio-to-PulseForge music-video grant">
+<label for="m045CinemaProjectId">Existing PulseForge cinema project ID</label>
+<input id="m045CinemaProjectId" autocomplete="off" placeholder="Select your cinema project ID; no new film is created"/>
+<button id="m045CreateMusicVideo" class="secondary" type="button">Create Music Video · Issue Authorized Soundtrack Grant</button>
+<div id="m045SoundtrackGrantStatus" role="status" aria-live="polite" class="status warn">Not issued · Rights and accepted Studio audio must be verified · No film authority promoted</div>
+</div>
+<div id="m045Wave4SamplePanel" aria-label="Compound editing and non-destructive Sample Lab">
+<h4>Compound Edit Planner · Sample Lab™</h4>
+<p class="hint">Plan a change without touching the current song. Preview approved source audio only; slicing and filtering never create rights clearance or a new revision.</p>
+<label for="m045Wave4CompoundIntent">Artist instruction (multi-clause)</label>
+<textarea id="m045Wave4CompoundIntent" rows="3">Keep the hook exactly the same, slow down the middle verse a little, make the bass darker, add a weird metallic sound.</textarea>
+<div class="m045-wave4-sample-actions">
+<button id="m045Wave4CompoundBtn" class="secondary" type="button">Preview Compound Edit Plan</button>
+<button id="m045Wave4SampleSlice" class="secondary" type="button">Sample · Slice First 44,100 Frames</button>
+<button id="m045Wave4SampleBass" class="secondary" type="button">Sample · Darker Bass</button>
+<button id="m045Wave4SampleMetal" class="secondary" type="button">Sample · Metallic Comb</button>
+</div>
+<div id="m045Wave4ExtraStatus" role="status" aria-live="polite" class="status warn">No Sample Lab candidate published or approved.</div>
+<pre id="m045Wave4PlanResult" class="m045-wave4-plan-result" aria-label="Compound edit plan and Sample Lab lineage" tabindex="0"></pre>
+<audio id="m045Wave4SampleAudio" controls preload="none" aria-label="Uncommitted Sample Lab audition candidate"></audio>
+</div>
+<div id="m045Wave4Status" class="status warn" role="status" aria-live="polite">P3 candidate · No mastered output · rights UNVERIFIED</div>
+</section>
+<div class="status warn" id="m045Proof" role="status" aria-live="polite">DECLARED · No committed generation attempt · audio quality UNVERIFIED</div>
+<div id="m045TakePanel" hidden><h4>Audition generated takes — artist selection required</h4><div id="m045TakeButtons"></div><audio id="m045TakePreview" controls preload="none" aria-label="Generated take preview"></audio><div class="status" id="m045TakeStatus" role="status" aria-live="polite">Select a take to audition.</div></div>
 </div>
 <div class="card">
 <h3>Song identity</h3>
@@ -70,8 +135,8 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <div><label>Key override</label><input id="keyOverride" placeholder="e.g. F# minor"/></div>
 </div>
 </div>
-<div class="card">
-<h3>SongSpec metadata</h3>
+<div class="card" id="studioCanvasSurface" tabindex="-1">
+<h3>Canvas · SongSpec and Sections</h3>
 <div id="meta">No SongSpec yet.</div>
 <div id="sections" style="margin-top:10px"></div>
 <div class="meter"><div id="prog"></div></div>
@@ -95,6 +160,21 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <h3>Step matrix (16 × 1/8)</h3>
 <select id="editTrack"></select>
 <div id="matrix" class="matrix"></div>
+</div>
+<div class="card" id="djScratchCard" tabindex="-1">
+<h3>Scratch Surgeon™ — Two-Deck Beat Grid</h3>
+<p class="muted">Symbolic DJ markers are editable ScoreCore events. Save the project to commit them. Audio rendering requires an authorized scratch sample; no synthetic performance is silently substituted.</p>
+<label for="djTechnique">Scratch technique</label>
+<select id="djTechnique">
+<option value="baby">Baby</option>
+<option value="chirp">Chirp</option>
+<option value="2_click_flare">2-click flare</option>
+<option value="two_deck_juggle">Two-deck juggle</option>
+</select>
+<label for="djDeck">Deck</label>
+<select id="djDeck"><option value="A">Deck A</option><option value="B">Deck B</option></select>
+<div id="djGrid" class="matrix" aria-label="Scratch performance step grid"></div>
+<div id="djGridStatus" class="status warn" role="status" aria-live="polite">Select a section and add a scratch marker. Audio UNRENDERED.</div>
 </div>
 
 
@@ -128,8 +208,8 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <label>Look-At Z</label>
 <input type="range" id="lookZ" min="1" max="8" step="0.1" value="4"/>
 </div>
-<div class="card">
-<h3>Project and export</h3>
+<div class="card" id="studioWorkstreamSurface" tabindex="-1">
+<h3>Workstream · Project and Export</h3>
 <label for="projectId">Durable project ID (keep this to reopen)</label>
 <input id="projectId" placeholder="New project, or paste its saved ID" autocomplete="off"/>
 <p id="projectRevision" class="hint">Unsaved draft — browser cache is not project storage</p>
@@ -161,11 +241,25 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 </div>
 </div>
 </div>
-<div class="dock">
+<nav id="studioThumbDock" class="studio-thumb-dock" aria-label="Studio transport and work surfaces">
+<div class="studio-transport-row" aria-label="Quick transport">
+<button type="button" id="dockPlay" class="studio-dock-action" disabled aria-label="Play selected authorized audio"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Play</button>
+<button type="button" id="dockStop" class="studio-dock-action secondary" aria-label="Stop playback"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Stop</button>
+<button type="button" id="dockGenerate" class="studio-dock-action" aria-label="Generate from saved revision"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"/></svg>Generate</button>
+<button type="button" id="dockChangeOnly" class="studio-dock-action secondary" aria-label="Open Change ONLY This controls"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h16M12 4v16"/><circle cx="12" cy="12" r="8"/></svg>Change ONLY This™</button>
+</div>
+<div id="studioModeTabs" class="studio-mode-row" aria-label="Navigate studio surfaces">
+<button type="button" id="studioModeChat" data-studio-target="studioPromptSurface">Chat</button>
+<button type="button" id="studioModeCanvas" data-studio-target="studioCanvasSurface">Canvas</button>
+<button type="button" id="studioModeDj" data-studio-target="djScratchCard">DJ Grid</button>
+<button type="button" id="studioModeProof" data-studio-target="m045StudioControls">Proof</button>
+<button type="button" id="studioModeWorkstream" data-studio-target="studioWorkstreamSurface">Workstream</button>
+</div></nav>
+<div class="studio-legacy-transport" aria-label="Additional studio exports">
 <button id="btnPlay" disabled>Play</button>
 <button class="secondary" id="btnStop">Stop</button>
 <button id="btnWav" style="background:var(--ok);color:#000">WAV</button>
-<button id="btnVocalLab" class="secondary sm" style="margin:0.2rem">Vocal Lab</button>
+<button id="btnVocalLab" class="secondary sm">Vocal Lab</button>
 <button id="btnNeural" style="background:var(--a2);color:#000;font-weight:800">Broadcast</button>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>

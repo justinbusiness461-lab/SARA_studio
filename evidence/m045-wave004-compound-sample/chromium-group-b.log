@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 1 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 10763.811258
+  type: 'test'
+  ...
+# Subtest: Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+ok 2 - Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+  ---
+  duration_ms: 7970.007093
+  type: 'test'
+  ...
+# Subtest: Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+ok 3 - Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+  ---
+  duration_ms: 2666.680488
+  type: 'test'
+  ...
+# Subtest: Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+ok 4 - Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+  ---
+  duration_ms: 2421.115365
+  type: 'test'
+  ...
+# Subtest: Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+ok 5 - Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+  ---
+  duration_ms: 1271.127623
+  type: 'test'
+  ...
+# Subtest: Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+ok 6 - Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+  ---
+  duration_ms: 2407.919892
+  type: 'test'
+  ...
+# Subtest: Studio loads ScoreCore, persists Generate, and reopens the exact revision
+ok 7 - Studio loads ScoreCore, persists Generate, and reopens the exact revision
+  ---
+  duration_ms: 6800.518311
+  type: 'test'
+  ...
+# Subtest: Installed Studio precaches the matching ScoreCore adapter
+ok 8 - Installed Studio precaches the matching ScoreCore adapter
+  ---
+  duration_ms: 1394.23688
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38096.844706

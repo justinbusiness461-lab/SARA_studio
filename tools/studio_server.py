@@ -33,11 +33,25 @@ import tempfile
 import re
 from urllib.parse import urlsplit
 
+try:
+    from m045_generation_attempt import AttemptSecurityError, GenerationAttemptOwner
+except ImportError:  # pragma: no cover - keeps unrelated tooling importable
+    AttemptSecurityError = None
+    GenerationAttemptOwner = None
+
 CAPABILITY = secrets.token_urlsafe(32)
 LOCAL_PRINCIPAL_ID = "local-studio-user"
 SESSION_PRINCIPALS = {}
+M045_ATTEMPT_OWNER = None
+M045_SYNTHESIZE_TO_STAGE = None
+# HVC-003 signing and rights must be configured by the server host, not HTTP.
+M045_GRANT_SIGNING_RING = None
+M045_GRANT_RIGHTS_POLICY = None
 MAX_REQUEST = 64 * 1024 * 1024
 MAX_ARTIFACT = 16 * 1024 * 1024
+# Host-generated, provenance-checked full-length masters only; all raw
+# exports and unproven caller-supplied artifacts keep the 16 MiB ceiling.
+MAX_MASTER_ARTIFACT = 40 * 1024 * 1024
 
 def _principal_id(value):
     if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", value):
@@ -57,6 +71,143 @@ def resolve_studio_session(token):
     if principal_id is None:
         raise ProjectConflict("session denied")
     return principal_id
+
+
+def configure_m045_generation(owner, synthesize_to_stage_fn):
+    """Install a host-owned M045 owner and synthesizer; no client fallback exists."""
+    global M045_ATTEMPT_OWNER, M045_SYNTHESIZE_TO_STAGE
+    M045_ATTEMPT_OWNER = owner
+    M045_SYNTHESIZE_TO_STAGE = synthesize_to_stage_fn
+
+def configure_m045_soundtrack_grant(signing_ring, rights_policy):
+    """Opt in to lawful Studio→PulseForge issuance using host-owned policy.
+
+    The caller may select an already-accepted revision/artifact but cannot mint
+    music rights, trusted signer keys, or ownerless CAS authorization.
+    """
+    from m045_soundtrack_grant import HostSigningKeyRing
+    if not isinstance(signing_ring, HostSigningKeyRing) or not callable(rights_policy):
+        raise ValueError("HVC003_HOST_SIGNING_AND_RIGHTS_POLICY_REQUIRED")
+    signing_ring.require_active_key()
+    global M045_GRANT_SIGNING_RING, M045_GRANT_RIGHTS_POLICY
+    M045_GRANT_SIGNING_RING = signing_ring
+    M045_GRANT_RIGHTS_POLICY = rights_policy
+
+
+def make_m045_native_owner(root):
+    """Bind M045 to the existing project, session, revision and CAS authorities."""
+    if GenerationAttemptOwner is None:
+        raise RuntimeError("M045_GENERATION_OWNER_UNAVAILABLE")
+    root = Path(root).resolve()
+
+    def authorize(principal_id, pid, capability):
+        if capability != "generate":
+            return False
+        project_owner_directory(root, project_id(pid), principal_id, allow_create=False)
+        # The current owner callback contract can only commit for the local
+        # principal. Other principals fail closed until principal-bound commits.
+        return principal_id == LOCAL_PRINCIPAL_ID
+
+    def read_revision(pid, rid):
+        request = {"projectId": project_id(pid)}
+        if rid != "CURRENT":
+            request["revisionId"] = rid
+        try:
+            return project_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID)["revision"]
+        except (ValueError, FileNotFoundError):
+            return None
+
+    def list_revisions(pid):
+        pid = project_id(pid)
+        directory = project_owner_directory(root, pid, LOCAL_PRINCIPAL_ID, allow_create=False)
+        manifest = project_operation(root, {"projectId": pid}, principal_id=LOCAL_PRINCIPAL_ID)["manifest"]
+        found = {}
+        for path in sorted((directory / "revisions").glob("*.json")):
+            revision, _, _ = project_revision(root, directory, pid, path.stem)
+            revision = dict(revision)
+            revision["is_current"] = (revision["revisionId"] == manifest["currentRevisionId"])
+            found[revision["revisionId"]] = revision
+        # Consume Studio's lawful historical-render association authority.
+        # These receipts are not an alternative CAS owner or current pointer.
+        history = directory / "historical-renders"
+        if history.is_dir():
+            for receipt_file in sorted(history.glob("m045:*.json")):
+                receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+                operation_id = (receipt.get("operation") or {}).get("id")
+                rid = receipt.get("revisionId")
+                if (not isinstance(operation_id, str) or not operation_id.startswith("m045:att_")
+                        or receipt_file.name != operation_id + ".json"
+                        or receipt.get("projectId") != pid or rid not in found
+                        or receipt.get("songSpecDigest") != found[rid]["songSpecDigest"]
+                        or receipt.get("productionTimelineDigest") != found[rid]["productionTimelineDigest"]):
+                    raise ProjectConflict("M045 historical identity mismatch")
+                authorized = project_operation(root, {"projectId": pid, "revisionId": rid},
+                                               principal_id=LOCAL_PRINCIPAL_ID)
+                authorized_digests = {binding["artifactId"] for binding in
+                                      authorized.get("historicalOutputBindings", [])}
+                if (not isinstance(receipt.get("artifactIds"), list)
+                        or len(receipt["artifactIds"]) != 1
+                        or receipt["artifactIds"][0] not in authorized_digests):
+                    raise ProjectConflict("M045 historical binding invalid")
+                found[rid].setdefault("historicalGenerationAttempts", []).append(operation_id[5:])
+        return found
+
+    def publish(data):
+        digest = hashlib.sha256(data).hexdigest()
+        _publish_cas_exact(root, digest, data)
+        return digest
+
+    def commit(**kwargs):
+        request = {
+            "projectId": kwargs["project_id"],
+            "expectedCurrentRevisionId": kwargs["expected_current_revision_id"],
+            "songSpec": kwargs["song_spec"],
+            "sourceAssetDigests": kwargs.get("source_asset_digests") or [],
+            "outputArtifactIds": [kwargs["artifact_digest"]],
+            "operationId": "m045:" + kwargs["attempt_id"],
+            "operationContext": {"kind": "m045_generation", "attemptId": kwargs["attempt_id"]},
+        }
+        current = project_operation(root, {"projectId": kwargs["project_id"]},
+                                    principal_id=LOCAL_PRINCIPAL_ID)["manifest"]["currentRevisionId"]
+        if current != kwargs["expected_current_revision_id"]:
+            # Historical renders may bind to an ancestor but never promote it.
+            # project_operation verifies ancestry, exact source SongSpec, digest
+            # identity, media validity and durable historical association.
+            request["operationContext"] = {
+                "kind": "render",
+                "sourceRevisionId": kwargs["expected_current_revision_id"],
+                "attemptId": kwargs["attempt_id"],
+            }
+        return project_operation(root, request, commit=True, principal_id=LOCAL_PRINCIPAL_ID)
+
+    return GenerationAttemptOwner(
+        data_root=root,
+        resolve_session_principal=resolve_studio_session,
+        authorize_project=authorize,
+        read_revision=read_revision,
+        list_project_revisions=list_revisions,
+        publish_cas_object=publish,
+        associate_and_commit_revision=commit,
+        atomic_write_fn=atomic_write_bytes,
+    )
+
+
+def configure_m045_from_environment(root):
+    """Opt-in authorized providers. Missing credentials never enable generation."""
+    providers = {}
+    if os.environ.get("ELEVENLABS_API_KEY"):
+        from m045_eleven_music_provider import ElevenMusicProvider
+        provider = ElevenMusicProvider()
+        providers[provider.model_id] = provider
+    if os.environ.get("SARA_ACESTEP_ENDPOINT_URL"):
+        from m045_acestep_provider import AceStepProvider
+        provider = AceStepProvider()
+        providers[provider.model_id] = provider
+    if not providers:
+        return False
+    configure_m045_generation(make_m045_native_owner(root), providers)
+    return True
+
 
 def authorized_origin(origin, host):
     if host not in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"} or not origin:
@@ -379,9 +530,11 @@ def _render_operation_id(value):
 
 
 def _render_data_bytes(raw):
+    if type(raw) is bytes:
+        return raw  # Trusted server-internal media only; JSON cannot supply bytes.
     if isinstance(raw, list) and all(type(v) is int and 0 <= v <= 255 for v in raw):
         return bytes(raw)
-    raise ValueError("render data_bytes must be byte list")
+    raise ValueError("render data_bytes must be byte list or trusted bytes")
 
 
 def render_authoritative_revision_bytes(spec):
@@ -425,6 +578,8 @@ def _render_commit_request(root, directory, pid, attempt):
         "operationId": attempt["operationId"],
         "operationContext": {"kind": "render", "sourceRevisionId": attempt["sourceRevisionId"]},
     }
+    if attempt.get("masterProvenance") is not None:
+        request["operationContext"]["masterProvenance"] = attempt["masterProvenance"]
     meaning = {k: v for k, v in request.items() if k != "operationId"}
     if hashlib.sha256(project_json(meaning)).hexdigest() != attempt["operationMeaningDigest"]:
         raise ValueError("render attempt meaning mismatch")
@@ -532,7 +687,7 @@ def reconcile_render_attempts(root, directory, pid, manifest):
             raise ValueError("unknown render attempt state")
 
 
-def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
+def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID, master_provenance=None):
     root = Path(root).resolve()
     pid = project_id(request.get("projectId"))
     operation_id = _render_operation_id(request.get("operationId"))
@@ -556,10 +711,37 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
         raw_data = request.get("data_bytes")
         data = (render_authoritative_revision_bytes(spec)
                 if raw_data is None else _render_data_bytes(raw_data))
-        if len(data) > MAX_ARTIFACT:
+        allowed_size = MAX_MASTER_ARTIFACT if master_provenance is not None else MAX_ARTIFACT
+        if len(data) > allowed_size:
             raise ValueError("artifact too large")
         validate_render_audio_bytes(data)
         digest = hashlib.sha256(data).hexdigest()
+        if master_provenance is not None:
+            from m045_wave4_mastering_provenance import CanonicalProvenanceRecord
+            if not isinstance(master_provenance, CanonicalProvenanceRecord):
+                raise ValueError("MASTER_PROVENANCE_TYPE_DENIED")
+            master_provenance.validate()
+            # Physical PCM identity and lawful source binding must match the
+            # claimed provenance, not a client/path/digest-only assertion.
+            with wave.open(io.BytesIO(data), "rb") as verified_pcm:
+                true_pcm_hash = hashlib.sha256(
+                    verified_pcm.readframes(verified_pcm.getnframes())).hexdigest()
+            if true_pcm_hash != master_provenance.pcm_sha256:
+                raise ValueError("MASTER_PCM_PROVENANCE_MISMATCH")
+            project_audio_bytes(root, {"projectId":pid,
+                "revisionId":source_revision,
+                "artifactId":master_provenance.parent_artifact_sha256s[0]},
+                principal_id=principal_id)
+            if (master_provenance.artifact_sha256 != digest
+                    or master_provenance.project_id != pid
+                    or master_provenance.revision_id != source_revision
+                    or master_provenance.rights_status != "UNVERIFIED_HELD"
+                    or master_provenance.origin_type != "DSP_TRANSFORM"
+                    or master_provenance.parent_artifact_sha256s[0] == digest):
+                raise ValueError("MASTER_PROVENANCE_MISMATCH")
+            provenanced = master_provenance.to_dict()
+        else:
+            provenanced = None
         commit_request = {
             "projectId": pid,
             "expectedCurrentRevisionId": source_revision,
@@ -569,6 +751,8 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
             "operationId": operation_id,
             "operationContext": {"kind": "render", "sourceRevisionId": source_revision},
         }
+        if provenanced is not None:
+            commit_request["operationContext"]["masterProvenance"] = provenanced
         meaning = {k: v for k, v in commit_request.items() if k != "operationId"}
         meaning_digest = hashlib.sha256(project_json(meaning)).hexdigest()
         attempts = directory / "render-attempts"
@@ -590,6 +774,8 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
             "filename": filename,
             "subdirectory": subdirectory,
         }
+        if provenanced is not None:
+            identity["masterProvenance"] = provenanced
         if attempt_path.exists():
             attempt = json.loads(attempt_path.read_text())
             for key, value in identity.items():
@@ -637,6 +823,64 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
         fcntl.flock(lock, fcntl.LOCK_UN)
         os.close(lock)
     return result
+
+
+def render_authorized_scratch_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
+    """Studio-owned scratch render using only lawful revision/CAS association."""
+    from m045_scratch_dsp import render_scratch_mix, waveform_pcm
+    if not isinstance(request,dict):
+        raise ValueError("scratch request required")
+    pid=project_id(request.get("projectId"))
+    rid=request.get("revisionId")
+    base_id=request.get("baseArtifactId")
+    refs=request.get("sampleAssetDigests")
+    selected=project_operation(root,{"projectId":pid,"revisionId":rid},principal_id=principal_id)
+    revision=selected["revision"]
+    spec=selected["songSpec"]
+    if not isinstance(refs,dict) or not isinstance(base_id,str):
+        raise ValueError("invalid scratch artifact references")
+    base=project_audio_bytes(root,{"projectId":pid,"revisionId":rid,"artifactId":base_id},principal_id=principal_id)
+    waveform_pcm(base)
+    tracks=[t for t in spec["tracks"] if t.get("track_id")=="dj_scratch"]
+    if len(tracks)!=1 or tracks[0].get("muted") is True:
+        raise ProjectConflict("no active scratch track")
+    events=tracks[0]["events"]
+    if not events or len(events)>128:
+        raise ValueError("scratch marker count unavailable")
+    validate_dj_scratch_authority(spec)
+    if set(refs)!={event["event_id"] for event in events}:
+        raise ProjectConflict("scratch source map does not match source revision")
+    bpm=spec["timebase"]["initial_bpm"]
+    window=(2*480*60*44100+bpm*960)//(2*bpm*960)
+    if not 0<window<=44100*8:
+        raise ValueError("scratch window unsupported")
+    performances=[]
+    for marker in events:
+        digest=refs[marker["event_id"]]
+        if not isinstance(digest,str) or not re.fullmatch("[a-f0-9]{64}",digest):
+            raise ValueError("invalid scratch source digest")
+        if digest not in revision["sourceAssetDigests"]:
+            raise ProjectConflict("scratch source not attached to authorized revision")
+        data=artifact_bytes(Path(root).resolve(),digest)
+        waveform_pcm(data)
+        performances.append({"marker":marker,"sample_asset_wav":data,
+                             "source_asset_digest":digest})
+    output,proof=render_scratch_mix(base,performances,window_frames=window)
+    identity={"schema":"sara.scratch.render.v1","sourceRevisionId":rid,
+        "baseArtifactId":base_id,
+        "sourceAssetDigests":{k:refs[k] for k in sorted(refs)}}
+    op="scratch:"+hashlib.sha256(project_json(identity)).hexdigest()[:48]
+    published=render_publish_operation(root,{"projectId":pid,"sourceRevisionId":rid,
+        "operationId":op,"filename":"scratch-render.wav","subdirectory":"scratch",
+        "data_bytes":list(output)},principal_id=principal_id)
+    selected_revision=published["revision"]["revisionId"]
+    digest=hashlib.sha256(output).hexdigest()
+    readback=project_audio_bytes(root,{"projectId":pid,"revisionId":selected_revision,
+                                      "artifactId":digest},principal_id=principal_id)
+    if readback!=output:
+        raise ValueError("scratch render readback mismatch")
+    return {"projectId":pid,"sourceRevisionId":rid,"revisionId":selected_revision,
+            "artifactId":digest,"proof":proof,"operationId":op}
 
 
 def project_audio_bytes(root, request, principal_id=LOCAL_PRINCIPAL_ID):
@@ -712,6 +956,75 @@ def historical_result(root, directory, manifest, revision, spec, timeline):
     if bindings:
         result["historicalOutputBindings"] = bindings
     return result
+
+
+def validate_dj_scratch_authority(spec, prior=None):
+    """Validate editable DJ markers against canonical ScoreCore clock and locks."""
+    tracks=spec.get("tracks", [])
+    dj=[t for t in tracks if t.get("track_id")=="dj_scratch"]
+    if len(dj)>1 or (dj and dj[0].get("type")!="DJ"):
+        raise ValueError("invalid DJ track identity")
+    for track in tracks:
+        if track.get("track_id")!="dj_scratch" and any(
+                e.get("type")=="DJ_SCRATCH_MARKER" for e in track.get("events",[])):
+            raise ValueError("DJ marker outside canonical track")
+    if dj:
+        tb=spec.get("timebase",{})
+        bpm=tb.get("initial_bpm")
+        if (tb.get("meter")!="4/4" or tb.get("sample_rate")!=44100
+                or tb.get("ticks_per_quarter_note")!=960
+                or type(bpm) is not int or not 60<=bpm<=180):
+            raise ValueError("DJ source clock unsupported")
+        sections=spec["structure"]["sections"]
+        if len(dj[0].get("events",[]))>4096:
+            raise ValueError("DJ marker count exceeds capacity")
+        identities=set()
+        for e in dj[0].get("events",[]):
+            if (not isinstance(e,dict)
+                    or set(e)!={"type","event_id","tick","duration_ticks","deck",
+                                "technique","sample_index","audio_status"}
+                    or e["type"]!="DJ_SCRATCH_MARKER"
+                    or type(e["tick"]) is not int or e["tick"]<0
+                    or e["duration_ticks"]!=480
+                    or e["technique"] not in ("baby","chirp","2_click_flare","two_deck_juggle")
+                    or e["deck"] not in ("A","B")
+                    or e["audio_status"]!="UNRENDERED_SOURCE_ASSET_REQUIRED"):
+                raise ValueError("invalid DJ marker")
+            members=[sec for sec in sections if
+                 type(sec.get("start_tick")) is int and type(sec.get("end_tick")) is int
+                 and sec["start_tick"]<=e["tick"]<sec["end_tick"]
+                 and (e["tick"]-sec["start_tick"])%480==0
+                 and e["tick"]<sec["start_tick"]+16*480]
+            if len(members)!=1:
+                raise ValueError("DJ marker off section beat grid")
+            expected_id=f'dj:{members[0]["id"]}:{e["tick"]}:{e["deck"]}'
+            samples=(2*e["tick"]*60*44100+bpm*960)//(2*bpm*960)
+            if (e["event_id"]!=expected_id or e["sample_index"]!=samples
+                    or type(e["sample_index"]) is not int or expected_id in identities):
+                raise ValueError("DJ marker identity or sample clock mismatch")
+            identities.add(expected_id)
+    if prior is not None:
+        old_tracks={t.get("track_id"):t for t in prior.get("tracks",[])}
+        new_tracks={t.get("track_id"):t for t in tracks}
+        for track_id,old in old_tracks.items():
+            if old.get("sonic_lock") is True:
+                current=new_tracks.get(track_id)
+                if current is None or current.get("events")!=old.get("events"):
+                    raise ProjectConflict("Sonic Lock protects symbolic events")
+        before=(old_tracks.get("dj_scratch") or {}).get("events",[])
+        after=(new_tracks.get("dj_scratch") or {}).get("events",[])
+        before_ids={x.get("event_id"):x for x in before}
+        after_ids={x.get("event_id"):x for x in after}
+        locked=[sec for sec in prior.get("structure",{}).get("sections",[])
+                if sec.get("sonic_lock") is True]
+        for sec in locked:
+            first,last=sec.get("start_tick"),sec.get("end_tick")
+            if type(first) is not int or type(last) is not int or first>=last:
+                raise ProjectConflict("invalid Sonic Lock section clock")
+            old_region={k:v for k,v in before_ids.items() if first<=v["tick"]<last}
+            new_region={k:v for k,v in after_ids.items() if first<=v["tick"]<last}
+            if old_region!=new_region:
+                raise ProjectConflict("Sonic Lock protects DJ region")
 
 
 def project_operation(root, request, commit=False, lyric=False, principal_id=LOCAL_PRINCIPAL_ID):
@@ -820,6 +1133,7 @@ def project_operation(root, request, commit=False, lyric=False, principal_id=LOC
         spec = old_spec if lyric else request.get("songSpec")
         if not isinstance(spec, dict) or not isinstance(spec.get("tracks"), list) or (not isinstance(spec.get("structure"), dict) or not isinstance(spec["structure"].get("sections"), list)) or not isinstance(spec.get("timebase"), dict):
             raise ValueError("SongSpec required")
+        validate_dj_scratch_authority(spec, old_spec if previous else None)
         if request.get("lyricTimelineDigest") is not None:
             raise ValueError("lyric digest cannot bypass the lyric transaction")
         sources = previous['sourceAssetDigests'][:] if lyric else request.get("sourceAssetDigests", [])
@@ -950,7 +1264,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 "<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";</script>"
             ).encode()
             self.send_response(200);self.send_header("Content-Type","text/html");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
-        public={"/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
+        public={"/studio-shell.css","/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
         if path not in public: return self._json(404,{"status":"ERROR","error":"not a public asset"})
         return super().do_GET()
 
@@ -960,11 +1274,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if self.headers.get("Access-Control-Request-Method") not in {"GET","POST"}:
             return self._json(403,{"status":"ERROR","error":"method denied"})
         requested={v.strip().lower() for v in self.headers.get("Access-Control-Request-Headers","").split(",") if v.strip()}
-        if not requested <= {"content-type","x-studio-capability","x-studio-session"}:
+        if not requested <= {"authorization","content-type","x-studio-capability","x-studio-session"}:
             return self._json(403,{"status":"ERROR","error":"headers denied"})
         self.send_response(204)
         self.send_header("Access-Control-Allow-Methods","GET, POST")
-        self.send_header("Access-Control-Allow-Headers","Content-Type, X-Studio-Capability, X-Studio-Session")
+        self.send_header("Access-Control-Allow-Headers","Authorization, Content-Type, X-Studio-Capability, X-Studio-Session")
         self.end_headers()
 
     def _json(self, code: int, obj: dict):
@@ -986,7 +1300,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
         principal_id = None
-        if path.startswith("/api/projects/"):
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant"}:
             try:
                 principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
             except ProjectConflict as e:
@@ -1001,6 +1315,155 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
 
+        if path in {"/api/m045/compound-plan", "/api/m045/sample-preview"}:
+            try:
+                from m045_wave4_service import authorized_compound_plan,authorized_sample_transform
+                operation = (authorized_compound_plan if path.endswith("compound-plan")
+                             else authorized_sample_transform)
+                return self._json(200,operation(EXPORT_ROOT,payload,principal_id))
+            except (ProjectConflict,PermissionError) as exc:
+                return self._json(403,{"status":"DENY","error":str(exc)})
+            except (ValueError,KeyError,TypeError,OSError,wave.Error,EOFError) as exc:
+                return self._json(400,{"status":"ERROR","error":str(exc)})
+
+        if path == "/api/m045/soundtrack-grant":
+            if M045_GRANT_SIGNING_RING is None or M045_GRANT_RIGHTS_POLICY is None:
+                return self._json(503, {"status": "BLOCKED",
+                    "error": "HVC003 host signing/rights authority unconfigured"})
+            try:
+                from m045_soundtrack_grant import issue_authorized_grant, GrantIssuerDenied
+                grant = issue_authorized_grant(
+                    root=EXPORT_ROOT, request=payload, principal_id=principal_id,
+                    ring=M045_GRANT_SIGNING_RING, read_project=project_operation,
+                    read_audio=project_audio_bytes, rights_policy=M045_GRANT_RIGHTS_POLICY)
+                return self._json(200, grant)
+            except ProjectConflict as error:
+                return self._json(403, {"status": "DENY", "error": str(error)})
+            except GrantIssuerDenied as error:
+                return self._json(403, {"status": "DENY", "error": str(error)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
+                return self._json(400, {"status": "ERROR",
+                    "error": "historical soundtrack grant source unqualified"})
+
+        if path == "/api/m045/master":
+            try:
+                from m045_wave4_service import authorized_master
+                return self._json(200, authorized_master(EXPORT_ROOT, payload, principal_id))
+            except (ProjectConflict, PermissionError) as exc:
+                status = 409 if isinstance(exc, ProjectConflict) and "stale" in str(exc) else 403
+                return self._json(status, {"status":"DENY","error":str(exc)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
+
+        if path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth"}:
+            # No client-provided PCM, CAS path, note list or revision publication.
+            # Resolve studio principal and source graph before interpreting a note.
+            try:
+                from m045_wave3_service import authorized_transcribe, authorized_preview
+                operation = authorized_transcribe if path.endswith("transcribe-midi") else authorized_preview
+                return self._json(200, operation(EXPORT_ROOT, payload, principal_id))
+            except ProjectConflict as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except PermissionError as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
+
+        if path == "/api/m045/attempts/take-audio":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status":"BLOCKED","error":"M045 owner unavailable"})
+            try:
+                audio=M045_ATTEMPT_OWNER.read_take_audio(
+                    headers=dict(self.headers),project_id=payload["project_id"],
+                    idempotency_key=payload["idempotency_key"],
+                    take_index=payload["take_index"])
+                self.send_response(200)
+                self.send_header("Content-Type","audio/wav")
+                self.send_header("Cache-Control","no-store")
+                self.send_header("Content-Length",str(len(audio)))
+                self.end_headers()
+                self.wfile.write(audio)
+                return
+            except AttemptSecurityError as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except ProjectConflict as exc:
+                return self._json(409, {"status":"CONFLICT","error":str(exc)})
+            except (ValueError,KeyError,TypeError,OSError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
+
+        if path == "/api/m045/attempts/select-take":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status":"BLOCKED","error":"M045 owner unavailable"})
+            try:
+                result=M045_ATTEMPT_OWNER.select_take(
+                    headers=dict(self.headers),project_id=payload["project_id"],
+                    idempotency_key=payload["idempotency_key"],
+                    take_index=payload["take_index"],
+                    expected_current_revision_id=payload["expected_current_revision_id"])
+                return self._json(200,result)
+            except AttemptSecurityError as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except ProjectConflict as exc:
+                return self._json(409, {"status":"CONFLICT","error":str(exc)})
+            except (ValueError,KeyError,TypeError,OSError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
+
+        if path == "/api/m045/attempts/reconcile":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status": "BLOCKED", "error": "M045 attempt owner unavailable"})
+            try:
+                result = M045_ATTEMPT_OWNER.reconcile_attempt(
+                    headers=dict(self.headers),
+                    project_id=payload["project_id"],
+                    idempotency_key=payload["idempotency_key"],
+                    synthesize_to_stage_fn=M045_SYNTHESIZE_TO_STAGE)
+                return self._json(200, result)
+            except AttemptSecurityError as exc:
+                return self._json(403, {"status": "DENY", "error": str(exc)})
+            except ProjectConflict as exc:
+                return self._json(409, {"status": "CONFLICT", "error": str(exc)})
+            except RuntimeError as exc:
+                return self._json(422, {"status": "ERROR", "error": str(exc)})
+            except (ValueError, KeyError, TypeError, OSError) as exc:
+                return self._json(400, {"status": "ERROR", "error": str(exc)})
+
+        if path == "/api/m045/attempts":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status": "BLOCKED", "error": "M045 generation authority unavailable"})
+            try:
+                fields = dict(payload)
+                provider = M045_SYNTHESIZE_TO_STAGE
+                if isinstance(provider, dict):
+                    provider = provider.get(fields.get("model_id"))
+                if not callable(provider):
+                    return self._json(503, {"status": "BLOCKED", "error": "M045 selected provider unavailable"})
+                configured_model = getattr(provider, "model_id", None)
+                configured_version = getattr(provider, "model_version", None)
+                if configured_model and (fields.get("model_id") != configured_model
+                                         or fields.get("model_version") != configured_version):
+                    return self._json(400, {"status": "DENY", "error": "host provider model mismatch"})
+                fields["headers"] = dict(self.headers)
+                fields["synthesize_to_stage_fn"] = provider
+                result = M045_ATTEMPT_OWNER.execute_attempt(**fields)
+                return self._json(200, result)
+            except AttemptSecurityError as e:
+                return self._json(403, {"status": "DENY", "error": str(e)})
+            except ProjectConflict as e:
+                return self._json(409, {"status": "CONFLICT", "error": str(e)})
+            except RuntimeError as e:
+                return self._json(422, {"status": "ERROR", "error": str(e)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError) as e:
+                return self._json(400, {"status": "ERROR", "error": str(e)})
+
+        if path == "/api/m045/scratch/render":
+            try:
+                return self._json(200, render_authorized_scratch_operation(
+                    EXPORT_ROOT, payload, principal_id=principal_id))
+            except ProjectConflict as e:
+                return self._json(409, {"status":"CONFLICT","error":str(e)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
+                return self._json(400, {"status":"ERROR",
+                    "error":"scratch source or revision authority unqualified"})
         if path == "/api/projects/render":
             try:
                 return self._json(200, render_publish_operation(EXPORT_ROOT, payload, principal_id=principal_id))
@@ -1150,6 +1613,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     durable_mkdir(EXPORT_ROOT)
+    configure_m045_from_environment(EXPORT_ROOT)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("127.0.0.1", PORT), StudioHandler) as httpd:
         print("=" * 72)

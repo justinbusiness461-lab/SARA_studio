@@ -1,0 +1,62 @@
+{
+  "schema": "sara.m045.native-generation-attempt.slice1.v1",
+  "baseMain": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+  "branch": "feat/m045-native-generation-attempt",
+  "implementation": "GenerationAttempt owner and /api/m045/attempts HTTP seam using canonical session, project, revision, and objects CAS authorities",
+  "files": {
+    "tools/m045_generation_attempt.py": "b636f4d0c19a06745f9f804b38427a2514c372c8e188284f52a1769c60a5ba76",
+    "tools/studio_server.py": "ef6ac0590388632db252b7edd06ef726f1af82829a49287d08edaddbcf44d3df",
+    "tests/test_m045_native_attempt.py": "3e4bdd1b55b32c08c4db7cffabef626dbe04cf7bf18561c1c0edf0ff9c9238c2"
+  },
+  "red": {
+    "command": "PYTHONPATH=tools:tests python3 -m unittest tests/test_m045_native_attempt.py -v",
+    "result": "FAIL as required before implementation",
+    "failure": "ModuleNotFoundError: m045_generation_attempt"
+  },
+  "green": {
+    "command": "PYTHONPATH=tools:tests python3 -m unittest tests/test_m045_native_attempt.py -v",
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "result": "PASS"
+  },
+  "pythonRegression": {
+    "command": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -p 'test*.py' -v",
+    "tests": 85,
+    "failures": 0,
+    "errors": 0,
+    "result": "PASS"
+  },
+  "nodeRunnable": {
+    "command": "node --test tests/*test.cjs",
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "skipped": 0,
+    "result": "PASS"
+  },
+  "nodeAllFiles": {
+    "command": "node --test tests/*.cjs",
+    "tests": 15,
+    "pass": 11,
+    "fail": 4,
+    "skipped": 0,
+    "result": "BLOCKED",
+    "reason": "Four browser suites cannot import playwright; playwright is absent from the repository environment. Chromium exists at /usr/bin/chromium."
+  },
+  "proofs": [
+    "Missing bearer authentication is rejected with HTTP 403.",
+    "X-Sara-Principal is ignored; valid server bearer session succeeds.",
+    "Stale expected revision is rejected with HTTP 409.",
+    "Identical concurrent idempotency submissions synthesize once and commit once.",
+    "Divergent payload reuse of an idempotency key is rejected.",
+    "Synthesis failure persists FAILED_PRE_COMMIT.",
+    "Lost post-commit response is reconciled from authoritative revision history.",
+    "Cold restart recovers a now-historical revision and its authorized CAS artifact."
+  ],
+  "notProven": [
+    "Actual model/GPU provider execution; no provider was silently substituted.",
+    "Browser Playwright regression suites until dependency is installed.",
+    "Merge to main; branch remains isolated."
+  ]
+}

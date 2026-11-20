@@ -1,0 +1,36 @@
+{
+  "baseSha": "08ec8abf861cca6a7f4ce3ec7d575dbf0d09b12e",
+  "canonicalRepo": "justinbusiness461-lab/SARA_studio",
+  "certificationLevel": "LOCAL_CHROMIUM_EXECUTED_SOURCE_NOT_RELEASE",
+  "changedSourceSha256": {
+    "app-ui.js": "e9ebd63f74d29b5f293e54c34f81a6cd813a632e3db4edaa50f97c7b13fe6e00",
+    "index.html": "382faeb366966d634e75c20c041b9956811cc2ca5b7ac042617bd251e1c449f5",
+    "scorecore.js": "38dedbb316e01c01efb4f57e60baa134503f5c75187b2f0206138fa16337b452",
+    "service-worker.js": "b8a481d75550819420ecbe96d2cca33358e54f1ff10f7592054b8e1f0b2c2041",
+    "studio-shell.css": "29526460d15956444c7eeec8721677bc087c2d186a74be8c6e9c84f2e236eb7a",
+    "tests/m045-wave4-compound-sample.browser.cjs": "4cd0ad96097573a47b1ab9aa95379334c3c191d43d8cccaf7084ed8e8da2ab10",
+    "tests/m045-wave4-plan.test.cjs": "440dabfafbb16f64fef00d073e8d283cbc728eed0a2b36774bbae45cee67d257",
+    "tests/test_m045_wave4_compound_http.py": "8ec9f79be2d43fc43b9d93e44fa5c3107dfb1708eb7b04942d487fd10e10c196",
+    "tests/test_m045_wave4_compound_sample.py": "0c9e7d1ce69f15efb7d278c41af179bc34bc52ca25e1022b3e921c85ac47593d",
+    "tests/test_m045_wave4_parity.py": "3a56dfbecce37aff52d308bc7a2faa3b5c4272b24797b069a2aa61bea9d4fb66",
+    "tools/m045_edit_proposal.py": "f2ed9d3775237ef81add8937beff7131463331e82f1b2b541dda76f11d0454fe",
+    "tools/m045_sample_lab_dsp.py": "7e38bb0174c012021d9315e6c1606731bf394906422eb42ae68c6cc4f3afbcce",
+    "tools/m045_wave4_service.py": "96855e99b43af2a3159b2a89300f4cf16125e41d8cd0a285e52667ac0493bce7",
+    "tools/studio_server.py": "d7252364cf47a3fdba21b4e114d8b11ba91bb722c1929387876dab63e648cdbf"
+  },
+  "logSha256": {
+    "chromium-group-a.log": "d86e3dc3f395f7680b2a661ffcff93082a073ca0a64f7c305ea9a601dd51d296",
+    "chromium-group-b.log": "bd0ebba29ef28d6045bb3f39d9e5075818da63a29c22a7ce66444e17e48980dc",
+    "chromium-group-c.log": "537e8c9641d44fde3ceeb7a282f6bb6ff2fb1df1f760b08b7f09d5f02887029c",
+    "node-unit.log": "0ca748e6f5af230a4452898c684f2448a024debb596b497122dd61a4586c56d0",
+    "python-full.log": "52290f3ae8b788011340cabab5bcd30c33b94074ade32a0126c2d70371b90dfa"
+  },
+  "mainChanged": false,
+  "schemaVersion": "sj3.wave004.extension.source-manifest.v1",
+  "testCounts": {
+    "chromium": 21,
+    "nodeUnit": 39,
+    "python": 196,
+    "total": 256
+  }
+}

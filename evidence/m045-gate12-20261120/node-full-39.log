@@ -1,0 +1,244 @@
+TAP version 13
+# Subtest: render completion retains captured revision and publishes one durable transaction
+ok 1 - render completion retains captured revision and publishes one durable transaction
+  ---
+  duration_ms: 1.494894
+  type: 'test'
+  ...
+# Subtest: render path refuses legacy split write/commit publication
+ok 2 - render path refuses legacy split write/commit publication
+  ---
+  duration_ms: 0.462554
+  type: 'test'
+  ...
+# Subtest: scratch grid toggles one exact canonical marker and leaves all other events P0-identical
+ok 3 - scratch grid toggles one exact canonical marker and leaves all other events P0-identical
+  ---
+  duration_ms: 8.547988
+  type: 'test'
+  ...
+# Subtest: two deck markers at same tick coexist with deterministic identities
+ok 4 - two deck markers at same tick coexist with deterministic identities
+  ---
+  duration_ms: 12.1872
+  type: 'test'
+  ...
+# Subtest: Sonic Lock and invalid step/technique/deck fail without mutating SongSpec
+ok 5 - Sonic Lock and invalid step/technique/deck fail without mutating SongSpec
+  ---
+  duration_ms: 1.208474
+  type: 'test'
+  ...
+# Subtest: sample clocks are rational-rounded and report event render as UNQUALIFIED
+ok 6 - sample clocks are rational-rounded and report event render as UNQUALIFIED
+  ---
+  duration_ms: 0.709364
+  type: 'test'
+  ...
+# Subtest: Wave4 ScoreCore validates scoped read-only compound plan
+ok 7 - Wave4 ScoreCore validates scoped read-only compound plan
+  ---
+  duration_ms: 0.81936
+  type: 'test'
+  ...
+# Subtest: Wave4 ScoreCore rejects a locked chorus target and false commit
+ok 8 - Wave4 ScoreCore rejects a locked chorus target and false commit
+  ---
+  duration_ms: 0.501142
+  type: 'test'
+  ...
+# Subtest: Wave4 ScoreCore rejects duplicate/unknown operations and missing preserved scopes
+ok 9 - Wave4 ScoreCore rejects duplicate/unknown operations and missing preserved scopes
+  ---
+  duration_ms: 0.237767
+  type: 'test'
+  ...
+# Subtest: propose/validate/preview is immutable P0 event-local, no commit
+ok 10 - propose/validate/preview is immutable P0 event-local, no commit
+  ---
+  duration_ms: 3.159731
+  type: 'test'
+  ...
+# Subtest: ambiguous command is blocked, not inventing an edit
+ok 11 - ambiguous command is blocked, not inventing an edit
+  ---
+  duration_ms: 0.575213
+  type: 'test'
+  ...
+# Subtest: duplicate semantic name and stale snapshot fail closed
+ok 12 - duplicate semantic name and stale snapshot fail closed
+  ---
+  duration_ms: 0.17974
+  type: 'test'
+  ...
+# Subtest: sonic lock denies target mutation
+ok 13 - sonic lock denies target mutation
+  ---
+  duration_ms: 0.148413
+  type: 'test'
+  ...
+# Subtest: commit requires approval; canonical API receives pinned R1 and no audio claims
+ok 14 - commit requires approval; canonical API receives pinned R1 and no audio claims
+  ---
+  duration_ms: 1.000942
+  type: 'test'
+  ...
+# Subtest: stale canonical revision conflict is never retried optimistically
+ok 15 - stale canonical revision conflict is never retried optimistically
+  ---
+  duration_ms: 0.363276
+  type: 'test'
+  ...
+# Subtest: mobile 2x8 DJ pads explicit while desktop keeps canonical matrix
+ok 16 - mobile 2x8 DJ pads explicit while desktop keeps canonical matrix
+  ---
+  duration_ms: 1.214403
+  type: 'test'
+  ...
+# Subtest: viewport contract covers exact required six
+ok 17 - viewport contract covers exact required six
+  ---
+  duration_ms: 0.382454
+  type: 'test'
+  ...
+# Subtest: positive: sequential A then B retains latest B
+ok 18 - positive: sequential A then B retains latest B
+  ---
+  duration_ms: 1.168053
+  type: 'test'
+  ...
+# Subtest: newer B wins when older A server open resolves after B
+ok 19 - newer B wins when older A server open resolves after B
+  ---
+  duration_ms: 0.224107
+  type: 'test'
+  ...
+# Subtest: newer B wins when older A WAV verification resolves after B
+ok 20 - newer B wins when older A WAV verification resolves after B
+  ---
+  duration_ms: 4.056538
+  type: 'test'
+  ...
+# Subtest: newest open failure leaves no previous playback proof
+ok 21 - newest open failure leaves no previous playback proof
+  ---
+  duration_ms: 0.569004
+  type: 'test'
+  ...
+# Subtest: shared ScoreCore loads in a browser without CommonJS
+ok 22 - shared ScoreCore loads in a browser without CommonJS
+  ---
+  duration_ms: 1.832781
+  type: 'test'
+  ...
+# Subtest: prompt UI uses qualified intent and saves only after successful compile
+ok 23 - prompt UI uses qualified intent and saves only after successful compile
+  ---
+  duration_ms: 1.730698
+  type: 'test'
+  ...
+# Subtest: release packaging retains shared browser adapter
+ok 24 - release packaging retains shared browser adapter
+  ---
+  duration_ms: 0.281783
+  type: 'test'
+  ...
+# Subtest: responsive shell loads external stylesheet and allows accessible zoom
+ok 25 - responsive shell loads external stylesheet and allows accessible zoom
+  ---
+  duration_ms: 0.949545
+  type: 'test'
+  ...
+# Subtest: project bar, unified thumb transport, navigation and live proof retain source controls
+ok 26 - project bar, unified thumb transport, navigation and live proof retain source controls
+  ---
+  duration_ms: 0.392719
+  type: 'test'
+  ...
+# Subtest: thumb and step grid minimum 48 px and safe-area composition are styled
+ok 27 - thumb and step grid minimum 48 px and safe-area composition are styled
+  ---
+  duration_ms: 0.163024
+  type: 'test'
+  ...
+# Subtest: responsive shell does not duplicate the canonical production control ids
+ok 28 - responsive shell does not duplicate the canonical production control ids
+  ---
+  duration_ms: 0.6733
+  type: 'test'
+  ...
+# Subtest: intent retains prompt, explicit musical constraints and reproducible seed
+ok 29 - intent retains prompt, explicit musical constraints and reproducible seed
+  ---
+  duration_ms: 3.767545
+  type: 'test'
+  ...
+# Subtest: unsupported meter and contradictory explicit tempo fail rather than silently coerce
+ok 30 - unsupported meter and contradictory explicit tempo fail rather than silently coerce
+  ---
+  duration_ms: 0.405469
+  type: 'test'
+  ...
+# Subtest: unsupported keys and invalid seeds fail explicitly
+ok 31 - unsupported keys and invalid seeds fail explicitly
+  ---
+  duration_ms: 0.153571
+  type: 'test'
+  ...
+# Subtest: bass octave edit changes only notes starting inside the chosen section
+ok 32 - bass octave edit changes only notes starting inside the chosen section
+  ---
+  duration_ms: 2.859852
+  type: 'test'
+  ...
+# Subtest: invalid target, ambiguous IDs and out of range pitches fail atomically
+ok 33 - invalid target, ambiguous IDs and out of range pitches fail atomically
+  ---
+  duration_ms: 0.787421
+  type: 'test'
+  ...
+# Subtest: section end is exclusive and straddling-note edits require explicit later policy
+ok 34 - section end is exclusive and straddling-note edits require explicit later policy
+  ---
+  duration_ms: 0.591257
+  type: 'test'
+  ...
+# Subtest: baseline: targeted bass transpose preserves non-targets and input
+ok 35 - baseline: targeted bass transpose preserves non-targets and input
+  ---
+  duration_ms: 1.127863
+  type: 'test'
+  ...
+# Subtest: reject overlapping named sections instead of ambiguous target
+ok 36 - reject overlapping named sections instead of ambiguous target
+  ---
+  duration_ms: 0.396806
+  type: 'test'
+  ...
+# Subtest: reject unsafe integer section ticks
+ok 37 - reject unsafe integer section ticks
+  ---
+  duration_ms: 0.194532
+  type: 'test'
+  ...
+# Subtest: baseline: note crossing selected section rejects
+ok 38 - baseline: note crossing selected section rejects
+  ---
+  duration_ms: 0.145979
+  type: 'test'
+  ...
+# Subtest: reject unsafe note end arithmetic before silent precision loss
+ok 39 - reject unsafe note end arithmetic before silent precision loss
+  ---
+  duration_ms: 0.173691
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 584.165671

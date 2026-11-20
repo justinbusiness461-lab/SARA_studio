@@ -199,7 +199,13 @@ test('late R1 A-B response cannot replace newer R2 selection', { timeout: 150000
   await page.waitForTimeout(50);
   const second = page.locator('#btnABR2').click();
   await Promise.allSettled([first, second]);
-  await page.waitForTimeout(1000);
+  // B's verified WAV/decode/seek may settle after click promises resolve.
+  // Assert the committed target state rather than an arbitrary wall-clock sleep.
+  await page.waitForFunction(target =>
+    window.__M044_AB_SWITCH__?.state === 'COMPLETE' &&
+    window.__M044_AB_SWITCH__?.targetRevisionId === target &&
+    window.__M044_PLAYBACK_PROOF__?.revisionId === target,
+    r2.revisionId, { timeout: 15000 });
 
   const selected = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
   assert.equal(selected.revisionId, r2.revisionId);

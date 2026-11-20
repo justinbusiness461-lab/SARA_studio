@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: render completion retains captured revision and publishes one durable transaction
+ok 1 - render completion retains captured revision and publishes one durable transaction
+  ---
+  duration_ms: 1.617235
+  type: 'test'
+  ...
+# Subtest: render path refuses legacy split write/commit publication
+ok 2 - render path refuses legacy split write/commit publication
+  ---
+  duration_ms: 0.55351
+  type: 'test'
+  ...
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+ok 3 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 14004.179453
+  type: 'test'
+  ...
+# Subtest: scratch grid toggles one exact canonical marker and leaves all other events P0-identical
+ok 4 - scratch grid toggles one exact canonical marker and leaves all other events P0-identical
+  ---
+  duration_ms: 9.603945
+  type: 'test'
+  ...
+# Subtest: two deck markers at same tick coexist with deterministic identities
+ok 5 - two deck markers at same tick coexist with deterministic identities
+  ---
+  duration_ms: 12.034841
+  type: 'test'
+  ...
+# Subtest: Sonic Lock and invalid step/technique/deck fail without mutating SongSpec
+ok 6 - Sonic Lock and invalid step/technique/deck fail without mutating SongSpec
+  ---
+  duration_ms: 1.22668
+  type: 'test'
+  ...
+# Subtest: sample clocks are rational-rounded and report event render as UNQUALIFIED
+ok 7 - sample clocks are rational-rounded and report event render as UNQUALIFIED
+  ---
+  duration_ms: 0.602784
+  type: 'test'
+  ...
+# Subtest: RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+ok 8 - RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+  ---
+  duration_ms: 21819.594647
+  type: 'test'
+  ...
+# Subtest: M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+ok 9 - M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+  ---
+  duration_ms: 6918.652526
+  type: 'test'
+  ...
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 10 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 6719.94752
+  type: 'test'
+  ...
+# Subtest: propose/validate/preview is immutable P0 event-local, no commit
+ok 11 - propose/validate/preview is immutable P0 event-local, no commit
+  ---
+  duration_ms: 3.463925
+  type: 'test'
+  ...
+# Subtest: ambiguous command is blocked, not inventing an edit
+ok 12 - ambiguous command is blocked, not inventing an edit
+  ---
+  duration_ms: 0.527481
+  type: 'test'
+  ...
+# Subtest: duplicate semantic name and stale snapshot fail closed
+ok 13 - duplicate semantic name and stale snapshot fail closed
+  ---
+  duration_ms: 0.174722
+  type: 'test'
+  ...
+# Subtest: sonic lock denies target mutation
+ok 14 - sonic lock denies target mutation
+  ---
+  duration_ms: 0.157837
+  type: 'test'
+  ...
+# Subtest: commit requires approval; canonical API receives pinned R1 and no audio claims
+ok 15 - commit requires approval; canonical API receives pinned R1 and no audio claims
+  ---
+  duration_ms: 0.96676
+  type: 'test'
+  ...
+# Subtest: stale canonical revision conflict is never retried optimistically
+ok 16 - stale canonical revision conflict is never retried optimistically
+  ---
+  duration_ms: 0.355704
+  type: 'test'
+  ...
+# Subtest: mobile 2x8 DJ pads explicit while desktop keeps canonical matrix
+ok 17 - mobile 2x8 DJ pads explicit while desktop keeps canonical matrix
+  ---
+  duration_ms: 1.238598
+  type: 'test'
+  ...
+# Subtest: viewport contract covers exact required six
+ok 18 - viewport contract covers exact required six
+  ---
+  duration_ms: 0.405909
+  type: 'test'
+  ...
+# Subtest: positive: sequential A then B retains latest B
+ok 19 - positive: sequential A then B retains latest B
+  ---
+  duration_ms: 1.129214
+  type: 'test'
+  ...
+# Subtest: newer B wins when older A server open resolves after B
+ok 20 - newer B wins when older A server open resolves after B
+  ---
+  duration_ms: 0.188583
+  type: 'test'
+  ...
+# Subtest: newer B wins when older A WAV verification resolves after B
+ok 21 - newer B wins when older A WAV verification resolves after B
+  ---
+  duration_ms: 3.331196
+  type: 'test'
+  ...
+# Subtest: newest open failure leaves no previous playback proof
+ok 22 - newest open failure leaves no previous playback proof
+  ---
+  duration_ms: 0.538918
+  type: 'test'
+  ...
+# Subtest: Studio loads ScoreCore, persists Generate, and reopens the exact revision
+ok 23 - Studio loads ScoreCore, persists Generate, and reopens the exact revision
+  ---
+  duration_ms: 4812.545554
+  type: 'test'
+  ...
+# Subtest: Installed Studio precaches the matching ScoreCore adapter
+ok 24 - Installed Studio precaches the matching ScoreCore adapter
+  ---
+  duration_ms: 879.900697
+  type: 'test'
+  ...
+# Subtest: shared ScoreCore loads in a browser without CommonJS
+ok 25 - shared ScoreCore loads in a browser without CommonJS
+  ---
+  duration_ms: 2.25977
+  type: 'test'
+  ...
+# Subtest: prompt UI uses qualified intent and saves only after successful compile
+ok 26 - prompt UI uses qualified intent and saves only after successful compile
+  ---
+  duration_ms: 1.424697
+  type: 'test'
+  ...
+# Subtest: release packaging retains shared browser adapter
+ok 27 - release packaging retains shared browser adapter
+  ---
+  duration_ms: 0.417136
+  type: 'test'
+  ...
+# Subtest: Generate reaches verified revision-bound WAV before Play is enabled
+ok 28 - Generate reaches verified revision-bound WAV before Play is enabled
+  ---
+  duration_ms: 4559.647022
+  type: 'test'
+  ...
+# Subtest: audio retrieval failure never presents Generate as playable
+ok 29 - audio retrieval failure never presents Generate as playable
+  ---
+  duration_ms: 4591.96068
+  type: 'test'
+  ...
+# Subtest: fresh Studio process reopens exact R1 and refetches same authorized WAV
+ok 30 - fresh Studio process reopens exact R1 and refetches same authorized WAV
+  ---
+  duration_ms: 7403.849471
+  type: 'test'
+  ...
+# Subtest: Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+ok 31 - Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+  ---
+  duration_ms: 8088.162169
+  type: 'test'
+  ...
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+ok 32 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 12464.151635
+  type: 'test'
+  ...
+# Subtest: late R1 A-B response cannot replace newer R2 selection
+ok 33 - late R1 A-B response cannot replace newer R2 selection
+  ---
+  duration_ms: 8778.644509
+  type: 'test'
+  ...
+# Subtest: A/B exposes completion only after transport, proof, artifact and position agree
+ok 34 - A/B exposes completion only after transport, proof, artifact and position agree
+  ---
+  duration_ms: 8833.856694
+  type: 'test'
+  ...
+# Subtest: fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+ok 35 - fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+  ---
+  duration_ms: 13399.79315
+  type: 'test'
+  ...
+# Subtest: RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+ok 36 - RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+  ---
+  duration_ms: 2966.258746
+  type: 'test'
+  ...
+# Subtest: mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+ok 37 - mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+  ---
+  duration_ms: 4796.446105
+  type: 'test'
+  ...
+# Subtest: responsive shell loads external stylesheet and allows accessible zoom
+ok 38 - responsive shell loads external stylesheet and allows accessible zoom
+  ---
+  duration_ms: 1.277126
+  type: 'test'
+  ...
+# Subtest: project bar, unified thumb transport, navigation and live proof retain source controls
+ok 39 - project bar, unified thumb transport, navigation and live proof retain source controls
+  ---
+  duration_ms: 0.377586
+  type: 'test'
+  ...
+# Subtest: thumb and step grid minimum 48 px and safe-area composition are styled
+ok 40 - thumb and step grid minimum 48 px and safe-area composition are styled
+  ---
+  duration_ms: 0.154972
+  type: 'test'
+  ...
+# Subtest: responsive shell does not duplicate the canonical production control ids
+ok 41 - responsive shell does not duplicate the canonical production control ids
+  ---
+  duration_ms: 0.747611
+  type: 'test'
+  ...
+# Subtest: intent retains prompt, explicit musical constraints and reproducible seed
+ok 42 - intent retains prompt, explicit musical constraints and reproducible seed
+  ---
+  duration_ms: 14.808632
+  type: 'test'
+  ...
+# Subtest: unsupported meter and contradictory explicit tempo fail rather than silently coerce
+ok 43 - unsupported meter and contradictory explicit tempo fail rather than silently coerce
+  ---
+  duration_ms: 0.889404
+  type: 'test'
+  ...
+# Subtest: unsupported keys and invalid seeds fail explicitly
+ok 44 - unsupported keys and invalid seeds fail explicitly
+  ---
+  duration_ms: 0.393661
+  type: 'test'
+  ...
+# Subtest: bass octave edit changes only notes starting inside the chosen section
+ok 45 - bass octave edit changes only notes starting inside the chosen section
+  ---
+  duration_ms: 5.223956
+  type: 'test'
+  ...
+# Subtest: invalid target, ambiguous IDs and out of range pitches fail atomically
+ok 46 - invalid target, ambiguous IDs and out of range pitches fail atomically
+  ---
+  duration_ms: 0.669334
+  type: 'test'
+  ...
+# Subtest: section end is exclusive and straddling-note edits require explicit later policy
+ok 47 - section end is exclusive and straddling-note edits require explicit later policy
+  ---
+  duration_ms: 0.58008
+  type: 'test'
+  ...
+# Subtest: baseline: targeted bass transpose preserves non-targets and input
+ok 48 - baseline: targeted bass transpose preserves non-targets and input
+  ---
+  duration_ms: 1.224727
+  type: 'test'
+  ...
+# Subtest: reject overlapping named sections instead of ambiguous target
+ok 49 - reject overlapping named sections instead of ambiguous target
+  ---
+  duration_ms: 0.397596
+  type: 'test'
+  ...
+# Subtest: reject unsafe integer section ticks
+ok 50 - reject unsafe integer section ticks
+  ---
+  duration_ms: 0.191037
+  type: 'test'
+  ...
+# Subtest: baseline: note crossing selected section rejects
+ok 51 - baseline: note crossing selected section rejects
+  ---
+  duration_ms: 0.152509
+  type: 'test'
+  ...
+# Subtest: reject unsafe note end arithmetic before silent precision loss
+ok 52 - reject unsafe note end arithmetic before silent precision loss
+  ---
+  duration_ms: 0.174933
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 136795.748124

@@ -1,0 +1,19 @@
+test_authorized_preview_uses_canonical_song_notes_and_does_not_publish (tests.test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_authorized_transcribe_is_p3_candidate_not_revision_promotion (tests.test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_preview_denies_foreign_actor_and_unsupported_client_notes (tests.test_m045_wave3_service.Wave3HTTPTests) ... ok
+test_reject_missing_foreign_session_and_unbound_artifact_with_http403 (tests.test_m045_wave3_service.Wave3HTTPTests) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.654s
+
+OK
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 400 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 403 -
