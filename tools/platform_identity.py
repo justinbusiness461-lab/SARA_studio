@@ -15,6 +15,7 @@ import re
 import secrets
 import sqlite3
 import time
+import threading
 from pathlib import Path
 
 class PlatformDenied(PermissionError): pass
@@ -25,6 +26,7 @@ _PRINCIPAL = re.compile(r"acct-[0-9a-f]{32}\Z")
 _SESSION = re.compile(r"[-_A-Za-z0-9]{38,128}\Z")
 _MAX_BIO = 1200
 _TTL_SECONDS = 60*60*24*7
+_SCHEMA_INIT_LOCK = threading.RLock()
 
 class PlatformStore:
     def __init__(self, root):
@@ -35,28 +37,34 @@ class PlatformStore:
         if folder.is_symlink():raise ValueError("unsafe platform directory")
         self.path=folder/"platform.sqlite3"
         if self.path.is_symlink():raise ValueError("unsafe platform database")
-        with self._db() as db:
-            db.executescript("""
-CREATE TABLE IF NOT EXISTS accounts (
- principal TEXT PRIMARY KEY, handle TEXT NOT NULL UNIQUE COLLATE NOCASE,
- password_salt BLOB NOT NULL, password_hash BLOB NOT NULL,
- display_name TEXT NOT NULL, bio TEXT NOT NULL DEFAULT '',
- created_at INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'active');
-CREATE TABLE IF NOT EXISTS sessions (
- session_id TEXT PRIMARY KEY, principal TEXT NOT NULL,
- token_digest TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL,
- expires_at INTEGER NOT NULL, revoked INTEGER NOT NULL DEFAULT 0,
- FOREIGN KEY(principal) REFERENCES accounts(principal));
-CREATE INDEX IF NOT EXISTS idx_session_principal ON sessions(principal, revoked);
-CREATE TABLE IF NOT EXISTS publications (
- publication_id TEXT PRIMARY KEY, principal TEXT NOT NULL, project_id TEXT NOT NULL,
- revision_id TEXT NOT NULL, artifact_id TEXT NOT NULL,
- title TEXT NOT NULL, rights_evidence TEXT NOT NULL,
- published_at INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1,
- UNIQUE(principal, project_id, revision_id, artifact_id),
- FOREIGN KEY(principal) REFERENCES accounts(principal));
-CREATE INDEX IF NOT EXISTS idx_publications_active ON publications(active,published_at);
-            """)
+        with _SCHEMA_INIT_LOCK:
+            with self._db() as db:
+                # Only one local process thread transitions the database to WAL.
+                # Never issue PRAGMA journal_mode=WAL on every HTTP read; that
+                # can require an exclusive lock and crash concurrent signups.
+                if db.execute("PRAGMA journal_mode").fetchone()[0].lower()!="wal":
+                    db.execute("PRAGMA journal_mode=WAL")
+                db.executescript("""
+    CREATE TABLE IF NOT EXISTS accounts (
+     principal TEXT PRIMARY KEY, handle TEXT NOT NULL UNIQUE COLLATE NOCASE,
+     password_salt BLOB NOT NULL, password_hash BLOB NOT NULL,
+     display_name TEXT NOT NULL, bio TEXT NOT NULL DEFAULT '',
+     created_at INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'active');
+    CREATE TABLE IF NOT EXISTS sessions (
+     session_id TEXT PRIMARY KEY, principal TEXT NOT NULL,
+     token_digest TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL,
+     expires_at INTEGER NOT NULL, revoked INTEGER NOT NULL DEFAULT 0,
+     FOREIGN KEY(principal) REFERENCES accounts(principal));
+    CREATE INDEX IF NOT EXISTS idx_session_principal ON sessions(principal, revoked);
+    CREATE TABLE IF NOT EXISTS publications (
+     publication_id TEXT PRIMARY KEY, principal TEXT NOT NULL, project_id TEXT NOT NULL,
+     revision_id TEXT NOT NULL, artifact_id TEXT NOT NULL,
+     title TEXT NOT NULL, rights_evidence TEXT NOT NULL,
+     published_at INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1,
+     UNIQUE(principal, project_id, revision_id, artifact_id),
+     FOREIGN KEY(principal) REFERENCES accounts(principal));
+    CREATE INDEX IF NOT EXISTS idx_publications_active ON publications(active,published_at);
+                """)
         try:os.chmod(self.path,0o600)
         except OSError:pass
 
@@ -65,7 +73,6 @@ CREATE INDEX IF NOT EXISTS idx_publications_active ON publications(active,publis
         db.row_factory=sqlite3.Row
         db.execute("PRAGMA busy_timeout=10000")
         db.execute("PRAGMA foreign_keys=ON")
-        db.execute("PRAGMA journal_mode=WAL")
         db.execute("PRAGMA synchronous=FULL")
         return db
 
