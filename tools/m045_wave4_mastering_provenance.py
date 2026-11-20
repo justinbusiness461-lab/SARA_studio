@@ -14,6 +14,10 @@ ALLOWED_RIGHTS_STATES=frozenset({"ARTIST_ORIGINAL","LICENSE_CLEARED","OPEN_WEIGH
 ALLOWED_ORIGIN_TYPES=frozenset({"ARTIST_UPLOAD","NATIVE_SCORECORE","FM_PREVIEW_SYNTH",
  "OPEN_WEIGHT_MODEL","COMMERCIAL_API","DSP_TRANSFORM"})
 _SHA=re.compile(r"[0-9a-f]{64}\Z")
+# Only Studio's host-side mastering accepts this larger, fixed PCM16 boundary.
+# Generic exports, JSON uploads, previews and arbitrary render payloads stay 16 MiB.
+MAX_MASTER_SECONDS=210
+MAX_MASTER_BYTES=40*1024*1024
 @dataclass(frozen=True)
 class CanonicalProvenanceRecord:
  artifact_sha256:str
@@ -65,15 +69,28 @@ def _run(args,deadline):
  return p
 
 def _validate_audio(data):
- if not isinstance(data,bytes) or not 44<=len(data)<=16*1024*1024:
+ if not isinstance(data,bytes) or not 44<=len(data)<=MAX_MASTER_BYTES:
   raise ValueError("MASTER_INPUT_UNSUPPORTED_LENGTH")
- with wave.open(io.BytesIO(data),"rb") as w:
-  if (w.getcomptype()!="NONE" or w.getframerate()!=44100 or w.getsampwidth()!=2
-   or w.getnchannels() not in (1,2) or w.getnframes()<4410):
-   raise ValueError("MASTER_INPUT_REQUIRES_44100_PCM16")
-  if w.getnframes()>44100*75:raise ValueError("MASTER_INPUT_DURATION_UNQUALIFIED")
-  if len(w.readframes(w.getnframes()))!=w.getnframes()*w.getnchannels()*2:
-   raise ValueError("TRUNCATED_MASTER_SOURCE")
+ try:
+  with wave.open(io.BytesIO(data),"rb") as w:
+   if (w.getcomptype()!="NONE" or w.getframerate()!=44100 or w.getsampwidth()!=2
+    or w.getnchannels() not in (1,2) or w.getnframes()<4410):
+    raise ValueError("MASTER_INPUT_REQUIRES_44100_PCM16")
+   if w.getnframes()>44100*MAX_MASTER_SECONDS:
+    raise ValueError("MASTER_INPUT_DURATION_UNQUALIFIED")
+   frames=w.getnframes()
+   # Validate bounded blocks; a 210-second song is not decoded into an extra
+   # 37 MiB temporary buffer merely to check completeness.
+   remaining=frames
+   while remaining:
+    chunk=min(65536,remaining)
+    raw=w.readframes(chunk)
+    if len(raw)!=chunk*w.getnchannels()*2:
+     raise ValueError("TRUNCATED_MASTER_SOURCE")
+    remaining-=chunk
+   return frames
+ except (wave.Error, EOFError) as e:
+  raise ValueError("MASTER_INPUT_PCM_INVALID") from e
 
 def master_wav_to_lufs_target(*,wav_bytes:bytes,target_lufs=-14.0,true_peak_ceiling_dbtp=-1.0):
  """FFmpeg BS.1770-derived gating, true peak, two-pass normalization and readback.
@@ -85,28 +102,28 @@ def master_wav_to_lufs_target(*,wav_bytes:bytes,target_lufs=-14.0,true_peak_ceil
  if (type(true_peak_ceiling_dbtp) not in (int,float) or not math.isfinite(true_peak_ceiling_dbtp)
   or true_peak_ceiling_dbtp!=-1.0):
   raise ValueError("MASTER_CEILING_NOT_QUALIFIED")
- _validate_audio(wav_bytes)
+ samples=_validate_audio(wav_bytes)
  # These are ephemeral DSP work files, not immutable artifact authority.
  with tempfile.TemporaryDirectory(prefix="sara-wave4-dsp-") as tmp:
   src=Path(tmp)/"source.wav";dst=Path(tmp)/"master.wav"
   src.write_bytes(wav_bytes)
   af=f"loudnorm=I={target_lufs}:TP={true_peak_ceiling_dbtp}:LRA=11:print_format=json"
-  first=_run(["ffmpeg","-y","-nostdin","-hide_banner","-loglevel","info",
-   "-i",str(src),"-af",af,"-f","null","-"],30)
+  first=_run(["ffmpeg","-y","-nostdin","-hide_banner","-loglevel","info","-threads","1",
+   "-i",str(src),"-af",af,"-f","null","-"],90)
   before=_filter_metrics(first.stderr)
   if before["input_i"] <= -69.9:raise ValueError("CANNOT_MASTER_SILENT_AUDIO")
   filter2=(f"loudnorm=I={target_lufs}:TP={true_peak_ceiling_dbtp}:LRA=11"
    f":measured_I={before['input_i']}:measured_TP={before['input_tp']}"
    f":measured_LRA={before['input_lra']}:measured_thresh={before['input_thresh']}"
    f":offset={before['target_offset']}:linear=true:print_format=json")
-  _run(["ffmpeg","-y","-nostdin","-hide_banner","-loglevel","info",
+  _run(["ffmpeg","-y","-nostdin","-hide_banner","-loglevel","info","-threads","1",
    "-i",str(src),"-af",filter2,"-ar","44100","-ac","2",
-   "-c:a","pcm_s16le",str(dst)],30)
+   "-c:a","pcm_s16le",str(dst)],90)
   output=dst.read_bytes()
   _validate_audio(output)
-  if len(output)>16*1024*1024:raise ValueError("MASTER_OUTPUT_TOO_LARGE")
-  independent=_run(["ffmpeg","-nostdin","-hide_banner","-loglevel","info",
-   "-i",str(dst),"-af",af,"-f","null","-"],30)
+  if len(output)>MAX_MASTER_BYTES:raise ValueError("MASTER_OUTPUT_TOO_LARGE")
+  independent=_run(["ffmpeg","-nostdin","-hide_banner","-loglevel","info","-threads","1",
+   "-i",str(dst),"-af",af,"-f","null","-"],90)
   measured=_filter_metrics(independent.stderr)
   if measured["input_tp"]>true_peak_ceiling_dbtp+0.05:
    raise ValueError("INDEPENDENT_TRUE_PEAK_CEILING_FAILED")
