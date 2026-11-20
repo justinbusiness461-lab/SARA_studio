@@ -100,6 +100,12 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <label for="m045Wave4Preset">Mastering loudness</label>
 <select id="m045Wave4Preset" aria-label="Select measured loudness target"><option value="-14">Streaming · −14 LUFS</option><option value="-9">Club · −9 LUFS</option></select>
 <button id="m045Wave4Master" class="secondary" type="button">Master Verified Revision</button>
+<div id="m045Hvc003GrantPanel" role="group" aria-label="Studio-to-PulseForge music-video grant">
+<label for="m045CinemaProjectId">Existing PulseForge cinema project ID</label>
+<input id="m045CinemaProjectId" autocomplete="off" placeholder="Select your cinema project ID; no new film is created"/>
+<button id="m045CreateMusicVideo" class="secondary" type="button">Create Music Video · Issue Authorized Soundtrack Grant</button>
+<div id="m045SoundtrackGrantStatus" role="status" aria-live="polite" class="status warn">Not issued · Rights and accepted Studio audio must be verified · No film authority promoted</div>
+</div>
 <div id="m045Wave4SamplePanel" aria-label="Compound editing and non-destructive Sample Lab">
 <h4>Compound Edit Planner · Sample Lab™</h4>
 <p class="hint">Plan a change without touching the current song. Preview approved source audio only; slicing and filtering never create rights clearance or a new revision.</p>
