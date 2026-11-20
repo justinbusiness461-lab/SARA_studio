@@ -2145,6 +2145,7 @@ if ($("m045CreateMusicVideo")) $("m045CreateMusicVideo").onclick=async()=>{
   const button=$("m045CreateMusicVideo");
   const status=$("m045SoundtrackGrantStatus");
   let ref=null;
+  let ownsBusy=false;
   try {
     if (m045Wave4Busy) throw new Error("Another Studio operation is running");
     if (m045LocksDirty) throw new Error("Save pending Sonic Lock changes before issuing any grant");
@@ -2157,7 +2158,7 @@ if ($("m045CreateMusicVideo")) $("m045CreateMusicVideo").onclick=async()=>{
     const openToken=projectOpenGenerationToken;
     const token=++m045Wave4Generation;
     const valid=()=>m045Wave4Valid(ref,openToken,token);
-    m045Wave4Busy=true;button.disabled=true;
+    m045Wave4Busy=true;ownsBusy=true;button.disabled=true;
     status.textContent="Checking accepted Studio audio, rights and exact section clock…";
     const response=await fetch("/api/m045/soundtrack-grant",{
       method:"POST",headers:studioProjectHeaders(),
@@ -2182,7 +2183,7 @@ if ($("m045CreateMusicVideo")) $("m045CreateMusicVideo").onclick=async()=>{
     if (!ref || durableProjectRef?.projectId===ref.projectId)
       status.textContent="NOT ISSUED · "+String(error.message||error);
   } finally {
-    m045Wave4Busy=false;button.disabled=false;
+    if (ownsBusy) { m045Wave4Busy=false;button.disabled=false; }
   }
 };
 if ($("m045Wave4Section")) $("m045Wave4Section").onfocus=m045Wave4FillOptions;
