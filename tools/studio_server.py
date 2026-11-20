@@ -44,6 +44,9 @@ LOCAL_PRINCIPAL_ID = "local-studio-user"
 SESSION_PRINCIPALS = {}
 M045_ATTEMPT_OWNER = None
 M045_SYNTHESIZE_TO_STAGE = None
+# HVC-003 signing and rights must be configured by the server host, not HTTP.
+M045_GRANT_SIGNING_RING = None
+M045_GRANT_RIGHTS_POLICY = None
 MAX_REQUEST = 64 * 1024 * 1024
 MAX_ARTIFACT = 16 * 1024 * 1024
 
@@ -72,6 +75,21 @@ def configure_m045_generation(owner, synthesize_to_stage_fn):
     global M045_ATTEMPT_OWNER, M045_SYNTHESIZE_TO_STAGE
     M045_ATTEMPT_OWNER = owner
     M045_SYNTHESIZE_TO_STAGE = synthesize_to_stage_fn
+
+def configure_m045_soundtrack_grant(signing_ring, rights_policy):
+    """Opt in to lawful Studio→PulseForge issuance using host-owned policy.
+
+    The caller may select an already-accepted revision/artifact but cannot mint
+    music rights, trusted signer keys, or ownerless CAS authorization.
+    """
+    from m045_soundtrack_grant import HostSigningKeyRing
+    if not isinstance(signing_ring, HostSigningKeyRing) or not callable(rights_policy):
+        raise ValueError("HVC003_HOST_SIGNING_AND_RIGHTS_POLICY_REQUIRED")
+    signing_ring.require_active_key()
+    global M045_GRANT_SIGNING_RING, M045_GRANT_RIGHTS_POLICY
+    M045_GRANT_SIGNING_RING = signing_ring
+    M045_GRANT_RIGHTS_POLICY = rights_policy
+
 
 def make_m045_native_owner(root):
     """Bind M045 to the existing project, session, revision and CAS authorities."""
@@ -1278,7 +1296,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant"}:
             try:
                 principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
             except ProjectConflict as e:
@@ -1303,6 +1321,25 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._json(403,{"status":"DENY","error":str(exc)})
             except (ValueError,KeyError,TypeError,OSError,wave.Error,EOFError) as exc:
                 return self._json(400,{"status":"ERROR","error":str(exc)})
+
+        if path == "/api/m045/soundtrack-grant":
+            if M045_GRANT_SIGNING_RING is None or M045_GRANT_RIGHTS_POLICY is None:
+                return self._json(503, {"status": "BLOCKED",
+                    "error": "HVC003 host signing/rights authority unconfigured"})
+            try:
+                from m045_soundtrack_grant import issue_authorized_grant, GrantIssuerDenied
+                grant = issue_authorized_grant(
+                    root=EXPORT_ROOT, request=payload, principal_id=principal_id,
+                    ring=M045_GRANT_SIGNING_RING, read_project=project_operation,
+                    read_audio=project_audio_bytes, rights_policy=M045_GRANT_RIGHTS_POLICY)
+                return self._json(200, grant)
+            except ProjectConflict as error:
+                return self._json(403, {"status": "DENY", "error": str(error)})
+            except GrantIssuerDenied as error:
+                return self._json(403, {"status": "DENY", "error": str(error)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
+                return self._json(400, {"status": "ERROR",
+                    "error": "historical soundtrack grant source unqualified"})
 
         if path == "/api/m045/master":
             try:
