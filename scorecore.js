@@ -42,12 +42,23 @@ function transposeSection(spec, { sectionId, trackId, semitones }) {
   if (sections.length !== 1 || tracks.length !== 1) throw new Error('missing or ambiguous edit target');
   const section = sections[0], track = tracks[0];
   const start = section.start_tick, end = section.end_tick;
-  if (!Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end <= start) throw new Error('invalid section bounds');
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end <= start) throw new Error('invalid section bounds: safe integer ticks required');
+  for (const other of spec.structure.sections) {
+    if (other === section) continue;
+    if (!Number.isSafeInteger(other.start_tick) || !Number.isSafeInteger(other.end_tick) ||
+        other.start_tick < 0 || other.end_tick <= other.start_tick) {
+      throw new Error('invalid neighboring section bounds: safe integer ticks required');
+    }
+    if (other.start_tick < end && other.end_tick > start) throw new Error('ambiguous overlapping sections');
+  }
   if (track.type === 'DRUMS' || track.type === 'VOCAL') throw new Error('unsupported track type');
   let count = 0;
   for (const e of track.events) {
     if (e.type !== 'NOTE_ON') continue;
-    if (!Number.isInteger(e.tick) || !Number.isInteger(e.duration_ticks) || e.duration_ticks <= 0) throw new Error('invalid note interval');
+    if (!Number.isSafeInteger(e.tick) || !Number.isSafeInteger(e.duration_ticks) ||
+        e.tick < 0 || e.duration_ticks <= 0 || !Number.isSafeInteger(e.tick + e.duration_ticks)) {
+      throw new Error('unsafe note interval: safe integer ticks required');
+    }
     const stop = e.tick + e.duration_ticks;
     if (e.tick < end && stop > start && (e.tick < start || stop > end)) throw new Error('note crosses edit section');
     if (e.tick >= start && e.tick < end) {
