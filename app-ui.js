@@ -2138,6 +2138,53 @@ async function m045Wave4Action(kind) {
 if ($("m045Wave4Preview")) $("m045Wave4Preview").onclick=()=>m045Wave4Action("preview");
 if ($("m045Wave4Transcribe")) $("m045Wave4Transcribe").onclick=()=>m045Wave4Action("transcribe");
 if ($("m045Wave4Master")) $("m045Wave4Master").onclick=()=>m045Wave4Action("master");
+// HVC-003: command is authenticated soundtrack-issuer request, NOT film creation.
+// Existing Studio project/revision/verified audio are authoritative. No browser
+// cache or localStorage entry ever becomes a second selected soundtrack pointer.
+if ($("m045CreateMusicVideo")) $("m045CreateMusicVideo").onclick=async()=>{
+  const button=$("m045CreateMusicVideo");
+  const status=$("m045SoundtrackGrantStatus");
+  let ref=null;
+  try {
+    if (m045Wave4Busy) throw new Error("Another Studio operation is running");
+    if (m045LocksDirty) throw new Error("Save pending Sonic Lock changes before issuing any grant");
+    ref=m045Wave4Context(true);
+    const cinemaProjectId=($("m045CinemaProjectId")?.value||"").trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(cinemaProjectId))
+      throw new Error("Enter an existing cinema project ID");
+    const sectionId=$("m045Wave4Section")?.value;
+    if (!sectionId) throw new Error("Select a canonical Studio section first");
+    const openToken=projectOpenGenerationToken;
+    const token=++m045Wave4Generation;
+    const valid=()=>m045Wave4Valid(ref,openToken,token);
+    m045Wave4Busy=true;button.disabled=true;
+    status.textContent="Checking accepted Studio audio, rights and exact section clock…";
+    const response=await fetch("/api/m045/soundtrack-grant",{
+      method:"POST",headers:studioProjectHeaders(),
+      body:JSON.stringify({projectId:ref.projectId,revisionId:ref.revisionId,
+        artifactId:ref.artifactId,cinemaProjectId,sectionId,fps:"24/1"})
+    });
+    const grant=await response.json().catch(()=>({}));
+    if (!valid()) return;
+    if (!response.ok) throw new Error(grant.error || ("Issuer HTTP "+response.status));
+    if (grant.schema_version!=="sara.soundtrack.grant.v1" ||
+        grant.source_project_revision_id!==ref.revisionId ||
+        grant.studio_project_id!==ref.projectId ||
+        grant.accepted_audio_artifact_id!==ref.artifactId ||
+        grant.cinema_project_id!==cinemaProjectId ||
+        !/^[a-f0-9]{64}$/.test(grant.signature||""))
+      throw new Error("Issuer result does not bind the selected authorized revision");
+    status.textContent="GRANT ISSUED for "+sectionId+" · Studio "+
+      ref.revisionId.slice(0,12)+" · Frames "+grant.resolved_start_frame+
+      "–"+grant.resolved_end_frame_exclusive+
+      " · Film NOT created or verified · Await PulseForge authorized consumer";
+  } catch(error) {
+    if (!ref || durableProjectRef?.projectId===ref.projectId)
+      status.textContent="NOT ISSUED · "+String(error.message||error);
+  } finally {
+    m045Wave4Busy=false;button.disabled=false;
+  }
+};
 if ($("m045Wave4Section")) $("m045Wave4Section").onfocus=m045Wave4FillOptions;
 if ($("m045Wave4Track")) $("m045Wave4Track").onfocus=m045Wave4FillOptions;
 m045Wave4FillOptions();
