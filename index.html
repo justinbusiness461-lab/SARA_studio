@@ -89,6 +89,19 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <label for="m045BarEnd">Ending bar, exclusive</label>
 <input type="number" id="m045BarEnd" min="2" step="1" placeholder="Requires selective renderer"/>
 <button class="full" id="btnM045Generate" type="button">Generate from saved revision</button>
+<section id="m045Wave4Controls" class="m045-wave4-controls" aria-label="Wave 004 native artist operations">
+<h4>DJ Rhythm · MIDI Candidate · Mastering</h4>
+<p class="hint">Preview is temporary. Audio-to-MIDI creates a P3 estimated symbolic candidate, never P0 proof. Mastering creates a new revision only with authorized audio; rights remain held until verified.</p>
+<label for="m045Wave4Section">Preview section</label><select id="m045Wave4Section" aria-label="Select a section for FM preview"></select>
+<label for="m045Wave4Track">Preview track</label><select id="m045Wave4Track" aria-label="Select instrument track for FM preview"></select>
+<button id="m045Wave4Preview" class="secondary" type="button">Audition FM Preview</button>
+<audio id="m045Wave4Audio" controls preload="none" aria-label="Temporary FM preview; not an accepted master"></audio>
+<button id="m045Wave4Transcribe" class="secondary" type="button">Audio → MIDI (P3 Candidate)</button>
+<label for="m045Wave4Preset">Mastering loudness</label>
+<select id="m045Wave4Preset" aria-label="Select measured loudness target"><option value="-14">Streaming · −14 LUFS</option><option value="-9">Club · −9 LUFS</option></select>
+<button id="m045Wave4Master" class="secondary" type="button">Master Verified Revision</button>
+<div id="m045Wave4Status" class="status warn" role="status" aria-live="polite">P3 candidate · No mastered output · rights UNVERIFIED</div>
+</section>
 <div class="status warn" id="m045Proof" role="status" aria-live="polite">DECLARED · No committed generation attempt · audio quality UNVERIFIED</div>
 <div id="m045TakePanel" hidden><h4>Audition generated takes — artist selection required</h4><div id="m045TakeButtons"></div><audio id="m045TakePreview" controls preload="none" aria-label="Generated take preview"></audio><div class="status" id="m045TakeStatus" role="status" aria-live="polite">Select a take to audition.</div></div>
 </div>
