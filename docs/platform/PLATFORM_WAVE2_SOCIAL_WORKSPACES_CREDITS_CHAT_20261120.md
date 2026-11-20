@@ -23,7 +23,24 @@
 | Concurrency/HTTP GREEN | 35 Wave2/HTTP tests PASS; 253 complete Python tests PASS in 74.730 seconds (includes original Studio regression) |
 | Node | 39/39 PASS, zero failures/skips |
 | Focused browser | 5/5 platform tests PASS (including Wave2 360px artist journey) |
-| Existing full Chromium | **IN EXECUTION AT THIS RECEIPT'S DRAFT CREATION**. Must replace with final exact result; no success claim until terminal result. |
+| Entire 27-case Chromium suite (full terminal) | **21 PASS / 6 FAIL / 0 skipped / 0 cancelled**; FAIL #1 Scratch Surgeon, #3 RS-002, #18 verified Play, #22 musical-position A/B, #24 atomic A/B proof, #25 A/B cold reopen. **NOT GREEN.** |
+
+## Full Chromium failure qualification (no false recovery)
+
+Actual full-suite log: `docs/platform/evidence/kernel_20261120_wave2/chromium-full-27.log`, SHA-256 `7743b0452aef9ac924936384e22dbadbcf9678a78e9e1c7cf531f8f49a2b02d6`. All 27 cases completed in 859.36 seconds; failures 6, skips 0, cancellations 0. This full run used legacy/local Studio mode except separately authored platform-specific tests. It is **not** a 27-case authenticated-platform-mode qualification.
+
+Specific owner edge and minimum repair:
+- #1 Scratch Surgeon: Chromium `locator.selectOption` could not complete on deck control within existing 12s deadline. Independent replay on a separate KERNEL VM also failed, but at a different DJ selector/HTTP timing boundary; root cause remains unproven.
+- #3 RS-002: after actual R2, switch to historical R1 stalled at `m045-mobile-endurance.browser.cjs:52` waiting 15s for `COMPLETE` and matching revision.
+- #18 physical Generate-to-Play: Play element existed, was enabled/visible, but Chromium click timed out within existing 10s limit.
+- #22 musical-position A/B: `r2-ab.browser.cjs:165`, 15s wait for exact R1 playback proof failed.
+- #24 atomic A/B: `r2-ab.browser.cjs:249`, 15s wait for fully committed transport/revision/digest proof failed.
+- #25 A/B cold-reopen: `r2-cold-reopen.browser.cjs:127`, 15s wait failed. Historical/current authority not falsely promoted by passing targeted checks.
+- The source's unchanged stale R1 fencing test (#23) passed. Six-viewport responsive (#26) passed. All five platform-specific browser tests passed.
+- KERNEL VM had 1 GiB RAM with additional resident Chromium processes. Resource contention is a hypothesis, **not an authenticated root cause**; no timeouts were relaxed and no failures were dismissed.
+- Independent opt-in authenticated synthetic two-revision probe on separate KERNEL VM PASS at nonzero playback positions (about 0.023s and 0.044s, exact SHA/selected revision), receipt `docs/platform/evidence/kernel_20261120_wave2/authenticated-ab-nonzero-position.log`. This limited probe **does not certify** generated full-song RS-002.
+
+**Execution state:** Full Chromium gate HELD. Next wake condition = fresh isolated renderer/transport telemetry for first visible failure → smallest lawful fix by Studio A/B/mobile owner → real repeat of exact tests with 0 failures/skips. Do not treat platform HTTP suite green as superseding this gate.
 
 ## Security invariants and unproven boundaries
 
