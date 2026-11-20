@@ -52,6 +52,21 @@ test('Wave2 360px real playlist, workspace, credits and Chat use authenticated a
  const verified=await page.evaluate(()=>window.__M044_PLAYBACK_PROOF__);
  assert.ok(verified.projectId&&verified.revisionId&&verified.artifactId);
  assert.equal(verified.wavSha256,verified.artifactId);
+ await page.locator('#platformNavChat').click();
+ await page.locator('#platformChatInstruction').fill('Master this song to -14 LUFS');
+ await page.locator('#platformChatSend').click();
+ await page.waitForFunction(()=>document.getElementById('platformChatStatus').textContent.includes('APPROVAL_REQUIRED'));
+ assert.equal(await page.locator('#platformChatApprove').isVisible(),true,
+   'A protected Studio operation must show a separate server-issued approval step');
+ page.on('dialog',dialog=>dialog.accept());
+ await page.locator('#platformChatApprove').click();
+ // The currently generated test audio is independently rejected by the
+ // mastering ceiling check. UI must NOT show a successful master.
+ await page.waitForFunction(()=>document.getElementById('platformChatStatus').textContent.includes(
+   'NOT VERIFIED · MASTER_TRUE_PEAK_CEILING_NOT_VERIFIED'),null,{timeout:70000});
+ assert.equal(await page.locator('#platformChatApprove').isVisible(),false);
+ assert.equal((await page.evaluate(()=>window.__M044_PLAYBACK_PROOF__))?.revisionId,
+   verified.revisionId,'independent mastering failure must not replace selected audio');
  const layout=await page.evaluate(()=>({
   overflow:document.documentElement.scrollWidth>window.innerWidth+1,
   touch:[...document.querySelectorAll('#platformShell button')].filter(e=>e.offsetParent!==null)

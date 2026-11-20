@@ -126,9 +126,12 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
      message="Choose exact bounded sample transform and parameters; preview is P3, unpublished and rights held.")
  route={"REPAINT":"/api/m045/compound-plan","TRANSCRIBE_MIDI":"/api/m045/transcribe-midi",
    "CREATE_MUSIC_VIDEO_GRANT":"/api/m045/soundtrack-grant"}.get(action)
- return _result("APPROVAL_REQUIRED",action,projectId=pid,sourceRevisionId=rid,
+ proposed={"projectId":pid,"revisionId":rid,"artifactId":artifact} if action=="TRANSCRIBE_MIDI" else None
+ response=_result("APPROVAL_REQUIRED",action,projectId=pid,sourceRevisionId=rid,
    sourceArtifactId=artifact,selectedTrackId=target_track,
    selectedBars=bars,route=route,
    preservationTier="UNQUALIFIED_UNTIL_EXISTING_OWNER_PROOF",
    message="Review exact source, scope, locks, rights and impact. Commit only through the existing Studio owner.")
+ if proposed:response["proposedRequest"]=proposed
+ return response
 

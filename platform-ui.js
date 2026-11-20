@@ -6,7 +6,13 @@
   const $ = id => document.getElementById(id);
   const root = document.body;
   let currentArtist = null;
+  let pendingChatApproval = null;
   let currentView = "home";
+  function clearChatApproval() {
+    pendingChatApproval=null;
+    const button=$("platformChatApprove");
+    if(button){button.hidden=true;button.disabled=false;}
+  }
   const surfaces = {home:"platformHomePanel",explore:"platformExplorePanel",
                     library:"platformLibraryPanel",profile:"platformProfilePanel",
                     chat:"platformChatPanel"};
@@ -29,6 +35,7 @@
     if(view==="home") text("platformHomeStatus","READY · Open your library or continue in Studio");
   }
   function showSignedOut(message="READY · Sign in or create your account"){
+    clearChatApproval();
     currentArtist=null;
     root.classList.remove("platform-signed-in","platform-view-studio");
     root.classList.add("platform-signed-out");
@@ -238,6 +245,7 @@
   async function executePlatformChat(){
     const instruction=$("platformChatInstruction").value.trim();
     const artist=currentArtist?.principalId;
+    clearChatApproval();
     text("platformChatStatus","LOADING · Checking authenticated command");
     text("platformChatResult","");
     if(!instruction){text("platformChatStatus","ERROR · Enter a command");return;}
@@ -247,6 +255,27 @@
       if(!currentArtist || currentArtist.principalId!==artist)return;
       text("platformChatStatus",result.state+" · "+result.action);
       text("platformChatResult",result.message||JSON.stringify(result.result,null,2));
+      if(result.state==="APPROVAL_REQUIRED"&&result.approval_challenge_id){
+        const project=context.projectId,revision=context.revisionId;
+        if(!project||!revision||result.projectId!==project||result.sourceRevisionId!==revision)
+          throw new Error("Approval requires an exact currently selected source revision");
+        pendingChatApproval={
+          challengeId:result.approval_challenge_id,
+          action:result.action,
+          digest:result.operation_digest,
+          principalId:artist,projectId:project,revisionId:revision,
+          artifactId:context.artifactId||null,
+          expiresAtUnix:result.expiresAtUnix
+        };
+        $("platformChatApprove").hidden=false;
+        text("platformChatResult",JSON.stringify({
+          action:result.action,sourceRevisionId:revision,
+          operationDigest:result.operation_digest,
+          expectedCurrentRevisionId:revision,
+          message:result.message,expiresAtUnix:result.expiresAtUnix,
+          warning:"Not committed. A separate approval is required; owner rights/locks may still deny."
+        },null,2));
+      }
       if(result.state==="STUDIO_ACTION_READY"&&result.action==="GENERATE"){
         const prompt=$("prompt"),button=$("btnCompile");
         if(!prompt||!button||!result.prompt)throw new Error("Existing Studio Generate control unavailable");
@@ -272,6 +301,52 @@
         await listPlaylists();
       }
     }catch(e){text("platformChatStatus","ERROR · "+e.message);}
+  }
+  async function approvePlatformChat(){
+    const selection=pendingChatApproval;
+    if(!selection)return;
+    clearChatApproval(); // Never allow a second submission while outcome is ambiguous.
+    const artist=currentArtist?.principalId;
+    if(!artist || artist!==selection.principalId){
+      text("platformChatStatus","DENIED · Account changed");return;
+    }
+    if(!selection.expiresAtUnix||Date.now()/1000>=selection.expiresAtUnix){
+      text("platformChatStatus","DENIED · Approval expired; request a new proposal");return;
+    }
+    let current;
+    try{current=sourceBoundChatContext();}
+    catch(error){text("platformChatStatus","DENIED · "+error.message);return;}
+    if(current.projectId!==selection.projectId||current.revisionId!==selection.revisionId||
+       (selection.artifactId&&current.artifactId!==selection.artifactId)){
+      text("platformChatStatus","DENIED · Project, revision or audio selection changed");return;
+    }
+    const warning=selection.action==="PUBLISH"?"Publicly reveal this source revision after rights verification?":
+      "Approve "+selection.action+" on this exact source revision? The server will recheck rights, locks and revision authority.";
+    if(!window.confirm(warning)){
+      text("platformChatStatus","DECLINED · No operation performed");return;
+    }
+    text("platformChatStatus","EXECUTING · Server validating single-use approval…");
+    try{
+      const result=await request("/api/m045/chat/approve","POST",{
+        approval_challenge_id:selection.challengeId,
+        expected_current_revision_id:selection.revisionId});
+      if(currentArtist?.principalId!==artist)return;
+      const digest=result.operationResult?.artifactId||null;
+      text("platformChatStatus","EXECUTED · "+result.action+" · Read back authoritative state");
+      text("platformChatResult",JSON.stringify({
+         action:result.action,revisionCommitted:result.revisionCommitted,
+         operationDigest:result.operationDigest,sourceRevisionId:result.sourceRevisionId,
+         outputRevisionId:result.operationResult?.revisionId||null,
+         outputArtifactId:digest,
+         rightsStatus:result.operationResult?.rightsStatus||null,
+         audioStatus:result.operationResult?.audioStatus||null,
+         telemetry:result.operationResult?.telemetry||null,
+         publicationId:result.operationResult?.publicationId||null,
+         preservationTier:result.operationResult?.preservationTier||"UNVERIFIED"
+      },null,2));
+    }catch(error){
+      text("platformChatStatus","NOT VERIFIED · "+error.message+" · Check revision history before reissuing");
+    }
   }
   async function publishCurrent(){
     text("platformPublishStatus","LOADING · Checking selected revision and rights");
@@ -309,6 +384,7 @@
   $("platformBlock").addEventListener("click",()=>socialAction("block"));
   $("platformNotificationsRefresh").addEventListener("click",showNotifications);
   $("platformChatSend").addEventListener("click",executePlatformChat);
+  $("platformChatApprove").addEventListener("click",approvePlatformChat);
   $("platformPublishCurrent").addEventListener("click",publishCurrent);
   $("platformLogout").addEventListener("click",async()=>{
     try{await request("/api/auth/logout","POST",{});}catch(_){}

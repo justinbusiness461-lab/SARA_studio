@@ -1484,12 +1484,22 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 if path.endswith("/finalize") and set(payload)=={"jobKey","outcome"}:
                     return self._json(200,ledger.finalize(principal,payload["jobKey"],payload["outcome"]))
                 raise ValueError("CREDIT_ACTION_DENIED")
-            if path=="/api/platform/chat":
+            if path in {"/api/platform/chat","/api/m045/chat"}:
                 from platform_chat import run_platform_chat
+                from platform_chat_approval import ApprovalStore
                 if set(payload) not in ({"instruction"},{"instruction","context"}):
                     raise ValueError("INVALID_CHAT_COMMAND")
-                return self._json(200,run_platform_chat(EXPORT_ROOT,principal,payload["instruction"],
-                    PLATFORM_PUBLICATION_RIGHTS,context=payload.get("context")))
+                proposal=run_platform_chat(EXPORT_ROOT,principal,payload["instruction"],
+                    PLATFORM_PUBLICATION_RIGHTS,context=payload.get("context"))
+                return self._json(200,ApprovalStore(EXPORT_ROOT).issue(
+                    principal,proposal,payload["instruction"]))
+            if path=="/api/m045/chat/approve":
+                from platform_chat_approval import approved_operation
+                if set(payload)!={"approval_challenge_id","expected_current_revision_id"}:
+                    raise ValueError("INVALID_APPROVAL_FIELDS")
+                result=approved_operation(EXPORT_ROOT,principal,payload["approval_challenge_id"],
+                    payload["expected_current_revision_id"],PLATFORM_PUBLICATION_RIGHTS)
+                return self._json(200,result)
             if path=="/api/me/sessions/revoke":
                 if set(payload)!={"sessionId"}:raise ValueError("INVALID_REVOKE")
                 return self._json(200,store.revoke_session(principal,payload["sessionId"]))
@@ -1616,7 +1626,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if PLATFORM_MODE and (path.startswith("/api/auth/") or
                               path.startswith("/api/playlists") or path.startswith("/api/albums") or
                               path.startswith("/api/social/") or path.startswith("/api/workspaces") or
-                              path.startswith("/api/credits/") or path=="/api/platform/chat" or
+                              path.startswith("/api/credits/") or
+                              path in {"/api/platform/chat","/api/m045/chat","/api/m045/chat/approve"} or
                               path=="/api/me/sessions/revoke"
                               or path=="/api/publications" or
                               (path.startswith("/api/publications/") and path.endswith("/unpublish"))):

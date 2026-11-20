@@ -175,3 +175,7 @@ html.platform-mode #platformChatPanel{display:grid;grid-template-columns:minmax(
 html.platform-mode #platformChatPanel[hidden]{display:none!important}
 
 html.platform-mode #platformChatBars{min-height:48px;min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+
+/* Separate 48px server-issued Chat approval action; never a client confirmation flag. */
+html.platform-mode #platformChatApprove{min-height:48px;min-width:48px;touch-action:manipulation;background:#174d58;color:#ecfdff}
+html.platform-mode #platformChatApprove[hidden]{display:none!important}

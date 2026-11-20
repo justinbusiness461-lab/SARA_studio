@@ -31,6 +31,23 @@ def run_platform_chat(root,principal,instruction,rights_policy,context=None):
   return {"state":"EXECUTED","action":"CREATE_PRIVATE_PLAYLIST",
    "result":SocialStore(root).create_playlist(principal,matched.group(1).strip()),"revisionCommitted":False}
  if normalized in {"publish r2","publish this track","publish this song","publish current song"}:
+  if isinstance(context,dict) and set(context)>= {"projectId","revisionId","artifactId"}:
+   from studio_server import project_operation,project_audio_bytes
+   if set(context)-{"projectId","revisionId","artifactId","selectedTrackId","selectedBars"}:
+    raise ValueError("INVALID_PUBLICATION_CHAT_CONTEXT")
+   project=project_operation(root,{"projectId":context["projectId"]},principal_id=principal)
+   if project["manifest"]["currentRevisionId"]!=context["revisionId"]:
+    raise PlatformDenied("PUBLICATION_SOURCE_NOT_CURRENT")
+   project_audio_bytes(root,{"projectId":context["projectId"],
+      "revisionId":context["revisionId"],"artifactId":context["artifactId"]},
+      principal_id=principal)
+   return {"state":"APPROVAL_REQUIRED","action":"PUBLISH",
+    "projectId":context["projectId"],"sourceRevisionId":context["revisionId"],
+    "sourceArtifactId":context["artifactId"],"route":"/api/publications",
+    "proposedRequest":{"projectId":context["projectId"],"revisionId":context["revisionId"],
+      "artifactId":context["artifactId"],"confirmPublic":True},
+    "message":"Public disclosure requires explicit approval and independent host rights clearance.",
+    "revisionCommitted":False}
   return {"state":"AWAITING_CONFIRMATION","action":"PUBLISH_VERIFIED_REVISION",
    "message":"Choose a specific current project/revision/accepted audio, verify rights and confirm publication. No song changed.",
    "revisionCommitted":False}

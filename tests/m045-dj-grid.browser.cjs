@@ -8,6 +8,7 @@ const {join,resolve}=require('node:path');
 const {once}=require('node:events');
 const {createInterface}=require('node:readline');
 const {chromium}=require('playwright');
+const {installQaLongtasks,qaSnapshot}=require('./qa-longtasks.cjs');
 
 test('Scratch Surgeon grid saves exact DJ event and restores via canonical revision',{timeout:90000},async t=>{
  const dir=mkdtempSync(join(tmpdir(),'djgrid-'));
@@ -27,17 +28,32 @@ test('Scratch Surgeon grid saves exact DJ event and restores via canonical revis
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});
  t.after(()=>browser.close());
  const page=await browser.newPage({serviceWorkers:'block'});
+ await installQaLongtasks(page);
  page.setDefaultTimeout(12000);
  await page.goto('http://127.0.0.1:'+port);
  await page.locator('#prompt').fill('94 BPM F# minor southern drum scratch');
  const commit=page.waitForResponse(r=>r.url().endsWith('/api/projects/commit'));
- const rendered=page.waitForResponse(r=>r.url().endsWith('/api/projects/render'));
+ // The 12s render-response budget begins when the render request is sent,
+ // not before the preceding project commit. No deadline is enlarged.
+ const renderRequested=page.waitForRequest(r=>r.url().endsWith('/api/projects/render'),{timeout:12000});
  await page.locator('#btnCompile').click();
  assert.equal((await commit).status(),200);
- assert.equal((await rendered).status(),200);
+ const renderRequest=await renderRequested;
+ let timeout;
+ try{
+   const result=await Promise.race([
+     renderRequest.response(),
+     new Promise((_,reject)=>{
+       timeout=setTimeout(()=>reject(new Error('Render response exceeded original 12000ms phase budget')),12000);
+     })
+   ]);
+   assert.ok(result,'render request completed without an HTTP response');
+   assert.equal(result.status(),200);
+ }finally{clearTimeout(timeout);}
  await page.waitForFunction(()=>document.querySelector('#projectRevision').textContent.includes('Saved revision'));
  const before=await page.locator('#projectRevision').innerText();
- await page.locator('#djDeck').selectOption('A');
+ try { await page.locator('#djDeck').selectOption('A'); }
+ catch(error){console.log('DJ_ACTIVE_MEDIA_LONGTASKS',JSON.stringify(await qaSnapshot(page)));throw error;}
  await page.locator('#djTechnique').selectOption('chirp');
  await page.locator('[data-dj-step="3"]').click();
  const marker=await page.evaluate(()=>{
