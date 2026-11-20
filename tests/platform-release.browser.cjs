@@ -1,0 +1,53 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const {spawn}=require('node:child_process'),{mkdtempSync,rmSync}=require('node:fs');
+const {tmpdir}=require('node:os'),{join,resolve}=require('node:path');
+const {once}=require('node:events'),{createInterface}=require('node:readline');
+const {chromium}=require('playwright');
+test('authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay', {timeout:85000},async t=>{
+ const dir=mkdtempSync(join(tmpdir(),'sara-pub-browser-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
+ const server=spawn('python3',['-u','tests/platform_release_fixture.py',dir],{cwd:resolve(__dirname,'..'),stdio:['ignore','pipe','inherit']});
+ const closed=once(server,'close');t.after(async()=>{if(server.exitCode===null)server.kill('SIGKILL');await closed;});
+ const lines=createInterface({input:server.stdout});
+ const [line]=await Promise.race([once(lines,'line'),closed.then(()=>{throw Error('fixture exited')})]);lines.close();
+ const fixture=JSON.parse(line);
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});
+ t.after(()=>browser.close());
+ const page=await browser.newPage({viewport:{width:390,height:844},serviceWorkers:'block'});
+ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.route('https://cdn.jsdelivr.net/**',r=>r.abort());
+ await page.goto('http://127.0.0.1:'+fixture.port);
+ await page.locator('#platformHandle').fill('release_artist');
+ await page.locator('#platformPassword').fill('test-only strong passphrase 2026');
+ await page.locator('#platformSignIn').click();
+ await page.waitForFunction(()=>document.body.classList.contains('platform-signed-in'));
+ await page.locator('#platformNavStudio').click();
+ await page.locator('#projectId').fill(fixture.projectId);
+ await page.locator('#btnOpenProject').click();
+ await page.waitForFunction(()=>window.__M044_PLAYBACK_PROOF__?.artifactId!==undefined,{timeout:35000});
+ assert.equal((await page.evaluate(()=>window.__M044_PLAYBACK_PROOF__)).artifactId,fixture.artifactId);
+ page.on('dialog',dialog=>dialog.accept());
+ await page.locator('#platformPublishCurrent').click();
+ await page.waitForFunction(()=>document.getElementById('platformPublishStatus').textContent.includes('Published ID'),{timeout:10000});
+ await page.locator('#platformNavExplore').click();
+ await page.waitForFunction(()=>document.getElementById('platformExploreStatus').textContent.includes('READY'),{timeout:10000});
+ assert.match(await page.locator('#platformExploreSongs').innerText(),/Public Release Fixture/);
+ const released=await page.evaluate(async()=>{
+  const data=await (await fetch('/api/explore')).json();
+  const pub=data.songs[0];const resp=await fetch(pub.audioUrl);
+  const bytes=await resp.arrayBuffer();
+  const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return {id:pub.publicationId,status:resp.status,digest};
+ });
+ assert.equal(released.status,200);assert.equal(released.digest,fixture.artifactId);
+ const result=await page.evaluate(async id=>{
+  const res=await fetch('/api/publications/'+id+'/unpublish',
+   {method:'POST',headers:{'Content-Type':'application/json','X-Studio-Capability':window.__STUDIO_CAPABILITY__},body:'{}'});
+  return res.status;
+ },released.id);
+ assert.equal(result,200);
+ assert.equal(await page.evaluate(async id=>(await fetch('/api/songs/'+id+'/audio')).status,released.id),404);
+ await page.locator('#platformNavExplore').click();
+ await page.waitForFunction(()=>document.getElementById('platformExploreStatus').textContent.includes('EMPTY'),{timeout:10000});
+ assert.deepEqual(errors,[]);
+});
