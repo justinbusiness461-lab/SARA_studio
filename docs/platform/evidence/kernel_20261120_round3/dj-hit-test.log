@@ -1,0 +1,35 @@
+TAP version 13
+# DJ_REQ 4128 POST projects/commit
+# DJ_RES 4712 200 projects/commit
+# DJ_REQ 5812 POST projects/render
+# DJ_RES 12559 200 projects/render
+# DJ_REQ 12650 POST projects/audio
+# DJ_RES 13637 200 projects/audio
+# DJ_DOM_PRE {"html":"","body":"","height":720,"scrollY":235,"status":"Revision saved. Rendering audio…","controls":[{"id":"djDeck","display":"inline-block","visibility":"visible","opacity":"1","disabled":false,"hidden":false,"rect":[718.265625,4009.78125,532.71875,44],"nearestHidden":null},{"id":"djScratchCard","display":"block","visibility":"visible","opacity":"1","hidden":false,"rect":[703.265625,3824.78125,562.71875,368],"nearestHidden":null},{"id":"studioModeDj","display":"flex","visibility":"visible","opacity":"1","disabled":false,"hidden":false,"rect":[548.1875,663,183.609375,48],"nearestHidden":null},{"id":"studioModeTabs","display":"grid","visibility":"visible","opacity":"1","hidden":false,"rect":[165,663,950,48],"nearestHidden":null},{"id":"djGrid","display":"grid","visibility":"visible","opacity":"1","hidden":false,"rect":[718.265625,4071.78125,532.71875,61],"nearestHidden":null},{"id":"platformNavigation","display":"block","visibility":"visible","opacity":"1","hidden":false,"rect":[0,0,0,0],"nearestHidden":"platformShell"},{"id":"platformMiniPlayer","display":"block","visibility":"visible","opacity":"1","hidden":false,"rect":[0,0,0,0],"nearestHidden":"platformShell"}]}
+# DJ_HIT_TEST [{"id":"studioModeDj","rect":[548.1875,663,183.609375,48],"hit":"studioModeDj","near":"<button type=\\"button\\" id=\\"studioModeDj\\" data-studio-target=\\"djScratchCard\\">DJ Grid</button>","display":"flex","disabled":false},{"id":"djDeck","rect":[718.265625,4009.78125,532.71875,44],"display":"inline-block","disabled":false},{"id":"dockGenerate","rect":[644,607,231.5,48],"hit":"dockGenerate","near":"<button type=\\"button\\" id=\\"dockGenerate\\" class=\\"studio-dock-action\\" aria-label=\\"Generate from saved revision\\"><svg aria-hidden=\\"true\\" viewBox=\\"0 0 24 2","display":"flex","disabled":false},{"id":"studioModeTabs","rect":[165,663,950,48],"hit":"studioModeDj","near":"<button type=\\"button\\" id=\\"studioModeDj\\" data-studio-target=\\"djScratchCard\\">DJ Grid</button>","display":"grid"},{"id":"platformMiniPlayer","rect":[0,0,0,0],"hit":"BODY","near":"<body>\\n<section id=\\"platformAuth\\" class=\\"platform-auth\\" aria-label=\\"S.A.R.A. Studio sign in\\" hidden=\\"\\">\\n  <div class=\\"platform-auth-card\\">\\n    <p clas","display":"block"},{"id":"platformNavigation","rect":[0,0,0,0],"hit":"BODY","near":"<body>\\n<section id=\\"platformAuth\\" class=\\"platform-auth\\" aria-label=\\"S.A.R.A. Studio sign in\\" hidden=\\"\\">\\n  <div class=\\"platform-auth-card\\">\\n    <p clas","display":"block"}]
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+not ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 54349.853687
+  type: 'test'
+  location: '/tmp/sara_r3/SARA_studio-d35da48c44894109468b3a1e7d56d09c7a375246/tests/m045-dj-grid.browser.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 12000ms exceeded.
+    Call log:
+      - waiting for locator('#studioModeDj')
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara_r3/SARA_studio-d35da48c44894109468b3a1e7d56d09c7a375246/tests/m045-dj-grid.browser.cjs:67:38)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54843.009428
