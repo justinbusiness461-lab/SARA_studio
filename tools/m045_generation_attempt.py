@@ -105,6 +105,8 @@ def _request_digest(kwargs: Dict[str, Any]) -> str:
         stable["audio_cover_strength"] = kwargs.get("audio_cover_strength", 1.0)
     if kwargs.get("batch_count", 1) not in (None, 1):
         stable["batch_count"] = kwargs["batch_count"]
+    if kwargs.get("typed_edit_proposal") is not None:
+        stable["typed_edit_proposal"] = kwargs["typed_edit_proposal"]
     return hashlib.sha256(_json_bytes(stable)).hexdigest()
 
 
@@ -429,7 +431,8 @@ class GenerationAttemptOwner:
                        "project_id","base_revision_id","expected_current_revision_id",
                        "idempotency_key","model_id","model_version","seed",
                        "song_spec","prompt","lyrics","params","batch_count",
-                       "reference_artifact_digest","audio_cover_strength")},
+                       "reference_artifact_digest","audio_cover_strength",
+                       "typed_edit_proposal")},
                    "state":"PREPARING","takes":[],"selections":{}}
                 self._save_attempt(path,attempt)
             stage=self._attempt_dir(project_id)/(attempt["attempt_id"]+".stage")
@@ -608,6 +611,14 @@ class GenerationAttemptOwner:
             _, source_frames = read_pcm16_wav(source_pcm)
             region = bar_sample_window(current_spec, requested.get("start_bar"),
                                        requested.get("end_bar"), source_frames)
+            if kwargs.get("typed_edit_proposal") is not None:
+                from m045_typed_edit_proposal import validate_typed_repaint_proposal
+                validated = validate_typed_repaint_proposal(
+                    kwargs["typed_edit_proposal"], current_spec, source_frames,
+                    region, target)
+                if (kwargs["typed_edit_proposal"]["target_scope"]["start_bar"] != requested["start_bar"]
+                        or kwargs["typed_edit_proposal"]["target_scope"]["end_bar"] != requested["end_bar"]):
+                    raise ValueError("TYPED_EDIT_TARGET_SCOPE_MISMATCH")
             # Section protection is evaluated on canonical integer ticks.
             quarter_ticks = current_spec["timebase"]["ticks_per_quarter_note"]
             first_tick = (requested["start_bar"] - 1) * 4 * quarter_ticks
@@ -623,6 +634,8 @@ class GenerationAttemptOwner:
         elif ("target_bar_range" in requested or "target_sample_range" in requested
               or requested.get("edit_mode") is not None):
             raise _conflict("Change ONLY This requires a qualified selective renderer")
+        elif kwargs.get("typed_edit_proposal") is not None:
+            raise _conflict("typed edit requires qualified scoped repaint")
         if batch_count > 1:
             if selective:
                 raise _conflict("multi-take repaint unqualified")
@@ -695,7 +708,7 @@ class GenerationAttemptOwner:
                         "idempotency_key", "model_id", "model_version", "seed",
                         "song_spec", "prompt", "lyrics", "params",
                         "reference_artifact_digest", "audio_cover_strength",
-                        "batch_count")},
+                        "batch_count", "typed_edit_proposal")},
                     "created_at": time.time(),
                     "updated_at": time.time(),
                     "error_code": None,
