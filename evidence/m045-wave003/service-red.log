@@ -1,0 +1,81 @@
+test_authorized_preview_uses_canonical_song_notes_and_does_not_publish (tests.test_m045_wave3_service.Wave3HTTPTests) ... ERROR
+test_authorized_transcribe_is_p3_candidate_not_revision_promotion (tests.test_m045_wave3_service.Wave3HTTPTests) ... ERROR
+test_preview_denies_foreign_actor_and_unsupported_client_notes (tests.test_m045_wave3_service.Wave3HTTPTests) ... ERROR
+test_reject_missing_foreign_session_and_unbound_artifact_with_http403 (tests.test_m045_wave3_service.Wave3HTTPTests) ... ERROR
+
+======================================================================
+ERROR: test_authorized_preview_uses_canonical_song_notes_and_does_not_publish (tests.test_m045_wave3_service.Wave3HTTPTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 62, in test_authorized_preview_uses_canonical_song_notes_and_does_not_publish
+    code,result=self.request("/api/m045/preview-synth",body,session=self.session)
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 39, in request
+    return e.code,json.loads(e.read())
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_authorized_transcribe_is_p3_candidate_not_revision_promotion (tests.test_m045_wave3_service.Wave3HTTPTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 41, in test_authorized_transcribe_is_p3_candidate_not_revision_promotion
+    code,body=self.request("/api/m045/transcribe-midi",
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 39, in request
+    return e.code,json.loads(e.read())
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_preview_denies_foreign_actor_and_unsupported_client_notes (tests.test_m045_wave3_service.Wave3HTTPTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 74, in test_preview_denies_foreign_actor_and_unsupported_client_notes
+    self.assertEqual(self.request("/api/m045/preview-synth",body)[0],403)
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 39, in request
+    return e.code,json.loads(e.read())
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_reject_missing_foreign_session_and_unbound_artifact_with_http403 (tests.test_m045_wave3_service.Wave3HTTPTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 53, in test_reject_missing_foreign_session_and_unbound_artifact_with_http403
+    self.assertEqual(self.request("/api/m045/transcribe-midi",body)[0],403)
+  File "/tmp/sj3-wave003/SARA_studio-4acb2a4adb91647bf433f1ac1d3ad41997266448/tests/test_m045_wave3_service.py", line 39, in request
+    return e.code,json.loads(e.read())
+  File "/usr/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.404s
+
+FAILED (errors=4)
+[Studio-Server] code 404, message Not found
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 404 -
+[Studio-Server] code 404, message Not found
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 404 -
+[Studio-Server] code 404, message Not found
+[Studio-Server] "POST /api/m045/preview-synth HTTP/1.1" 404 -
+[Studio-Server] code 404, message Not found
+[Studio-Server] "POST /api/m045/transcribe-midi HTTP/1.1" 404 -
