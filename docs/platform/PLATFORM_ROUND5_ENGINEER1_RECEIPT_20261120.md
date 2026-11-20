@@ -32,6 +32,9 @@ All raw logs are under `docs/platform/evidence/kernel_20261120_round5/`. Chromiu
 
 Independent GitHub byte readback: **13/13 distinct changed source/test/config files** matched executed local files at exact source commit, after correcting newline identity in an earlier intermediate commit. Product SHA is pinned above; the subsequent evidence-only commit does not alter product source.
 
+
+**Browser source-scope note:** The interrupted Chromium attempt ran on an intermediate local Round 5 candidate **before** the account-erasure routes were added. It is not an exact-final-SHA full browser certification. The final source SHA is qualified by the complete Python and Node runs above; the final browser gate remains **UNTESTED TO COMPLETION / RELEASE HOLD**.
+
 ## SECURITY / RELEASE DISPOSITION
 
 **Draft / release HOLD.** Native tests are contracts, not actual iOS/Android app-store submissions. StoreKit/Google Play receipts require real host APIs, signed transaction verification and revoke/refund settlement. Account-deletion request acceptance is not complete data destruction. HTTPS, CSRF/rate-limit, OIDC/SSO and independent penetration review remain unverified. No GPU/audio render, listening, deployment, billing charge, main merge, or cinema source mutation authorized.

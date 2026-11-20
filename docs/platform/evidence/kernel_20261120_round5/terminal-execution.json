@@ -37,7 +37,9 @@
       "qualification": "FAILED_INCOMPLETE",
       "failure": "Scratch Surgeon #djTechnique locator.selectOption 12s timeout",
       "log": "r5-chromium-full.log",
-      "sha256": "e719fb0404302ae31a1cbf3de010d5cd77f9aae6a79bc9d70d5dfad5234d1ef6"
+      "sha256": "e719fb0404302ae31a1cbf3de010d5cd77f9aae6a79bc9d70d5dfad5234d1ef6",
+      "source_scope": "PRE_ACCOUNT_ERASURE_INTERMEDIATE_LOCAL_ROUND5_CANDIDATE; NOT_EXACT_FINAL_SHA",
+      "final_sha_qualification": false
     }
   ],
   "source_files_committed": 13,
