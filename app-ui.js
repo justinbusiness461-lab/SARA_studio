@@ -1108,13 +1108,13 @@ async function submitM045Attempt() {
   m045PublishProof(result.state, result.attempt);
   if (result.state === "AWAITING_TAKE_SELECTION") {
     const pointer = {projectId:active.projectId,idempotencyKey:body.idempotency_key};
-    try { localStorage.setItem("m045_attempt_pointer", JSON.stringify(pointer)); } catch (_) {}
+    if (!window.__SARA_PLATFORM_MODE__) try { localStorage.setItem("m045_attempt_pointer", JSON.stringify(pointer)); } catch (_) {}
     m045PublishTakes(result.attempt,pointer);
     setStatus("Generation ready · audition takes before selecting a winner","warn");
     return;
   }
   if (["COMMITTED", "ASSOCIATED_HISTORICAL"].includes(result.state)) {
-    try { localStorage.setItem("m045_attempt_pointer", JSON.stringify({
+    if (!window.__SARA_PLATFORM_MODE__) try { localStorage.setItem("m045_attempt_pointer", JSON.stringify({
       projectId:active.projectId,idempotencyKey:body.idempotency_key
     })); } catch (_) {}
     setStatus("Generation recorded · reopen project for authoritative audio readback", "warn");
@@ -1124,7 +1124,7 @@ async function recoverM045Proof() {
   const generation = ++m045RequestToken;
   const active = durableProjectRef && {...durableProjectRef};
   let pointer = null;
-  try { pointer = JSON.parse(localStorage.getItem("m045_attempt_pointer") || "null"); } catch (_) {}
+  if (!window.__SARA_PLATFORM_MODE__) try { pointer = JSON.parse(localStorage.getItem("m045_attempt_pointer") || "null"); } catch (_) {}
   if (!active || !pointer || pointer.projectId !== active.projectId || !pointer.idempotencyKey) {
     m045PublishProof("DECLARED");
     return;
@@ -1164,7 +1164,7 @@ function showProjectAuthority(result) {
   }
   durableProjectRef = { projectId: result.manifest.projectId, revisionId: result.revision.revisionId };
   durableSourceAssets = result.revision.sourceAssetDigests.slice();
-  try { localStorage.setItem('sf_project_ref', JSON.stringify(durableProjectRef)); } catch (_) {}
+  if (!window.__SARA_PLATFORM_MODE__) try { localStorage.setItem('sf_project_ref', JSON.stringify(durableProjectRef)); } catch (_) {}
   if ($('projectId')) $('projectId').value = durableProjectRef.projectId;
   if ($('projectRevision')) $('projectRevision').textContent = 'Saved revision: ' + durableProjectRef.revisionId;
   if (typeof renderLyricAuthority === 'function') renderLyricAuthority(result.lyricTimeline || null);
@@ -1204,7 +1204,7 @@ async function restoreProjectFromStorage() {
   const enteredId = id || '';
   if (!id) {
     // Cache is an address only; authorization and currentness are server-owned.
-    try { id = JSON.parse(localStorage.getItem('sf_project_ref') || '{}').projectId; } catch (_) {}
+    if (!window.__SARA_PLATFORM_MODE__) try { id = JSON.parse(localStorage.getItem('sf_project_ref') || '{}').projectId; } catch (_) {}
   }
   if (!id) throw new Error('Enter a durable project ID');
   const generation = ++projectOpenGenerationToken;
