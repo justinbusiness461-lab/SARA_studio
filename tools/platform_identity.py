@@ -64,6 +64,13 @@ class PlatformStore:
      UNIQUE(principal, project_id, revision_id, artifact_id),
      FOREIGN KEY(principal) REFERENCES accounts(principal));
     CREATE INDEX IF NOT EXISTS idx_publications_active ON publications(active,published_at);
+    CREATE TABLE IF NOT EXISTS account_erasure_requests(
+     principal TEXT PRIMARY KEY,
+     requested_at INTEGER NOT NULL,
+     state TEXT NOT NULL,
+     entrypoint TEXT NOT NULL,
+     FOREIGN KEY(principal) REFERENCES accounts(principal));
+
                 """)
         try:os.chmod(self.path,0o600)
         except OSError:pass
@@ -155,6 +162,41 @@ class PlatformStore:
               (digest,int(time.time()))).fetchone()
         if row is None:raise PlatformDenied("SESSION_DENIED")
         return row["principal"]
+
+    def request_account_erasure(self,principal,entrypoint):
+        """Durably request erasure and immediately revoke sessions/publication.
+
+        Account erasure is NOT complete until a separately authorized purge
+        owner physically removes eligible data and records retention exceptions.
+        """
+        if entrypoint not in {"in_app","external_web"}:
+            raise ValueError("INVALID_ERASURE_ENTRYPOINT")
+        with self._db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            account=db.execute("SELECT status FROM accounts WHERE principal=?",(principal,)).fetchone()
+            if account is None or account["status"]!="active":
+                raise PlatformDenied("ACCOUNT_ERASURE_DENIED")
+            now=int(time.time())
+            db.execute("INSERT INTO account_erasure_requests VALUES(?,?,?,?)",
+                (principal,now,"PENDING",entrypoint))
+            db.execute("UPDATE accounts SET status='deletion_pending' WHERE principal=? AND status='active'",
+                (principal,))
+            db.execute("UPDATE sessions SET revoked=1 WHERE principal=?",(principal,))
+            db.execute("UPDATE publications SET active=0 WHERE principal=?",(principal,))
+            db.commit()
+        return {"status":"ACCEPTED","state":"ERASURE_PENDING","erasureComplete":False,
+                "sessionsRevoked":True,"catalogUnpublished":True}
+
+    def request_external_erasure(self,handle,password,confirmation):
+        if confirmation!="DELETE_MY_ACCOUNT":
+            raise ValueError("EXPLICIT_ERASURE_CONFIRMATION_REQUIRED")
+        # Credential verification reuses the existing hardened password owner.
+        # Any temporary login session created here is revoked atomically by
+        # request_account_erasure; no credentials leave the host.
+        handle=self._handle(handle)
+        token,_=self.login(handle,password)
+        principal=self.session_principal(token)
+        return self.request_account_erasure(principal,"external_web")
 
     def revoke_session(self,principal,session_id):
         if not isinstance(session_id,str) or not re.fullmatch(r"sess-[0-9a-f]{32}",session_id):

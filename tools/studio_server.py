@@ -1378,6 +1378,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 # HTTPS terminating proxy/internet deployment must be qualified separately.
                 cookie="sara_session="+token+"; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800"
                 return self._json(200,{"status":"SUCCESS",**session},cookie=cookie)
+            if path=="/api/account/delete-request":
+                if set(payload)!={"handle","password","confirm"}:
+                    raise ValueError("INVALID_EXTERNAL_ERASURE_FIELDS")
+                return self._json(202,store.request_external_erasure(
+                    payload["handle"],payload["password"],payload["confirm"]))
             if path=="/api/auth/logout":
                 principal=self._platform_principal()
                 from http.cookies import SimpleCookie
@@ -1596,6 +1601,32 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def do_DELETE(self):
+        if not PLATFORM_MODE:
+            return self._json(404,{"status":"NOT_FOUND"})
+        if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
+            return self._json(403,{"status":"DENY","error":"origin denied"})
+        if not secrets.compare_digest(self.headers.get("X-Studio-Capability",""),CAPABILITY):
+            return self._json(403,{"status":"DENY","error":"capability denied"})
+        if unquote(self.path.split("?",1)[0])!="/api/me":
+            return self._json(404,{"status":"NOT_FOUND"})
+        try:
+            principal=self._platform_principal()
+            length=int(self.headers.get("Content-Length","-1"))
+            if length<0 or length>512:
+                raise ValueError("INVALID_ERASURE_REQUEST_LENGTH")
+            payload=json.loads(self.rfile.read(length))
+            if not isinstance(payload,dict) or payload!={"confirm":"DELETE_MY_ACCOUNT"}:
+                raise ValueError("EXPLICIT_ERASURE_CONFIRMATION_REQUIRED")
+            from platform_identity import PlatformStore
+            result=PlatformStore(EXPORT_ROOT).request_account_erasure(principal,"in_app")
+            return self._json(202,result,
+                cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
+        except (ProjectConflict,PermissionError):
+            return self._json(403,{"status":"DENY","error":"UNAUTHORIZED_ERASURE"})
+        except (ValueError,TypeError,KeyError):
+            return self._json(400,{"status":"ERROR","error":"INVALID_ERASURE_REQUEST"})
+
     def do_PUT(self):
         if not PLATFORM_MODE:
             return self._json(404,{"status":"NOT_FOUND"})
@@ -1625,10 +1656,15 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
             return self._json(403,{"status":"ERROR","error":"origin denied"})
-        supplied=self.headers.get("X-Studio-Capability","")
-        if not secrets.compare_digest(supplied,CAPABILITY):
-            return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
+        is_external_erasure=PLATFORM_MODE and path=="/api/account/delete-request"
+        # External request accessible from the hosted account-deletion web page,
+        # but never from a cross-origin form or without exact credentials.
+        if is_external_erasure and not self.headers.get("Origin"):
+            return self._json(403,{"status":"DENY","error":"origin required"})
+        supplied=self.headers.get("X-Studio-Capability","")
+        if not is_external_erasure and not secrets.compare_digest(supplied,CAPABILITY):
+            return self._json(403,{"status":"ERROR","error":"capability denied"})
         principal_id = None
         if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant"}:
             try:
@@ -1646,7 +1682,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
 
-        if PLATFORM_MODE and (path.startswith("/api/auth/") or
+        if PLATFORM_MODE and (path=="/api/account/delete-request" or
+                              path.startswith("/api/auth/") or
                               path.startswith("/api/playlists") or path.startswith("/api/albums") or
                               path.startswith("/api/social/") or path.startswith("/api/workspaces") or
                               path.startswith("/api/credits/") or
