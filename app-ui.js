@@ -484,13 +484,25 @@ function studioProjectHeaders() {
   };
 }
 
+function releaseVerifiedAudioDecoder(playback) {
+  if (!playback) return;
+  if (playback.media) {
+    try {
+      playback.media.onended = null;
+      playback.media.pause();
+      // Revoking a blob URL does not guarantee that a decoded WAV is released.
+      // Unload before the next full-song verification, including late/stale A/B.
+      playback.media.removeAttribute('src');
+      playback.media.load();
+    } catch (_) {}
+  }
+  if (playback.objectUrl) {
+    try { URL.revokeObjectURL(playback.objectUrl); } catch (_) {}
+  }
+}
+
 function clearVerifiedPlayback() {
-  if (verifiedPlayback && verifiedPlayback.media) {
-    try { verifiedPlayback.media.pause(); } catch (_) {}
-  }
-  if (verifiedPlayback && verifiedPlayback.objectUrl) {
-    try { URL.revokeObjectURL(verifiedPlayback.objectUrl); } catch (_) {}
-  }
+  releaseVerifiedAudioDecoder(verifiedPlayback);
   verifiedPlaybackSource = null;
   verifiedPlayback = null;
   if (typeof m045Wave4Clear === "function") m045Wave4Clear();
@@ -906,8 +918,7 @@ async function selectABRevision(label) {
   } finally {
     if (activeABSwitch === operation) activeABSwitch = null;
     if (staged && verifiedPlayback !== staged) {
-      staged.media.pause();
-      URL.revokeObjectURL(staged.objectUrl);
+      releaseVerifiedAudioDecoder(staged);
     }
   }
 }
@@ -1348,6 +1359,7 @@ if ("serviceWorker" in navigator && !window.__SARA_PLATFORM_MODE__) {
 }
 
 $("prompt").value = "dark 102 BPM alt hip-hop, F# minor, guitar plucks, male verse, female chorus";
+$("prompt").dataset.studioExamplePrompt = $("prompt").value;
 compile();
 
 const btnLoad = $("btnLoad");

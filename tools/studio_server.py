@@ -1486,9 +1486,10 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 raise ValueError("CREDIT_ACTION_DENIED")
             if path=="/api/platform/chat":
                 from platform_chat import run_platform_chat
-                if set(payload)!={"instruction"}:raise ValueError("INVALID_CHAT_COMMAND")
+                if set(payload) not in ({"instruction"},{"instruction","context"}):
+                    raise ValueError("INVALID_CHAT_COMMAND")
                 return self._json(200,run_platform_chat(EXPORT_ROOT,principal,payload["instruction"],
-                    PLATFORM_PUBLICATION_RIGHTS))
+                    PLATFORM_PUBLICATION_RIGHTS,context=payload.get("context")))
             if path=="/api/me/sessions/revoke":
                 if set(payload)!={"sessionId"}:raise ValueError("INVALID_REVOKE")
                 return self._json(200,store.revoke_session(principal,payload["sessionId"]))

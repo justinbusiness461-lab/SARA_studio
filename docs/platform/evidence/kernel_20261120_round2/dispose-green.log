@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+ok 1 - R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+  ---
+  duration_ms: 5342.342212
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5833.691281

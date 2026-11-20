@@ -11,7 +11,7 @@ from platform_social import SocialStore
 from platform_billing import CreditLedger
 from platform_catalog import discover
 
-def run_platform_chat(root,principal,instruction,rights_policy):
+def run_platform_chat(root,principal,instruction,rights_policy,context=None):
  PlatformStore(root).profile(principal)
  if not isinstance(instruction,str) or not 1<=len(instruction.strip())<=350:
   raise ValueError("INVALID_CHAT_INTENT")
@@ -50,4 +50,7 @@ def run_platform_chat(root,principal,instruction,rights_policy):
   return {"state":"EXECUTED","action":"SEARCH_QUEUE_PRIVATE_PLAYLIST",
    "result":{"songs":chosen,"playlist":playlist,
      "queue":[song["audioUrl"] for song in chosen]},"revisionCommitted":False}
- raise ValueError("UNSUPPORTED_PLATFORM_CHAT_COMMAND")
+ # Source-bound Studio bridge: interpretation remains subordinate and
+ # independently authorizes project/revision/artifact before any proposal.
+ from m045_studio_chat_orchestrator import orchestrate_studio_chat
+ return orchestrate_studio_chat(root,principal,instruction,context,rights_policy)

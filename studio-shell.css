@@ -173,3 +173,5 @@ html.platform-mode .platform-chat-result{
 }
 html.platform-mode #platformChatPanel{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 html.platform-mode #platformChatPanel[hidden]{display:none!important}
+
+html.platform-mode #platformChatBars{min-height:48px;min-width:0;max-width:100%;width:100%;box-sizing:border-box}

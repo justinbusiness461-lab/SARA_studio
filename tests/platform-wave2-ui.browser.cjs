@@ -44,6 +44,14 @@ test('Wave2 360px real playlist, workspace, credits and Chat use authenticated a
  await page.locator('#platformChatInstruction').fill('Publish R2');
  await page.locator('#platformChatSend').click();
  await page.waitForFunction(()=>document.getElementById('platformChatStatus').textContent.includes('AWAITING_CONFIRMATION'));
+ // Chat must submit to the same Studio Generate click handler and await real owner proof.
+ await page.locator('#platformChatInstruction').fill('Generate 96 BPM E minor dark Southern hip-hop instrumental');
+ await page.locator('#platformChatSend').click();
+ await page.waitForFunction(()=>window.__M044_PLAYBACK_PROOF__?.revisionId &&
+   document.getElementById('status')?.textContent==='Audio verified. Ready to hear.',null,{timeout:70000});
+ const verified=await page.evaluate(()=>window.__M044_PLAYBACK_PROOF__);
+ assert.ok(verified.projectId&&verified.revisionId&&verified.artifactId);
+ assert.equal(verified.wavSha256,verified.artifactId);
  const layout=await page.evaluate(()=>({
   overflow:document.documentElement.scrollWidth>window.innerWidth+1,
   touch:[...document.querySelectorAll('#platformShell button')].filter(e=>e.offsetParent!==null)

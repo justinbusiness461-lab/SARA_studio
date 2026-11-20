@@ -214,15 +214,56 @@
   async function refreshWave2(){
     await Promise.all([listPlaylists(),listWorkspaces(),showCreditBalance(),showNotifications()]);
   }
+  function sourceBoundChatContext(){
+    // Presentation adapter only: exact Studio-authoritative project selection.
+    // No browser-supplied revision, rights status or CAS digest is trusted by server.
+    const context={};
+    const ref=typeof durableProjectRef!=="undefined"?durableProjectRef:null;
+    if(ref?.projectId&&ref?.revisionId){
+      context.projectId=ref.projectId;
+      context.revisionId=ref.revisionId;
+      const proof=window.__M044_PLAYBACK_PROOF__;
+      if(proof?.projectId===ref.projectId && proof?.revisionId===ref.revisionId
+        && proof?.artifactId)context.artifactId=proof.artifactId;
+    }
+    const selected=$("m045TargetTrack")?.value;
+    if(selected&&context.projectId)context.selectedTrackId=selected;
+    const rawBars=$("platformChatBars")?.value.trim();
+    if(rawBars){
+      if(!/^\d{1,4}(?:\s*,\s*\d{1,4})*$/.test(rawBars))throw new Error("Select bars as comma-separated numbers");
+      context.selectedBars=rawBars.split(",").map(x=>Number(x.trim()));
+    }
+    return context;
+  }
   async function executePlatformChat(){
     const instruction=$("platformChatInstruction").value.trim();
+    const artist=currentArtist?.principalId;
     text("platformChatStatus","LOADING · Checking authenticated command");
     text("platformChatResult","");
     if(!instruction){text("platformChatStatus","ERROR · Enter a command");return;}
     try{
-      const result=await request("/api/platform/chat","POST",{instruction});
+      const context=sourceBoundChatContext();
+      const result=await request("/api/platform/chat","POST",{instruction,context});
+      if(!currentArtist || currentArtist.principalId!==artist)return;
       text("platformChatStatus",result.state+" · "+result.action);
       text("platformChatResult",result.message||JSON.stringify(result.result,null,2));
+      if(result.state==="STUDIO_ACTION_READY"&&result.action==="GENERATE"){
+        const prompt=$("prompt"),button=$("btnCompile");
+        if(!prompt||!button||!result.prompt)throw new Error("Existing Studio Generate control unavailable");
+        const prior=prompt.value.trim();
+        // The shipped example prompt is not an artist-authored draft.
+        // Preserve genuinely edited drafts unless the artist confirms replacement.
+        const isBundledExample=prior===prompt.dataset.studioExamplePrompt;
+        const artistEditedDraft=prior&&!isBundledExample;
+        if(artistEditedDraft&&prior!==result.prompt&&!window.confirm("Replace the unsaved Studio prompt with this Chat request?")){
+          text("platformChatStatus","NOT SUBMITTED · Existing draft preserved");
+          return;
+        }
+        prompt.value=result.prompt;
+        changeView("studio");
+        button.click(); // exact existing Studio/ScoreCore owner, not Chat-owned music
+        text("platformChatStatus","STUDIO SUBMITTED · Check the resulting revision and audio Proof");
+      }
       if(result.action==="CREATE_PRIVATE_PLAYLIST")await listPlaylists();
       if(result.action==="SEARCH_QUEUE_PRIVATE_PLAYLIST"&&result.result?.queue?.length){
         const first=result.result.songs[0];

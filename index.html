@@ -110,7 +110,10 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
     <section id="platformChatPanel" aria-label="S.A.R.A. platform chat" hidden>
       <h2>Ask S.A.R.A.</h2><p>Search public songs, create a private playlist, check credits or prepare a publication review. Create/Studio has the music editing controls.</p>
       <label for="platformChatInstruction">Your instruction</label>
-      <textarea id="platformChatInstruction" rows="3" placeholder="Search dark Southern rock songs"></textarea>
+      <textarea id="platformChatInstruction" rows="3" placeholder="Generate 96 BPM E minor Southern rock"></textarea>
+      <label for="platformChatBars">Target bars (only when editing; for example: 5,6)</label>
+      <input id="platformChatBars" type="text" inputmode="numeric" autocomplete="off" placeholder="Leave empty if not selected"/>
+      <p>When editing a saved song, S.A.R.A. uses its open revision and the track selected in Studio. Ambiguous edits require clarification; protected changes require approval.</p>
       <button id="platformChatSend" type="button">Ask S.A.R.A.</button>
       <p id="platformChatStatus" role="status" aria-live="polite">READY · Bounded verified platform commands</p>
       <pre id="platformChatResult" class="platform-chat-result"></pre>

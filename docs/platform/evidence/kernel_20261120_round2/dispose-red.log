@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+not ok 1 - R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+  ---
+  duration_ms: 4953.175944
+  type: 'test'
+  location: '/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/r2-ab-dispose.browser.cjs:11:1'
+  failureType: 'testCodeFailure'
+  error: 'stale WAV decoder remains attached after switch: [{"hasSource":true,"readyState":4,"networkState":1}]'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/r2-ab-dispose.browser.cjs:56:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5408.296703
