@@ -47,6 +47,15 @@ PLATFORM_PUBLICATION_RIGHTS = None
 # External provider/job authorities are host-installed only, never HTTP minted.
 PLATFORM_CREDIT_JOB_AUTH = None
 PLATFORM_NATIVE_STORE_VERIFIER = None
+PLATFORM_SCRATCH_RIGHTS_POLICY = None
+
+def configure_platform_scratch_sample_rights(policy):
+    """Host-installed source/rights authority; browser cannot mint permissions."""
+    if not callable(policy):
+        raise ValueError("SCRATCH_SAMPLE_HOST_RIGHTS_CALLBACK_REQUIRED")
+    global PLATFORM_SCRATCH_RIGHTS_POLICY
+    PLATFORM_SCRATCH_RIGHTS_POLICY = policy
+
 
 def configure_platform_native_store_verifier(verifier):
     """Host only. Must independently verify Apple/Google transaction status."""
@@ -1687,7 +1696,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if not is_external_erasure and not secrets.compare_digest(supplied,CAPABILITY):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant", "/api/m045/scratch/render"}:
             try:
                 principal_id = (self._platform_principal() if PLATFORM_MODE
                   else resolve_studio_session(self.headers.get("X-Studio-Session", "")))
@@ -1719,7 +1728,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             path.startswith("/api/projects/") or
             path in {"/api/m045/transcribe-midi","/api/m045/preview-synth",
                 "/api/m045/master","/api/m045/compound-plan",
-                "/api/m045/sample-preview","/api/m045/soundtrack-grant"}):
+                "/api/m045/sample-preview","/api/m045/soundtrack-grant","/api/m045/scratch/render"}):
             # The legacy local-only endpoints rely on ambient LOCAL principal,
             # capability-only auth or unchecked paths. None are admitted to
             # the multi-user platform until their owner contracts are repaired.
@@ -1866,6 +1875,22 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._json(400, {"status": "ERROR", "error": str(e)})
 
         if path == "/api/m045/scratch/render":
+            if PLATFORM_MODE:
+                if not isinstance(payload,dict) or set(payload)!={"projectId","revisionId","baseArtifactId","sampleAssetDigests"}:
+                    return self._json(400,{"status":"ERROR","error":"INVALID_SCRATCH_RENDER_FIELDS"})
+                if PLATFORM_SCRATCH_RIGHTS_POLICY is None:
+                    return self._json(503,{"status":"BLOCKED","error":"HOST_SCRATCH_RIGHTS_POLICY_NOT_CONFIGURED"})
+                try:
+                    from m045_rights_bound_scratch import authorized_render_rights_bound_scratch
+                    result=authorized_render_rights_bound_scratch(EXPORT_ROOT,payload,
+                        principal_id,PLATFORM_SCRATCH_RIGHTS_POLICY)
+                    return self._json(200,result)
+                except ProjectConflict as e:
+                    return self._json(409,{"status":"CONFLICT","error":str(e)})
+                except PermissionError:
+                    return self._json(403,{"status":"DENY","error":"SCRATCH_SAMPLE_RIGHTS_DENIED"})
+                except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
+                    return self._json(400,{"status":"ERROR","error":"SCRATCH_SOURCE_OR_RIGHTS_UNQUALIFIED"})
             try:
                 return self._json(200, render_authorized_scratch_operation(
                     EXPORT_ROOT, payload, principal_id=principal_id))

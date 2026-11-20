@@ -117,10 +117,16 @@ class PlatformHTTP(unittest.TestCase):
   for route in ["/api/write_production_file","/api/dispatch_neural_compilation",
                 "/api/local_neural_vocal_synthesis","/api/m045/attempts",
                 "/api/m045/attempts/take-audio","/api/m045/attempts/select-take",
-                "/api/m045/attempts/reconcile","/api/m045/scratch/render"]:
+                "/api/m045/attempts/reconcile"]:
    for cookie_used in (None,cookie):
     status,_,_=self.api(route,{},cookie=cookie_used)
     self.assertEqual(status,403,(route,cookie_used is not None,status))
+  # Newly admitted scratch render has independent host rights and canonical
+  # revision membership; no session still 403 and missing host policy 503.
+  self.assertEqual(self.api("/api/m045/scratch/render",{},cookie=None)[0],403)
+  self.assertEqual(self.api("/api/m045/scratch/render",{
+    "projectId":"0"*32,"revisionId":"f"*64,"baseArtifactId":"f"*64,
+    "sampleAssetDigests":{}},cookie=cookie)[0],503)
  def test_pub01_no_public_listing_without_approval(self):
   a=self.signup();ca,_=self.login();p=self.project(a["principalId"])
   self.assertEqual(self.api("/api/explore")[2]["songs"],[])
