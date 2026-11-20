@@ -786,7 +786,129 @@ async function selectABRevision(label) {
 }
 
 let m045RequestToken = 0;
+let m045TakeToken = 0;
+let m045TakeUrl = null;
+let m045TakeContext = null;
 let m045LocksDirty = false;
+
+function m045ClearTakes() {
+  ++m045TakeToken;
+  const audio = $("m045TakePreview");
+  if (audio) { audio.pause(); audio.removeAttribute("src"); audio.load(); }
+  if (m045TakeUrl) URL.revokeObjectURL(m045TakeUrl);
+  m045TakeUrl = null;
+  m045TakeContext = null;
+  const panel = $("m045TakePanel");
+  if (panel) panel.hidden = true;
+  const buttons = $("m045TakeButtons");
+  if (buttons) buttons.replaceChildren();
+}
+
+function m045TakeHeaders() {
+  return {...studioProjectHeaders(), Authorization:"Bearer " + (window.__STUDIO_SESSION__ || "")};
+}
+
+function m045PublishTakes(attempt, pointer) {
+  m045ClearTakes();
+  if (!attempt || !Array.isArray(attempt.takes) || attempt.takes.length <= 1 || !pointer) return;
+  const panel = $("m045TakePanel");
+  const buttons = $("m045TakeButtons");
+  if (!panel || !buttons) return;
+  panel.hidden = false;
+  const context = {projectId:pointer.projectId, idempotencyKey:pointer.idempotencyKey};
+  m045TakeContext = context;
+  attempt.takes.forEach((take, i) => {
+    if (take.take_index !== i) return;
+    const audition = document.createElement("button");
+    audition.type = "button";
+    audition.className = "secondary sm";
+    audition.textContent = "Audition Take " + (i + 1);
+    audition.dataset.m045Audition = String(i);
+    audition.onclick = () => m045AuditionTake(i, context).catch(e => setStatus("Take audition failed: " + e.message,"warn"));
+    buttons.appendChild(audition);
+    const select = document.createElement("button");
+    select.type = "button";
+    select.className = "secondary sm";
+    select.textContent = "Select Take " + (i + 1);
+    select.dataset.m045Select = String(i);
+    select.onclick = () => m045SelectTake(i, context).catch(e => setStatus("Take promotion failed: " + e.message,"warn"));
+    buttons.appendChild(select);
+  });
+}
+
+async function m045AuditionTake(index, context) {
+  const generation = ++m045TakeToken;
+  const projectGeneration = m045RequestToken;
+  const active = durableProjectRef && {...durableProjectRef};
+  if (!active || active.projectId !== context.projectId || m045TakeContext !== context)
+    throw new Error("Take project changed");
+  const response = await fetch("/api/m045/attempts/take-audio", {
+    method:"POST", headers:m045TakeHeaders(),
+    body:JSON.stringify({project_id:context.projectId,idempotency_key:context.idempotencyKey,take_index:index})
+  });
+  if (!response.ok) throw new Error("Take playback not authorized (" + response.status + ")");
+  const audioBlob = await response.blob();
+  if (generation !== m045TakeToken || projectGeneration !== m045RequestToken ||
+      m045TakeContext !== context || !durableProjectRef ||
+      durableProjectRef.projectId !== context.projectId) return;
+  const media = $("m045TakePreview");
+  if (!media) return;
+  const priorPosition = Number.isFinite(media.currentTime) ? media.currentTime : 0;
+  media.pause();
+  if (m045TakeUrl) URL.revokeObjectURL(m045TakeUrl);
+  m045TakeUrl = URL.createObjectURL(audioBlob);
+  media.src = m045TakeUrl;
+  try {
+    await new Promise((resolve, reject) => {
+      if (media.readyState >= 1) return resolve();
+      media.addEventListener("loadedmetadata", resolve, {once:true});
+      media.addEventListener("error", () => reject(new Error("Take WAV decode failed")), {once:true});
+      media.load();
+    });
+  } catch (error) {
+    if (generation === m045TakeToken) throw error;
+    return;
+  }
+  if (generation !== m045TakeToken || projectGeneration !== m045RequestToken ||
+      m045TakeContext !== context || !durableProjectRef ||
+      durableProjectRef.projectId !== context.projectId) return;
+  if (!Number.isFinite(media.duration) || media.duration <= 0)
+    throw new Error("Take WAV duration invalid");
+  media.currentTime = Math.min(priorPosition, Math.max(0, media.duration - 0.01));
+  $("m045TakeStatus").textContent = "Auditioning Take " + (index + 1) + " · not promoted";
+  await media.play().catch(() => {});
+}
+
+async function m045SelectTake(index, context) {
+  const generation = ++m045TakeToken;
+  const projectGeneration = m045RequestToken;
+  const active = durableProjectRef && {...durableProjectRef};
+  if (!active || active.projectId !== context.projectId || m045TakeContext !== context)
+    throw new Error("Take project changed");
+  const response = await fetch("/api/m045/attempts/select-take", {
+    method:"POST", headers:m045TakeHeaders(), body:JSON.stringify({
+      project_id:context.projectId,idempotency_key:context.idempotencyKey,
+      take_index:index,expected_current_revision_id:active.revisionId})
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Take promotion rejected");
+  if (generation !== m045TakeToken || projectGeneration !== m045RequestToken ||
+      m045TakeContext !== context || !durableProjectRef ||
+      durableProjectRef.projectId !== context.projectId ||
+      durableProjectRef.revisionId !== active.revisionId) return;
+  // Read back authoritative revision before updating selected playback or badges.
+  const opened = await projectRequest("open",{projectId:context.projectId});
+  if (generation !== m045TakeToken || projectGeneration !== m045RequestToken ||
+      !durableProjectRef || durableProjectRef.revisionId !== active.revisionId) return;
+  if (opened.revision.revisionId !== result.revision.revisionId)
+    throw new Error("Selected take was not current on independent readback");
+  showProjectAuthority(opened);
+  $("m045TakeStatus").textContent = "Take " + (index + 1) + " selected · revision " + result.revision.revisionId;
+  m045PublishProof(result.state,result.attempt);
+  m045PublishTakes(result.attempt,context);
+  setStatus("Selected Take " + (index + 1) + " · re-open to verify audio", "ok");
+}
+
 
 
 function m045ProofText(state, attempt = {}) {
@@ -811,6 +933,11 @@ async function submitM045Attempt() {
   const provider = $("m045Provider").value;
   const model = provider === "ace" ? "ace-step-1.5" : "music_v2_5";
   const modelVersion = provider === "ace" ? "ace-step-1.5" : "elevenlabs-music-v2.5";
+  const batchCount = Number($("m045BatchCount").value);
+  if (!Number.isInteger(batchCount) || batchCount < 1 || batchCount > 4)
+    throw new Error("Generation take count must be 1–4");
+  if (batchCount > 1 && provider !== "ace")
+    throw new Error("Multi-take generation requires ACE-Step");
   const params = {music_length_ms: duration * 1000};
   const start = $("m045BarStart").value.trim();
   const end = $("m045BarEnd").value.trim();
@@ -821,6 +948,7 @@ async function submitM045Attempt() {
     const target = $("m045TargetTrack").value;
     if (!target || !skeleton.tracks.some(track => track.track_id === target && !track.sonic_lock))
       throw new Error("Select an unlocked target track");
+    if (batchCount > 1) throw new Error("Multi-take repaint not qualified");
     params.edit_mode = "repaint";
     params.start_bar = +start;
     params.end_bar = +end;
@@ -834,7 +962,8 @@ async function submitM045Attempt() {
     expected_current_revision_id: active.revisionId,
     idempotency_key: crypto.randomUUID(), model_id: model,
     model_version: modelVersion, prompt: ($("prompt").value || "").trim(),
-    song_spec: JSON.parse(serializeProject()), lyrics: null, seed: 0, params
+    song_spec: JSON.parse(serializeProject()), lyrics: null, seed: 0, params,
+    batch_count:batchCount
   };
   if (!body.prompt) throw new Error("Prompt required");
   const response = await fetch("/api/m045/attempts", {
@@ -850,6 +979,13 @@ async function submitM045Attempt() {
     throw new Error(result.error || "Generation attempt rejected");
   }
   m045PublishProof(result.state, result.attempt);
+  if (result.state === "AWAITING_TAKE_SELECTION") {
+    const pointer = {projectId:active.projectId,idempotencyKey:body.idempotency_key};
+    try { localStorage.setItem("m045_attempt_pointer", JSON.stringify(pointer)); } catch (_) {}
+    m045PublishTakes(result.attempt,pointer);
+    setStatus("Generation ready · audition takes before selecting a winner","warn");
+    return;
+  }
   if (["COMMITTED", "ASSOCIATED_HISTORICAL"].includes(result.state)) {
     try { localStorage.setItem("m045_attempt_pointer", JSON.stringify({
       projectId:active.projectId,idempotencyKey:body.idempotency_key
@@ -873,6 +1009,8 @@ async function recoverM045Proof() {
   const result = await response.json();
   if (generation !== m045RequestToken || !durableProjectRef || durableProjectRef.projectId !== active.projectId) return;
   m045PublishProof(response.ok ? result.state : "DECLARED", response.ok ? result.attempt : null);
+  m045PublishTakes(response.ok ? result.attempt : null,
+                   response.ok ? pointer : null);
 }
 let durableProjectRef = null;
 let durableSourceAssets = [];
@@ -893,6 +1031,7 @@ function showProjectAuthority(result) {
       durableProjectRef.projectId !== result.manifest.projectId ||
       durableProjectRef.revisionId !== result.revision.revisionId) {
     ++m045RequestToken;
+    m045ClearTakes();
     m045PublishProof("DECLARED");
   }
   durableProjectRef = { projectId: result.manifest.projectId, revisionId: result.revision.revisionId };
@@ -1552,6 +1691,7 @@ setABControls();
 if ($('btnOpenProject')) $('btnOpenProject').onclick = () => restoreProjectFromStorage().catch(e => setStatus('Open failed: ' + e.message, 'warn'));
 if ($('btnNewProject')) $('btnNewProject').onclick = () => {
   ++m045RequestToken;
+  m045ClearTakes();
   m045LocksDirty = false;
   m045PublishProof("DECLARED");
   durableProjectRef = null; durableSourceAssets = [];
