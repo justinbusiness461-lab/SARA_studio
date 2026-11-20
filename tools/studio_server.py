@@ -844,6 +844,75 @@ def historical_result(root, directory, manifest, revision, spec, timeline):
     return result
 
 
+def validate_dj_scratch_authority(spec, prior=None):
+    """Validate editable DJ markers against canonical ScoreCore clock and locks."""
+    tracks=spec.get("tracks", [])
+    dj=[t for t in tracks if t.get("track_id")=="dj_scratch"]
+    if len(dj)>1 or (dj and dj[0].get("type")!="DJ"):
+        raise ValueError("invalid DJ track identity")
+    for track in tracks:
+        if track.get("track_id")!="dj_scratch" and any(
+                e.get("type")=="DJ_SCRATCH_MARKER" for e in track.get("events",[])):
+            raise ValueError("DJ marker outside canonical track")
+    if dj:
+        tb=spec.get("timebase",{})
+        bpm=tb.get("initial_bpm")
+        if (tb.get("meter")!="4/4" or tb.get("sample_rate")!=44100
+                or tb.get("ticks_per_quarter_note")!=960
+                or type(bpm) is not int or not 60<=bpm<=180):
+            raise ValueError("DJ source clock unsupported")
+        sections=spec["structure"]["sections"]
+        if len(dj[0].get("events",[]))>4096:
+            raise ValueError("DJ marker count exceeds capacity")
+        identities=set()
+        for e in dj[0].get("events",[]):
+            if (not isinstance(e,dict)
+                    or set(e)!={"type","event_id","tick","duration_ticks","deck",
+                                "technique","sample_index","audio_status"}
+                    or e["type"]!="DJ_SCRATCH_MARKER"
+                    or type(e["tick"]) is not int or e["tick"]<0
+                    or e["duration_ticks"]!=480
+                    or e["technique"] not in ("baby","chirp","2_click_flare","two_deck_juggle")
+                    or e["deck"] not in ("A","B")
+                    or e["audio_status"]!="UNRENDERED_SOURCE_ASSET_REQUIRED"):
+                raise ValueError("invalid DJ marker")
+            members=[sec for sec in sections if
+                 type(sec.get("start_tick")) is int and type(sec.get("end_tick")) is int
+                 and sec["start_tick"]<=e["tick"]<sec["end_tick"]
+                 and (e["tick"]-sec["start_tick"])%480==0
+                 and e["tick"]<sec["start_tick"]+16*480]
+            if len(members)!=1:
+                raise ValueError("DJ marker off section beat grid")
+            expected_id=f'dj:{members[0]["id"]}:{e["tick"]}:{e["deck"]}'
+            samples=(2*e["tick"]*60*44100+bpm*960)//(2*bpm*960)
+            if (e["event_id"]!=expected_id or e["sample_index"]!=samples
+                    or type(e["sample_index"]) is not int or expected_id in identities):
+                raise ValueError("DJ marker identity or sample clock mismatch")
+            identities.add(expected_id)
+    if prior is not None:
+        old_tracks={t.get("track_id"):t for t in prior.get("tracks",[])}
+        new_tracks={t.get("track_id"):t for t in tracks}
+        for track_id,old in old_tracks.items():
+            if old.get("sonic_lock") is True:
+                current=new_tracks.get(track_id)
+                if current is None or current.get("events")!=old.get("events"):
+                    raise ProjectConflict("Sonic Lock protects symbolic events")
+        before=(old_tracks.get("dj_scratch") or {}).get("events",[])
+        after=(new_tracks.get("dj_scratch") or {}).get("events",[])
+        before_ids={x.get("event_id"):x for x in before}
+        after_ids={x.get("event_id"):x for x in after}
+        locked=[sec for sec in prior.get("structure",{}).get("sections",[])
+                if sec.get("sonic_lock") is True]
+        for sec in locked:
+            first,last=sec.get("start_tick"),sec.get("end_tick")
+            if type(first) is not int or type(last) is not int or first>=last:
+                raise ProjectConflict("invalid Sonic Lock section clock")
+            old_region={k:v for k,v in before_ids.items() if first<=v["tick"]<last}
+            new_region={k:v for k,v in after_ids.items() if first<=v["tick"]<last}
+            if old_region!=new_region:
+                raise ProjectConflict("Sonic Lock protects DJ region")
+
+
 def project_operation(root, request, commit=False, lyric=False, principal_id=LOCAL_PRINCIPAL_ID):
     import uuid
     root = Path(root).resolve()
@@ -950,6 +1019,7 @@ def project_operation(root, request, commit=False, lyric=False, principal_id=LOC
         spec = old_spec if lyric else request.get("songSpec")
         if not isinstance(spec, dict) or not isinstance(spec.get("tracks"), list) or (not isinstance(spec.get("structure"), dict) or not isinstance(spec["structure"].get("sections"), list)) or not isinstance(spec.get("timebase"), dict):
             raise ValueError("SongSpec required")
+        validate_dj_scratch_authority(spec, old_spec if previous else None)
         if request.get("lyricTimelineDigest") is not None:
             raise ValueError("lyric digest cannot bypass the lyric transaction")
         sources = previous['sourceAssetDigests'][:] if lyric else request.get("sourceAssetDigests", [])
