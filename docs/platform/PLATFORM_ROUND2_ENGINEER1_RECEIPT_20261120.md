@@ -22,7 +22,12 @@ Exact intake PR #37 head: `482f1f7a887bb529eb16c6927bcb84d6f1769f03`.
 - 210s physical mastering owner test **1/1 PASS**, 18.848s, zero GPU.
 - Complete Python **267/267 PASS**, 99.802s, zero failures.
 - Complete Node unit **39/39 PASS**, zero skips/failures.
-- Full Chromium **28-case** regression is separate; test run started, final result must be recorded before any full-suite PASS claim. Never erase earlier 21/27 failures.
+- Full Chromium **28-case** terminal regression: **25 PASS / 3 FAIL / 0 skips / 0 cancellations**. Exact original timeouts and 50 ms A/B preservation assertions unchanged. Raw evidence: `docs/platform/evidence/kernel_20261120_round2/chromium-full-28.log`; SHA-256 `61920e842e7bcc120ad1e91f524732bd43e562e508dc57d8bfe9acba727e0a62`.
+- Remaining fail cases are #1 Scratch Surgeon click actionability (12s), #3 RS-002 390px R1/R2 endurance wait for source-accurate revision/position state (15s), and #23 musical-position R1/R2 A/B completion (15s). All are live release holds; no retiming, skips, fabricated audio or test masking.
+- Original #18 verified Play and #24 atomic A/B and #25 cold-reopen regressions from 27-case baseline now PASS in the 28-case run (renumbered #18, #25, #26 respectively). The new decoder proof #21 also PASS. A single isolated musical-position test PASS is not full-suite certification.
+- Parallel independent KERNEL browser showed real A/B COMPLETE with precise revision/artifact/digest and musical position 8.509567s on 50.5s decoded WAV. However the full browser suite still reproduced #23 timeout on 1 GiB VM. Measured full-suite KERNEL available memory ~30 MiB during later Chromium; resource pressure is an evidenced contributor candidate, NOT a proven exclusive root cause.
+- Server boots for failing legacy tests are local Studio mode rather than authenticated platform-account mode. The user's original missing-cookie diagnosis is **not authenticated** by this run. Earlier platform-only suite and new source-bound Chat/Generate journeys passed.
+- **Wake condition:** isolate first failing DJ/transport trace with renderer and media telemetry, verify code vs executor classification, apply smallest lawful repair, rerun all 28 Chromium tests with zero failures/skips.
 
 ## Hard holds
 
@@ -30,14 +35,14 @@ Exact intake PR #37 head: `482f1f7a887bb529eb16c6927bcb84d6f1769f03`.
 - `mopy` SampleAsset rights release clearance, production payments, deployed auth security, exact Android hardware, public Explore production scale, multi-actor editing and 210s provider-generated original source ingest remain out of scope.
 - No actual human listening, creativity approval or accredited meter test.
 - Film/cinema remains `dj_rezrxtion` owner; this branch neither edits nor publishes visuals.
-- Full browser suite and PR draft gate remain held until complete terminal receipt.
+- Full browser suite remains HELD at 25/28 (3 failures), while the source/test package is committed and independently verified. No release promotion.
 
 ## JUSTIN 101
 
 **WHAT CHANGED:** Explicit audio decoder disposal, authenticated source-bound Chat bridge, real Generate delegation and 210s physical master test.
 **FAILED/REPAIRED:** Revoked-but-still-attached WAV decoder and sample-prompt replacement false confirmation.
 **PROVEN:** Exact tests above, branch evidence receipts.
-**UNPROVEN:** 28-case browser suite, generalized Studio Chat mutation parity, release/deployment/security, creative listening.
+**UNPROVEN:** Full-browser certification (25/28), generalized Studio Chat mutation parity, release/deployment/security, creative listening.
 **TEAM NEXT:** Studio A/B/browser QA close all full-suite failures; ScoreCore owner implement authorized precise edit execution; rights/payment owners retain their security gates.
 **JUSTIN ACTION:** None for draft review; do not approve merge, billing or release.
 
