@@ -1,0 +1,104 @@
+test_approval_required_mints_random_server_challenge_bound_to_exact_source (tests.test_platform_approval_challenge.ApprovalHTTP) ... FAIL
+test_approve_master_executes_canonical_owner_and_readback_once (tests.test_platform_approval_challenge.ApprovalHTTP) ... ERROR
+test_concurrent_approval_has_one_winner_and_no_double_publication (tests.test_platform_approval_challenge.ApprovalHTTP) ... ERROR
+test_expired_challenge_fail_closed (tests.test_platform_approval_challenge.ApprovalHTTP) ... ERROR
+test_foreign_principal_and_different_expected_revision_denied (tests.test_platform_approval_challenge.ApprovalHTTP) ... ERROR
+test_forged_and_missing_session_denied (tests.test_platform_approval_challenge.ApprovalHTTP) ... ERROR
+test_stale_manifest_blocks_challenge_and_preserves_new_revision (tests.test_platform_approval_challenge.ApprovalHTTP) ... ERROR
+test_unsupported_approved_action_never_fabricates_committed_revision (tests.test_platform_approval_challenge.ApprovalHTTP) ... FAIL
+
+======================================================================
+ERROR: test_approve_master_executes_canonical_owner_and_readback_once (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 32, in test_approve_master_executes_canonical_owner_and_readback_once
+    challenge=self.issue()[2]["approval_challenge_id"]
+KeyError: 'approval_challenge_id'
+
+======================================================================
+ERROR: test_concurrent_approval_has_one_winner_and_no_double_publication (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 78, in test_concurrent_approval_has_one_winner_and_no_double_publication
+    challenge=self.issue()[2]["approval_challenge_id"]
+KeyError: 'approval_challenge_id'
+
+======================================================================
+ERROR: test_expired_challenge_fail_closed (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 59, in test_expired_challenge_fail_closed
+    challenge=self.issue()[2]["approval_challenge_id"]
+KeyError: 'approval_challenge_id'
+
+======================================================================
+ERROR: test_foreign_principal_and_different_expected_revision_denied (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 54, in test_foreign_principal_and_different_expected_revision_denied
+    challenge=self.issue()[2]["approval_challenge_id"]
+KeyError: 'approval_challenge_id'
+
+======================================================================
+ERROR: test_forged_and_missing_session_denied (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 47, in test_forged_and_missing_session_denied
+    challenge=self.issue()[2]["approval_challenge_id"]
+KeyError: 'approval_challenge_id'
+
+======================================================================
+ERROR: test_stale_manifest_blocks_challenge_and_preserves_new_revision (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 65, in test_stale_manifest_blocks_challenge_and_preserves_new_revision
+    challenge=self.issue()[2]["approval_challenge_id"]
+KeyError: 'approval_challenge_id'
+
+======================================================================
+FAIL: test_approval_required_mints_random_server_challenge_bound_to_exact_source (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 25, in test_approval_required_mints_random_server_challenge_bound_to_exact_source
+    self.assertEqual(status,200,data)
+AssertionError: 403 != 200 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_unsupported_approved_action_never_fabricates_committed_revision (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 85, in test_unsupported_approved_action_never_fabricates_committed_revision
+    self.assertEqual(code,200,proposal)
+AssertionError: 403 != 200 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+----------------------------------------------------------------------
+Ran 8 tests in 4.789s
+
+FAILED (failures=2, errors=6)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 403 -
