@@ -187,6 +187,75 @@ class PlatformStore:
         return {"status":"ACCEPTED","state":"ERASURE_PENDING","erasureComplete":False,
                 "sessionsRevoked":True,"catalogUnpublished":True}
 
+    def process_pending_account_erasures(self, limit=50):
+        """Deterministic, atomic mutable-data purge; NOT physical Studio media erasure.
+
+        Keeps a non-loginable principal tombstone to preserve rights/financial
+        referential integrity and project provenance. A separate authorized,
+        retention-reviewed Studio operation must handle immutable audio and
+        revisions. The result must NEVER claim full erasure.
+        """
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise ValueError("INVALID_ERASURE_BATCH_LIMIT")
+        retained=("immutable_project_revisions","source_and_render_artifacts",
+                  "financial_ledger_tombstones","rights_and_publication_audit")
+        processed=0
+        with self._db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            rows=db.execute("""SELECT r.principal FROM account_erasure_requests r
+                JOIN accounts a ON a.principal=r.principal
+                WHERE r.state='PENDING' AND a.status='deletion_pending'
+                ORDER BY r.requested_at,r.principal LIMIT ?""",(limit,)).fetchall()
+            for row in rows:
+                principal=row["principal"]
+                def run(table,query,*params):
+                    if table in tables:db.execute(query,(principal,*params))
+                # Artist-authored mutable social drafts and engagement.
+                for child,parent,parent_id in (
+                    ("social_playlist_items","social_playlists","playlist"),
+                    ("social_album_items","social_albums","album")):
+                    if child in tables and parent in tables:
+                        db.execute(f"""DELETE FROM {child} WHERE {parent_id} IN
+                            (SELECT id FROM {parent} WHERE principal=?)""",(principal,))
+                run("social_playlists","DELETE FROM social_playlists WHERE principal=?")
+                run("social_albums","DELETE FROM social_albums WHERE principal=?")
+                run("social_follows","DELETE FROM social_follows WHERE follower=? OR followed=?",principal)
+                run("social_blocks","DELETE FROM social_blocks WHERE blocker=? OR blocked=?",principal)
+                run("social_likes","DELETE FROM social_likes WHERE principal=?")
+                run("social_comments_enabled","DELETE FROM social_comments_enabled WHERE principal=?")
+                run("social_comments","DELETE FROM social_comments WHERE author=?")
+                run("social_notifications","DELETE FROM social_notifications WHERE target=? OR actor=?",principal)
+                # Workspace grants and privately named collaboration drafts.
+                if "platform_workspaces" in tables:
+                    for table in ("platform_workspace_projects","platform_workspace_members"):
+                        if table in tables: db.execute(
+                            f"DELETE FROM {table} WHERE workspace IN "
+                            "(SELECT id FROM platform_workspaces WHERE owner=?)",(principal,))
+                    db.execute("DELETE FROM platform_workspaces WHERE owner=?",(principal,))
+                run("platform_workspace_members","DELETE FROM platform_workspace_members WHERE principal=?")
+                run("platform_workspace_projects","DELETE FROM platform_workspace_projects WHERE owner=?")
+                # Unexecuted command proposals can include personal creative prose.
+                run("chat_approvals","DELETE FROM chat_approvals WHERE principal=?")
+                run("sessions","DELETE FROM sessions WHERE principal=?")
+                # Rights/financial audit binds remain, but titles cannot leak.
+                run("publications","UPDATE publications SET title='Deleted account publication',active=0 WHERE principal=?")
+                # Maintain non-loginable stable principal for provenance/ledger
+                # and erase live handle, profile, credential material.
+                tombstone="erased_"+hashlib.sha256(principal.encode()).hexdigest()[:22]
+                db.execute("""UPDATE accounts
+                   SET handle=?,display_name='Deleted account',bio='',
+                       password_salt=?,password_hash=?,status='erased_partial'
+                   WHERE principal=? AND status='deletion_pending'""",
+                   (tombstone,secrets.token_bytes(16),secrets.token_bytes(32),principal))
+                db.execute("UPDATE account_erasure_requests SET state='PURGED_MUTABLE' WHERE principal=? AND state='PENDING'",(principal,))
+                processed+=1
+            db.commit()
+        return {"state":"PURGED_MUTABLE" if processed else "NO_PENDING_MUTABLE_ERASURES",
+                "processed":processed,"erasureComplete":False,
+                "retainedDataClasses":list(retained),
+                "requiresOwnerRetentionReview":True}
+
     def request_external_erasure(self,handle,password,confirmation):
         if confirmation!="DELETE_MY_ACCOUNT":
             raise ValueError("EXPLICIT_ERASURE_CONFIRMATION_REQUIRED")

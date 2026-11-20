@@ -128,33 +128,43 @@ def configure_m045_soundtrack_grant(signing_ring, rights_policy):
     M045_GRANT_RIGHTS_POLICY = rights_policy
 
 
-def make_m045_native_owner(root):
+def make_m045_native_owner(root, scoped_principal=None, host_delegation_token=None):
     """Bind M045 to the existing project, session, revision and CAS authorities."""
     if GenerationAttemptOwner is None:
         raise RuntimeError("M045_GENERATION_OWNER_UNAVAILABLE")
     root = Path(root).resolve()
+    bound_principal=scoped_principal if scoped_principal is not None else LOCAL_PRINCIPAL_ID
+    if scoped_principal is not None and (not isinstance(host_delegation_token,str)
+                                         or len(host_delegation_token)<32):
+        raise ValueError("HOST_APPROVAL_DELEGATION_TOKEN_REQUIRED")
+    def resolve_bearer(token):
+        if scoped_principal is None:
+            return resolve_studio_session(token)
+        if not isinstance(token,str) or not secrets.compare_digest(token,host_delegation_token):
+            raise ProjectConflict("host-delegated generation denied")
+        return bound_principal
 
     def authorize(principal_id, pid, capability):
         if capability != "generate":
             return False
-        project_owner_directory(root, project_id(pid), principal_id, allow_create=False)
-        # The current owner callback contract can only commit for the local
-        # principal. Other principals fail closed until principal-bound commits.
-        return principal_id == LOCAL_PRINCIPAL_ID
+        if principal_id != bound_principal:
+            return False
+        project_owner_directory(root, project_id(pid), bound_principal, allow_create=False)
+        return True
 
     def read_revision(pid, rid):
         request = {"projectId": project_id(pid)}
         if rid != "CURRENT":
             request["revisionId"] = rid
         try:
-            return project_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID)["revision"]
+            return project_operation(root, request, principal_id=bound_principal)["revision"]
         except (ValueError, FileNotFoundError):
             return None
 
     def list_revisions(pid):
         pid = project_id(pid)
-        directory = project_owner_directory(root, pid, LOCAL_PRINCIPAL_ID, allow_create=False)
-        manifest = project_operation(root, {"projectId": pid}, principal_id=LOCAL_PRINCIPAL_ID)["manifest"]
+        directory = project_owner_directory(root, pid, bound_principal, allow_create=False)
+        manifest = project_operation(root, {"projectId": pid}, principal_id=bound_principal)["manifest"]
         found = {}
         for path in sorted((directory / "revisions").glob("*.json")):
             revision, _, _ = project_revision(root, directory, pid, path.stem)
@@ -176,7 +186,7 @@ def make_m045_native_owner(root):
                         or receipt.get("productionTimelineDigest") != found[rid]["productionTimelineDigest"]):
                     raise ProjectConflict("M045 historical identity mismatch")
                 authorized = project_operation(root, {"projectId": pid, "revisionId": rid},
-                                               principal_id=LOCAL_PRINCIPAL_ID)
+                                               principal_id=bound_principal)
                 authorized_digests = {binding["artifactId"] for binding in
                                       authorized.get("historicalOutputBindings", [])}
                 if (not isinstance(receipt.get("artifactIds"), list)
@@ -202,7 +212,7 @@ def make_m045_native_owner(root):
             "operationContext": {"kind": "m045_generation", "attemptId": kwargs["attempt_id"]},
         }
         current = project_operation(root, {"projectId": kwargs["project_id"]},
-                                    principal_id=LOCAL_PRINCIPAL_ID)["manifest"]["currentRevisionId"]
+                                    principal_id=bound_principal)["manifest"]["currentRevisionId"]
         if current != kwargs["expected_current_revision_id"]:
             # Historical renders may bind to an ancestor but never promote it.
             # project_operation verifies ancestry, exact source SongSpec, digest
@@ -212,11 +222,11 @@ def make_m045_native_owner(root):
                 "sourceRevisionId": kwargs["expected_current_revision_id"],
                 "attemptId": kwargs["attempt_id"],
             }
-        return project_operation(root, request, commit=True, principal_id=LOCAL_PRINCIPAL_ID)
+        return project_operation(root, request, commit=True, principal_id=bound_principal)
 
     return GenerationAttemptOwner(
         data_root=root,
-        resolve_session_principal=resolve_studio_session,
+        resolve_session_principal=resolve_bearer,
         authorize_project=authorize,
         read_revision=read_revision,
         list_project_revisions=list_revisions,
@@ -1557,6 +1567,17 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"private storage"})
         if PLATFORM_MODE and path.startswith("/api/"):
             return self._platform_get(path)
+        if PLATFORM_MODE and path=="/account/delete":
+            # Public unauthenticated account-deletion request page.
+            # It requires exact credentials before any irreversible action.
+            body=(ROOT/"account-delete.html").read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type","text/html; charset=utf-8")
+            self.send_header("Cache-Control","no-store")
+            self.send_header("Content-Security-Policy","default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+            self.send_header("X-Content-Type-Options","nosniff")
+            self.send_header("Content-Length",str(len(body)))
+            self.end_headers();self.wfile.write(body);return
         if path in {"/","/index.html"}:
             # In platform mode, anonymous view gets ONLY a same-origin
             # capability, not a local principal or authorization token.

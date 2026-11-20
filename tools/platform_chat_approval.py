@@ -19,7 +19,7 @@ _TTL_SECONDS=300
 _APPROVABLE=frozenset({"MASTER","TRANSCRIBE_MIDI","REPAINT","ADD_SCRATCH",
                        "TOGGLE_LOCK","CREATE_MUSIC_VIDEO_GRANT","PUBLISH"})
 _EXECUTABLE=frozenset({"MASTER","TRANSCRIBE_MIDI","PUBLISH",
-                       "TOGGLE_LOCK","CREATE_MUSIC_VIDEO_GRANT"})
+                       "TOGGLE_LOCK","CREATE_MUSIC_VIDEO_GRANT","ADD_SCRATCH","REPAINT"})
 
 def _canonical(data):
  return json.dumps(data,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False)
@@ -120,7 +120,7 @@ class ApprovalStore:
    db.commit()
   if not isinstance(op,dict) or not isinstance(op.get("request"),dict):
    raise PlatformDenied("APPROVAL_OPERATION_ENVELOPE_INVALID")
-  return dict(row)|{'operation':op["request"]}
+  return dict(row)|{'operation':op["request"],'instruction':op["instruction"]}
  def settle(self,challenge,principal,state,result=None):
   digest=hashlib.sha256(_canonical(result or {}).encode()).hexdigest()
   with self.store._db() as db:
@@ -156,6 +156,14 @@ def approved_operation(root,principal,challenge,expected,rights_policy=None):
    from m045_chat_owner_operations import authorized_toggle_lock
    result=authorized_toggle_lock(root,op,principal_id=principal)
    committed=True
+  elif action=='REPAINT':
+   from m045_chat_repaint_owner import authorized_repaint
+   result=authorized_repaint(root,op,principal,row["instruction"],challenge)
+   committed=True
+  elif action=='ADD_SCRATCH':
+   from m045_chat_owner_operations import authorized_add_scratch
+   result=authorized_add_scratch(root,op,principal_id=principal)
+   committed=True
   elif action=='CREATE_MUSIC_VIDEO_GRANT':
    from studio_server import M045_GRANT_SIGNING_RING,M045_GRANT_RIGHTS_POLICY
    if M045_GRANT_SIGNING_RING is None or M045_GRANT_RIGHTS_POLICY is None:
@@ -189,4 +197,3 @@ def approved_operation(root,principal,challenge,expected,rights_policy=None):
   # Effect may be ambiguous. Never return challenge to PENDING or auto-retry.
   store.settle(challenge,principal,'RECONCILIATION_REQUIRED')
   raise
-

@@ -54,7 +54,8 @@ class StudioChatRound2(unittest.TestCase):
   r=self.ask("Add scratch chirp",self.ref)[2]
   self.assertEqual(r["state"],"CLARIFICATION_REQUIRED")
   r=self.ask("Add scratch chirp",{**self.ref,"selectedTrackId":"lead","selectedBars":[1]})[2]
-  self.assertEqual(r["state"],"APPROVAL_REQUIRED")
+  self.assertEqual(r["state"],"CLARIFICATION_REQUIRED")
+  self.assertIn("selectedTrackId",r["missing"])
  def test_audio_to_midi_requires_lawful_artifact(self):
   r=self.ask("Transcribe this audio to MIDI",{**self.ref,"artifactId":"f"*64})
   self.assertEqual(r[0],403,r[2])
@@ -98,4 +99,3 @@ class StudioChatRound2(unittest.TestCase):
   self.assertEqual(r[0],403,r[2])
 
 if __name__=="__main__":unittest.main()
-

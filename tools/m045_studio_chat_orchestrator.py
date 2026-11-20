@@ -10,7 +10,7 @@ from platform_identity import PlatformDenied
 
 _ALLOWED_FIELDS=frozenset({"projectId","revisionId","artifactId",
  "selectedTrackId","selectedBars","playlistId","publicationId",
- "cinemaProjectId","sectionId","fps"})
+ "cinemaProjectId","sectionId","fps","stepIndex","technique","deck"})
 _PROTECTED=frozenset({"REPAINT","ADD_SCRATCH","TRANSCRIBE_MIDI","MASTER",
  "TOGGLE_LOCK","CREATE_MUSIC_VIDEO_GRANT"})
 
@@ -95,7 +95,7 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
  target_track=context.get("selectedTrackId")
  bars=context.get("selectedBars")
  if target_track is not None and (not isinstance(target_track,str) or len(target_track)>120 or
-      target_track not in {t.get("track_id") for t in chosen["songSpec"]["tracks"]}):
+      (target_track not in {t.get("track_id") for t in chosen["songSpec"]["tracks"]} and not (action=="ADD_SCRATCH" and target_track=="dj_scratch"))):
   raise PlatformDenied("TRACK_NOT_IN_SELECTED_SONGSPEC")
  if bars is not None and (not isinstance(bars,list) or not 1<=len(bars)<=64 or
       any(type(b)!=int or b<1 or b>1024 for b in bars) or len(set(bars))!=len(bars)):
@@ -103,8 +103,17 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
  missing=[]
  if action in {"REPAINT","ADD_SCRATCH","TOGGLE_LOCK"} and not target_track:missing.append("selectedTrackId")
  if action in {"REPAINT","ADD_SCRATCH"} and not bars:missing.append("selectedBars")
+ if action=="REPAINT" and not artifact:missing.append("artifactId")
  if action in {"MASTER","TRANSCRIBE_MIDI","SAMPLE_PREVIEW","CREATE_MUSIC_VIDEO_GRANT"} and not artifact:
   missing.append("artifactId")
+ if action=="ADD_SCRATCH":
+  if target_track and target_track!="dj_scratch":
+   return _need(action,missing=["selectedTrackId"],projectId=pid,
+     sourceRevisionId=rid,message="Select the canonical dj_scratch track, not another instrument.")
+  for field in ("sectionId","stepIndex","technique","deck"):
+   if context.get(field) is None:missing.append(field)
+  if bars is not None and len(bars)!=1:
+   raise ValueError("SCRATCH_REQUIRES_EXACT_SINGLE_BAR")
  if action=="CREATE_MUSIC_VIDEO_GRANT":
   for field in ("cinemaProjectId","sectionId"):
    value=context.get(field)
@@ -131,6 +140,35 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
   return _need(action,missing=["transform","parameters"],projectId=pid,sourceRevisionId=rid,
      route="/api/m045/sample-preview",
      message="Choose exact bounded sample transform and parameters; preview is P3, unpublished and rights held.")
+ if action=="ADD_SCRATCH":
+  index=context["stepIndex"]
+  if type(index) is not int or not 0<=index<16:
+   raise ValueError("INVALID_SCRATCH_STEP")
+  if context["technique"] not in ("baby","chirp","2_click_flare","two_deck_juggle"):
+   raise ValueError("INVALID_SCRATCH_TECHNIQUE")
+  if context["deck"] not in ("A","B"):
+   raise ValueError("INVALID_SCRATCH_DECK")
+  section=context["sectionId"]
+  if not isinstance(section,str) or not section or len(section)>128:
+   raise ValueError("INVALID_SCRATCH_SECTION")
+  return _result("APPROVAL_REQUIRED",action,projectId=pid,sourceRevisionId=rid,
+      sourceArtifactId=artifact,selectedTrackId="dj_scratch",selectedBars=bars,
+      proposedRequest={"projectId":pid,"revisionId":rid,"targetTrackId":"dj_scratch",
+        "selectedBar":bars[0],"sectionId":section,"stepIndex":index,
+        "technique":context["technique"],"deck":context["deck"]},
+      preservationTier="P0_EXACT_NON_TARGET_EVENTS_NO_AUDIO_MUTATION",
+      message="Approve one editable, UNRENDERED DJ marker. No scratch audio or cleared SampleAsset is claimed.")
+ if action=="REPAINT":
+  if bars!=list(range(min(bars),max(bars)+1)):
+   raise ValueError("REPAINT_REQUIRES_CONTIGUOUS_SELECTED_BARS")
+  return _result("APPROVAL_REQUIRED",action,projectId=pid,sourceRevisionId=rid,
+    sourceArtifactId=artifact,selectedTrackId=target_track,selectedBars=bars,
+    proposedRequest={"projectId":pid,"revisionId":rid,"artifactId":artifact,
+        "targetTrackId":target_track,"selectedBars":bars},
+    preservationTier="P1_PENDING_PHYSICAL_GENERATION_PROOF",
+    message="Approved scoped repaint requires a host-qualified provider and exact outside-window PCM preservation; all Sonic Locks reject full-mix reconstruction.")
+ if action=="TOGGLE_LOCK":
+  chosen_track=next(t for t in chosen["songSpec"]["tracks"] if t["track_id"]==target_track)
  if action=="TOGGLE_LOCK":
   chosen_track=next(t for t in chosen["songSpec"]["tracks"] if t["track_id"]==target_track)
   originally_locked=chosen_track.get("sonic_lock") is True
@@ -160,4 +198,3 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
    message="Review exact source, scope, locks, rights and impact. Commit only through the existing Studio owner.")
  if proposed:response["proposedRequest"]=proposed
  return response
-
