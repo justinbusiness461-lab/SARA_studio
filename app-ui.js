@@ -2004,6 +2004,9 @@ function m045Wave4Clear() {
   m045Wave4PreviewUrl = null;
   if ($("m045Wave4Status")) $("m045Wave4Status").textContent =
     "P3 candidate · Selection changed · rights UNVERIFIED";
+  const grantStatus=$("m045SoundtrackGrantStatus");
+  if (grantStatus) grantStatus.textContent=
+    "NOT ISSUED · Source/project selection changed · Pending grant receipt discarded";
 }
 function m045Wave4FillOptions() {
   if (!skeleton) return;
