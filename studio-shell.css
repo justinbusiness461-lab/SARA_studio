@@ -84,3 +84,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .studio-thumb-dock button{display:flex;align-items:center;justify-content:center;gap:4px}
 #m045Proof{border:2px solid #4b8194;background:#102633;color:#effaff;font-weight:650;line-height:1.45}
 @media(max-width:430px){#djGrid{grid-template-columns:repeat(8,48px)}#studioWaveformPreview{width:100%;max-width:100%}.studio-thumb-dock svg{width:15px;height:15px}}
+/* Wave 004: native controls obey existing responsive single-shell thumb sizes. */
+.m045-wave4-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:14px 0;padding:12px;border:1px solid var(--studio-outline);border-radius:12px;background:rgba(15,27,41,.6)}
+.m045-wave4-controls button,.m045-wave4-controls select{min-height:48px;min-width:48px;width:100%;touch-action:manipulation}
+.m045-wave4-controls audio{width:100%;max-width:100%;min-height:48px}
+.m045-wave4-controls .status{overflow-wrap:anywhere}
