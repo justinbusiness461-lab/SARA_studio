@@ -36,3 +36,30 @@ without separate provenance and license qualification.
 
 The prior Sample Lab owner gap and exact reconstruction contract remain
 in docs/M045_SAMPLE_LAB_STEM_EXPORT_HELD.md.
+
+
+## Local DSP/publication qualification annex — 2026-11-19
+
+New source: tools/m045_scratch_dsp.py and the canonical Studio
+render_authorized_scratch_operation() / POST /api/m045/scratch/render.
+
+VERIFIED LOCALLY: Synthetic project-attached 44.1 kHz stereo PCM16 audio
+drives bounded dual-deck float64 scratch DSP with deterministic forward and
+reverse fractional interpolation, technique-specific crossfader breakpoints,
+and 2 ms cosine edge fades (short windows clamp the fade). PCM outside the
+event-window union remains byte-identical. Two decks sum before one PCM16
+quantizer. The pre-existing render_publish_operation() durably publishes
+the resulting WAV to canonical CAS, and independent authorized
+project_audio_bytes() physically decodes/readbacks the published master.
+Foreign/unbound source digests and unauthorized project principals fail closed.
+
+STILL HELD: This source revision attachment does not independently establish
+first-class SampleAsset source/decoded/transform/rights provenance. No real
+turntable sample, physical DJ audition, artist creative approval, or complete
+rights qualification was provided. A local synthetic renderer proof cannot
+certify production SampleAsset governance. The initial marker edit identity
+proof remains P0 symbolic, not a blanket exact audio-isolation claim.
+
+WAKE: verify authorized source and rights provenance in the rightful
+SampleAsset owner, then audition real scratch content and certify output.
+
