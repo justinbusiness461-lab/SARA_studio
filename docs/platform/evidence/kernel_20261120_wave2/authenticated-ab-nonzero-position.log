@@ -1,0 +1,134 @@
+{
+  "case": "PLATFORM_AB_AUTH_DIAGNOSTIC",
+  "fixture": {
+    "projectId": "94922dfc6bcb4882a0e6fd38cbbe0bc7",
+    "sourceRevisionIds": [
+      "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+      "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997"
+    ]
+  },
+  "events": [
+    {
+      "kind": "opened",
+      "state": {
+        "status": "Audio verified. Ready to hear.",
+        "abStatus": "A/B unavailable until R2 is verified",
+        "switch": {
+          "state": "IDLE",
+          "generation": 1,
+          "targetRevisionId": null
+        },
+        "ab": null,
+        "playback": {
+          "projectId": "94922dfc6bcb4882a0e6fd38cbbe0bc7",
+          "revisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "artifactId": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "wavSha256": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "decodedWavValidity": true,
+          "durationSec": 2,
+          "transportSelectedRevision": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997"
+        },
+        "playerPaused": "Play"
+      }
+    },
+    {
+      "kind": "playing-before-switch",
+      "state": {
+        "status": "Playing verified revision · a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+        "abStatus": "Selected R2 · current",
+        "switch": {
+          "state": "IDLE",
+          "generation": 1,
+          "targetRevisionId": null
+        },
+        "ab": null,
+        "playback": {
+          "projectId": "94922dfc6bcb4882a0e6fd38cbbe0bc7",
+          "revisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "artifactId": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "wavSha256": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "decodedWavValidity": true,
+          "durationSec": 2,
+          "transportSelectedRevision": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997"
+        },
+        "playerPaused": "Stop"
+      }
+    },
+    {
+      "kind": "ab-complete",
+      "button": "btnABR1",
+      "state": {
+        "status": "Playing verified revision · 6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+        "abStatus": "Selected R1 · historical",
+        "switch": {
+          "generation": 2,
+          "operationId": "ab:2:6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "targetRevisionId": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "artifactId": "ce2c338526854fc75c83b1f0f24b74ee7bb34c50cd7dfbab4bc8bd84b90cd771",
+          "state": "COMPLETE",
+          "fromRevisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "fromPositionSec": 0.02322,
+          "toPositionSec": 0.02322,
+          "transportSelectedRevision": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "proofRevisionId": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf"
+        },
+        "ab": {
+          "fromRevisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "fromPositionSec": 0.02322,
+          "fromArtifactId": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "toRevisionId": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "toArtifactId": "ce2c338526854fc75c83b1f0f24b74ee7bb34c50cd7dfbab4bc8bd84b90cd771",
+          "toPositionSec": 0.02322
+        },
+        "playback": {
+          "projectId": "94922dfc6bcb4882a0e6fd38cbbe0bc7",
+          "revisionId": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "artifactId": "ce2c338526854fc75c83b1f0f24b74ee7bb34c50cd7dfbab4bc8bd84b90cd771",
+          "wavSha256": "ce2c338526854fc75c83b1f0f24b74ee7bb34c50cd7dfbab4bc8bd84b90cd771",
+          "decodedWavValidity": true,
+          "durationSec": 2,
+          "transportSelectedRevision": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf"
+        },
+        "playerPaused": "Stop"
+      }
+    },
+    {
+      "kind": "ab-complete",
+      "button": "btnABR2",
+      "state": {
+        "status": "Playing verified revision · a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+        "abStatus": "Selected R2 · current",
+        "switch": {
+          "generation": 3,
+          "operationId": "ab:3:a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "targetRevisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "artifactId": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "state": "COMPLETE",
+          "fromRevisionId": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "fromPositionSec": 0.043922,
+          "toPositionSec": 0.043922,
+          "transportSelectedRevision": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "proofRevisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997"
+        },
+        "ab": {
+          "fromRevisionId": "6c00b4c243e1979abbbe7753432748dd181a6e7ec10ec51606c88f7bf862b1bf",
+          "fromPositionSec": 0.043922,
+          "fromArtifactId": "ce2c338526854fc75c83b1f0f24b74ee7bb34c50cd7dfbab4bc8bd84b90cd771",
+          "toRevisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "toArtifactId": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "toPositionSec": 0.043922
+        },
+        "playback": {
+          "projectId": "94922dfc6bcb4882a0e6fd38cbbe0bc7",
+          "revisionId": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997",
+          "artifactId": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "wavSha256": "e2f3928fdc14752f71c9f0233120049621fb5abc435dac9b7aea797012f3467f",
+          "decodedWavValidity": true,
+          "durationSec": 2,
+          "transportSelectedRevision": "a5dba30bf3d790241d3a77ceba8461349c5c82b9a0ca8a877c135a5807754997"
+        },
+        "playerPaused": "Stop"
+      }
+    }
+  ]
+}
