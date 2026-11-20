@@ -27,7 +27,7 @@ test('RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});
  t.after(()=>browser.close());
  const base='http://127.0.0.1:'+port;
- const viewports=[[1440,900],[1024,768],[768,900],[640,900],[430,932],[390,844]];
+ const viewports=[[360,800],[390,844],[412,915],[768,1024],[1024,768],[1440,900]];
  for (const [width,height] of viewports) {
   const page=await browser.newPage({viewport:{width,height},serviceWorkers:'block'});
   await page.route('https://cdn.jsdelivr.net/**',r=>r.abort());
