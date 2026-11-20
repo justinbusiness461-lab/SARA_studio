@@ -141,6 +141,51 @@ function render() {
     };
   });
   drawMatrix();
+  drawScratchGrid();
+}
+
+function drawScratchGrid() {
+  const box=$("djGrid");
+  if (!box) return;
+  box.replaceChildren();
+  if (!skeleton || !window.ScoreCore) return;
+  const section=skeleton.structure.sections[activeSectionIdx];
+  if (!section) return;
+  const technique=$("djTechnique").value, deck=$("djDeck").value;
+  const markers=skeleton.tracks.find(t=>t.track_id==="dj_scratch");
+  for (let step=0;step<16;step++) {
+    const tick=section.start_tick+step*480;
+    const cell=document.createElement("button");
+    cell.type="button";
+    cell.className="cell";
+    cell.dataset.djStep=String(step);
+    cell.textContent=String(step+1);
+    const found=markers && markers.events.find(e=>e.type==="DJ_SCRATCH_MARKER" &&
+       e.tick===tick && e.deck===deck);
+    if (found) cell.classList.add("on");
+    cell.setAttribute("aria-pressed",String(!!found));
+    cell.title=found ? found.technique+" · "+deck+" · sample "+found.sample_index
+                     : "Add "+technique+" · Deck "+deck+" · step "+(step+1);
+    cell.onclick=()=>{
+      try {
+        const proposed=window.ScoreCore.toggleScratchMarker(skeleton,{
+          sectionId:section.id,stepIndex:step,
+          technique:$("djTechnique").value,deck:$("djDeck").value});
+        skeleton=proposed;
+        window.skeleton=skeleton;
+        clearVerifiedPlayback();
+        ++m045RequestToken;
+        m045ClearTakes();
+        m045PublishProof("DECLARED");
+        render();
+        setStatus("DJ marker changed in draft · Save project before playback/render","warn");
+        $("djGridStatus").textContent="Symbolic DJ marker recorded · audio UNRENDERED until a lawful source asset is qualified";
+      } catch (error) {
+        setStatus("Scratch edit blocked: "+String(error.message||error),"warn");
+      }
+    };
+    box.appendChild(cell);
+  }
 }
 
 function syncSectionEditors() {
@@ -1161,6 +1206,8 @@ $("btnSave").onclick = () => saveJSON().catch(e => setStatus("Save failed: " + e
 if ($("btnM045Generate")) $("btnM045Generate").onclick = () =>
   submitM045Attempt().catch(e => setStatus("M045 blocked: " + e.message, "warn"));
 $("editTrack").onchange = drawMatrix;
+if ($("djTechnique")) $("djTechnique").onchange = drawScratchGrid;
+if ($("djDeck")) $("djDeck").onchange = drawScratchGrid;
 
 const lyricsEl = $("lyrics");
 if (lyricsEl) {
