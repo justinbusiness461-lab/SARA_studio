@@ -49,6 +49,9 @@ M045_GRANT_SIGNING_RING = None
 M045_GRANT_RIGHTS_POLICY = None
 MAX_REQUEST = 64 * 1024 * 1024
 MAX_ARTIFACT = 16 * 1024 * 1024
+# Host-generated, provenance-checked full-length masters only; all raw
+# exports and unproven caller-supplied artifacts keep the 16 MiB ceiling.
+MAX_MASTER_ARTIFACT = 40 * 1024 * 1024
 
 def _principal_id(value):
     if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", value):
@@ -708,7 +711,8 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID, mas
         raw_data = request.get("data_bytes")
         data = (render_authoritative_revision_bytes(spec)
                 if raw_data is None else _render_data_bytes(raw_data))
-        if len(data) > MAX_ARTIFACT:
+        allowed_size = MAX_MASTER_ARTIFACT if master_provenance is not None else MAX_ARTIFACT
+        if len(data) > allowed_size:
             raise ValueError("artifact too large")
         validate_render_audio_bytes(data)
         digest = hashlib.sha256(data).hexdigest()
