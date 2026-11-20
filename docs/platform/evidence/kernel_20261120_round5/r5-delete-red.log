@@ -1,0 +1,46 @@
+test_external_web_deletion_works_without_app_capability_but_requires_credentials_and_origin (test_platform_round5_account_delete.AccountDeletionRequestHTTP) ... FAIL
+test_inapp_delete_requires_explicit_confirmation_then_revokes_access (test_platform_round5_account_delete.AccountDeletionRequestHTTP) ... FAIL
+test_request_unpublishes_existing_public_song_and_preserves_revision_evidence (test_platform_round5_account_delete.AccountDeletionRequestHTTP) ... FAIL
+
+======================================================================
+FAIL: test_external_web_deletion_works_without_app_capability_but_requires_credentials_and_origin (test_platform_round5_account_delete.AccountDeletionRequestHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round5/tests/test_platform_round5_account_delete.py", line 30, in test_external_web_deletion_works_without_app_capability_but_requires_credentials_and_origin
+    self.assertEqual(code,202,result)
+AssertionError: 403 != 202 : {'status': 'ERROR', 'error': 'capability denied'}
+
+======================================================================
+FAIL: test_inapp_delete_requires_explicit_confirmation_then_revokes_access (test_platform_round5_account_delete.AccountDeletionRequestHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round5/tests/test_platform_round5_account_delete.py", line 18, in test_inapp_delete_requires_explicit_confirmation_then_revokes_access
+    self.assertEqual(self.fx.api("/api/me",{},method="DELETE",cookie=self.cookie)[0],400)
+AssertionError: 501 != 400
+
+======================================================================
+FAIL: test_request_unpublishes_existing_public_song_and_preserves_revision_evidence (test_platform_round5_account_delete.AccountDeletionRequestHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round5/tests/test_platform_round5_account_delete.py", line 41, in test_request_unpublishes_existing_public_song_and_preserves_revision_evidence
+    self.assertEqual(code,202,r)
+AssertionError: 501 != 202 : b'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"\n        "http://www.w3.org/TR/html4/strict.dtd">\n<html>\n    <head>\n        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">\n        <title>Error response</title>\n    </head>\n    <body>\n        <h1>Error response</h1>\n        <p>Error code: 501</p>\n        <p>Message: Unsupported method (\'DELETE\').</p>\n        <p>Error code explanation: HTTPStatus.NOT_IMPLEMENTED - Server does not support this operation.</p>\n    </body>\n</html>\n'
+
+----------------------------------------------------------------------
+Ran 3 tests in 2.078s
+
+FAILED (failures=3)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/account/delete-request HTTP/1.1" 403 -
+[Studio-Server] "POST /api/account/delete-request HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] code 501, message Unsupported method ('DELETE')
+[Studio-Server] "DELETE /api/me HTTP/1.1" 501 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/songs/pub-03f9172d7e780327d900853f1bab3a18/audio HTTP/1.1" 200 -
+[Studio-Server] code 501, message Unsupported method ('DELETE')
+[Studio-Server] "DELETE /api/me HTTP/1.1" 501 -

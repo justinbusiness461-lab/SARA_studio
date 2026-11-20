@@ -1,0 +1,26 @@
+test_external_web_deletion_works_without_app_capability_but_requires_credentials_and_origin (test_platform_round5_account_delete.AccountDeletionRequestHTTP) ... ok
+test_inapp_delete_requires_explicit_confirmation_then_revokes_access (test_platform_round5_account_delete.AccountDeletionRequestHTTP) ... ok
+test_request_unpublishes_existing_public_song_and_preserves_revision_evidence (test_platform_round5_account_delete.AccountDeletionRequestHTTP) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 2.191s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/account/delete-request HTTP/1.1" 403 -
+[Studio-Server] "POST /api/account/delete-request HTTP/1.1" 202 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 400 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/songs/pub-76b911a5d60039dc0f065f85a40ec814/audio HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "GET /api/songs/pub-76b911a5d60039dc0f065f85a40ec814/audio HTTP/1.1" 404 -
