@@ -46,6 +46,7 @@ test('RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
   assert.ok(shape.bodyWidth<=width+1,'body overflow '+width+': '+JSON.stringify(shape));
   assert.ok(shape.documentWidth<=width+1,'document overflow '+width+': '+JSON.stringify(shape));
   assert.equal(shape.dock.bottom,height,'dock pinned '+width);
+  assert.ok(shape.dock.height < height*0.4,'dock obstructs too much screen '+width);
   assert.match(shape.zoom,/viewport-fit=cover/);
   assert.doesNotMatch(shape.zoom,/user-scalable=no/);
   for (const button of shape.buttons) {
