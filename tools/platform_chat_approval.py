@@ -189,3 +189,4 @@ def approved_operation(root,principal,challenge,expected,rights_policy=None):
   # Effect may be ambiguous. Never return challenge to PENDING or auto-retry.
   store.settle(challenge,principal,'RECONCILIATION_REQUIRED')
   raise
+

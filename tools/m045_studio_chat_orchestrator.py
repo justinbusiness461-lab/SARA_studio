@@ -160,3 +160,4 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
    message="Review exact source, scope, locks, rights and impact. Commit only through the existing Studio owner.")
  if proposed:response["proposedRequest"]=proposed
  return response
+
