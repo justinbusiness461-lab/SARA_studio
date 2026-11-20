@@ -56,27 +56,34 @@ class AceStepProvider:
         return self.endpoint.rstrip("/") + endpoint
 
     @staticmethod
-    def _multipart(fields, source):
+    def _multipart(fields, source, *, field_name="src_audio", filename="source.wav"):
         # Multipart is required: ACE-Step does not accept client-local paths.
+        if field_name not in ("src_audio","reference_audio"):
+            raise ValueError("ACE_STEP_MULTIPART_FIELD_UNQUALIFIED")
         boundary = "sara" + hashlib.sha256(source + json.dumps(fields,sort_keys=True).encode()).hexdigest()[:32]
         chunks=[]
         for name, value in sorted(fields.items()):
             if isinstance(value, bool):
                 value="true" if value else "false"
             chunks.append((f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n").encode())
-        chunks.append((f"--{boundary}\r\nContent-Disposition: form-data; name=\"src_audio\"; filename=\"source.wav\"\r\nContent-Type: audio/wav\r\n\r\n").encode())
+        chunks.append((f"--{boundary}\r\nContent-Disposition: form-data; name=\"{field_name}\"; filename=\"{filename}\"\r\nContent-Type: audio/wav\r\n\r\n").encode())
         chunks.append(source)
         chunks.append((f"\r\n--{boundary}--\r\n").encode())
         return b"".join(chunks), "multipart/form-data; boundary="+boundary
 
-    def _request(self, path, body=None, *, limit=1024*1024, src_audio=None):
+    def _request(self, path, body=None, *, limit=1024*1024, src_audio=None, reference_audio=None):
         headers={"Accept": "application/json" if body is not None or path != "/v1/audio" else "audio/wav"}
         if self.api_key:
             headers["Authorization"]="Bearer "+self.api_key
-        if src_audio is not None:
-            if path != "/release_task" or not isinstance(body,dict):
-                raise ValueError("ACE_STEP_INVALID_REPAINT_MULTIPART")
-            payload,mime=self._multipart(body,src_audio)
+        if src_audio is not None or reference_audio is not None:
+            if (path != "/release_task" or not isinstance(body,dict)
+                    or (src_audio is not None and reference_audio is not None)):
+                raise ValueError("ACE_STEP_INVALID_AUDIO_MULTIPART")
+            if reference_audio is not None:
+                payload,mime=self._multipart(body,reference_audio,
+                    field_name="reference_audio",filename="reference.wav")
+            else:
+                payload,mime=self._multipart(body,src_audio)
             headers["Content-Type"]=mime
         elif body is not None:
             payload=json.dumps(body,sort_keys=True).encode("utf-8")
@@ -140,7 +147,15 @@ class AceStepProvider:
         if not isinstance(params,dict):
             raise ValueError("ACE_STEP_UNSUPPORTED_PARAMETERS")
         repaint=params.get("_m045_repaint")
+        reference=params.get("_m045_reference")
         allowed={"music_length_ms"}
+        if reference is not None:
+            allowed.add("_m045_reference")
+            if (not isinstance(reference,dict)
+                    or set(reference)!={"reference_sha256","audio_cover_strength"}):
+                raise ValueError("ACE_STEP_REFERENCE_AUTHORITY_REQUIRED")
+            if repaint is not None:
+                raise ValueError("ACE_STEP_REFERENCE_REPAINT_UNQUALIFIED")
         if repaint is not None:
             allowed.update({"edit_mode","start_bar","end_bar","target_track_id","_m045_repaint"})
             if params.get("edit_mode")!="repaint":
@@ -161,6 +176,21 @@ class AceStepProvider:
               "thinking":False, **self._music_attributes(song_spec)}
         stage=pathlib.Path(stage_dir)
         source_bytes=None
+        reference_bytes=None
+        if reference is not None:
+            ref_path=stage/"reference-source.wav"
+            if not ref_path.is_file() or ref_path.is_symlink():
+                raise ValueError("ACE_STEP_REFERENCE_SOURCE_MISSING")
+            reference_bytes=ref_path.read_bytes()
+            strength=reference["audio_cover_strength"]
+            if (not isinstance(reference["reference_sha256"],str)
+                    or not HEX64.fullmatch(reference["reference_sha256"])
+                    or type(strength) not in (float,int) or not 0<=strength<=1
+                    or hashlib.sha256(reference_bytes).hexdigest()!=reference["reference_sha256"]):
+                raise ValueError("ACE_STEP_REFERENCE_SOURCE_MISMATCH")
+            from m045_repaint import read_pcm16_wav
+            read_pcm16_wav(reference_bytes)
+            body["audio_cover_strength"]=strength
         if repaint is not None:
             source_file=stage/"repaint-source.wav"
             if not source_file.is_file() or source_file.is_symlink():
@@ -183,6 +213,7 @@ class AceStepProvider:
             "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest(),
             "provider": "ace_step_native",
             "source_sha256": hashlib.sha256(source_bytes).hexdigest() if source_bytes is not None else None,
+            "reference_sha256": hashlib.sha256(reference_bytes).hexdigest() if reference_bytes is not None else None,
         }
         task_path = stage / "upstream-task.json"
         if task_path.is_file():
@@ -195,7 +226,8 @@ class AceStepProvider:
             task_id = saved["task_id"]
         else:
             try:
-                released = self._request("/release_task", body, src_audio=source_bytes)
+                released = self._request("/release_task", body, src_audio=source_bytes,
+                                         reference_audio=reference_bytes)
             except ProviderUnavailable as exc:
                 # Upstream might have accepted the task before our connection failed.
                 # No task ID means no lawful way to resume; do not blindly retry.
@@ -269,6 +301,8 @@ class AceStepProvider:
             "checkpoint_identity_source":"OPERATOR_CONFIGURED_UNVERIFIED",
             "provider_request_id":task_id[:128],
             "seed":seed,
+            "reference_artifact_digest":reference["reference_sha256"] if reference is not None else None,
+            "reference_strength":reference["audio_cover_strength"] if reference is not None else None,
             "audio_sha256":media["sha256"],
             "latency_ms":int((time.monotonic()-started)*1000),
             "output_format":"wav_pcm16_stereo_44100"}
