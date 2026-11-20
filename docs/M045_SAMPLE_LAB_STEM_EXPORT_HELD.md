@@ -47,3 +47,30 @@ Star Light source master/stems/recipe in inspected repo and Project evidence.
 WAKE CONDITION: authenticated owner source and source-bound media with
 independent digest readback; then change the actual renderer, not a shadow
 CAS/master implementation. This note is not certification.
+
+
+## Deterministic reconstruction mechanism annex — 2026-11-19
+
+New source: tools/m045_stem_reconstruction.py.
+
+VERIFIED LOCALLY: A pure portable sara.mix.recipe.v1 implementation consumes
+exact-digest, little-endian interleaved float64 dry stem frames, sums in
+canonical declared order, performs the saved tanh/nonlinear bus, fades and
+peak normalization, and writes deterministic 44.1 kHz stereo PCM16 WAV.
+Whole-WAV SHA-256 was reproduced in a fresh Python process. Wrong stem digest,
+order/alignment, malformed revision identity and nonfinite samples fail
+closed. Creative stem class is explicitly non-reconstructive.
+
+STILL HELD: No production dry stems were exported from current
+ScoreCore/OfflineAudioContext rendering; no original Star Light source
+master/stems/recipe were qualified. Reported Star Light digest
+409427bcebe6e0397cff7a005efc940eb429c22ed0b1eecacbb842d57e4206fc
+was NOT reproduced. The deterministic synthetic master does not supersede
+the production master or establish revision-bound CAS stem membership.
+This helper is DSP-only, never a new audio/ProjectRevision authority.
+
+WAKE: qualify the existing production renderer's dry stem extraction,
+lawful revision-to-stem bindings and actual immutable reference master;
+then certify a fresh-process full-WAV SHA equality, crash boundaries and
+creative stem non-equivalence before closing the original HOLD.
+
