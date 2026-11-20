@@ -1244,7 +1244,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
         principal_id = None
-        if path.startswith("/api/projects/"):
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth"}:
             try:
                 principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
             except ProjectConflict as e:
@@ -1258,6 +1258,20 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload,dict): raise ValueError("object required")
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
+
+        if path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth"}:
+            # No client-provided PCM, CAS path, note list or revision publication.
+            # Resolve studio principal and source graph before interpreting a note.
+            try:
+                from m045_wave3_service import authorized_transcribe, authorized_preview
+                operation = authorized_transcribe if path.endswith("transcribe-midi") else authorized_preview
+                return self._json(200, operation(EXPORT_ROOT, payload, principal_id))
+            except ProjectConflict as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except PermissionError as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
 
         if path == "/api/m045/attempts/take-audio":
             if M045_ATTEMPT_OWNER is None:
