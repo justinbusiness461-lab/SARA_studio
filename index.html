@@ -68,6 +68,8 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <select id="m045Provider"><option value="eleven">Eleven Music (requires approved key)</option><option value="ace">ACE-Step (requires qualified remote endpoint)</option></select>
 <label for="m045Duration">Duration, seconds (3–210)</label>
 <input type="number" id="m045Duration" min="3" max="210" value="180"/>
+<label for="m045BatchCount">Generation takes (1–4; selection required for multiple)</label>
+<select id="m045BatchCount"><option value="1">1 take</option><option value="2">2 takes</option><option value="3">3 takes</option><option value="4">4 takes</option></select>
 <label for="m045TargetTrack">Target track (full-mix repaint; locked tracks block)</label>
 <select id="m045TargetTrack"><option value="">Select an unlocked track</option></select>
 <label for="m045BarStart">Change ONLY This™ — starting bar (1-based)</label>
@@ -76,6 +78,7 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <input type="number" id="m045BarEnd" min="2" step="1" placeholder="Requires selective renderer"/>
 <button class="full" id="btnM045Generate" type="button">Generate from saved revision</button>
 <div class="status warn" id="m045Proof" role="status" aria-live="polite">DECLARED · No committed generation attempt · audio quality UNVERIFIED</div>
+<div id="m045TakePanel" hidden><h4>Audition generated takes — artist selection required</h4><div id="m045TakeButtons"></div><audio id="m045TakePreview" controls preload="none" aria-label="Generated take preview"></audio><div class="status" id="m045TakeStatus" role="status" aria-live="polite">Select a take to audition.</div></div>
 </div>
 <div class="card">
 <h3>Song identity</h3>
