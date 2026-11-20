@@ -2,57 +2,57 @@
   "baseline": "482f1f7a887bb529eb16c6927bcb84d6f1769f03",
   "files": {
     "app-ui.js": {
-      "git_blob_sha1": "59fd57237f141ce2dc3b3986ff06bde62530f997",
+      "git_blob_sha1": "b6f11d47fb9cec26a7f4d0fb8a277aa705c5bb5b",
       "sha256": "e249a895a56198a5547bda6551a8a1e89660fe820a690bfd53eb12b48b8e9e8b",
       "size": 97651
     },
     "index.html": {
-      "git_blob_sha1": "6d14fe91ad6b4ee0a0236ea22e967e9b42501ed2",
+      "git_blob_sha1": "ffe3a230499c725259d3695d9d7580de4177012b",
       "sha256": "0d7fb0f78fe8c3b8da6db163e096d5355ca4b270a35d86a5e762e78763a69929",
       "size": 27494
     },
     "platform-ui.js": {
-      "git_blob_sha1": "ac8c98c2d70143b661ab60c03daa5b303c790c56",
+      "git_blob_sha1": "c86710d0ee4c8ac85df7460f05b53323488c4098",
       "sha256": "0f4df15be481b9d5f09204de7ad011add73db9a748cac8f2fe3cbb1cedc98dbc",
       "size": 18128
     },
     "studio-shell.css": {
-      "git_blob_sha1": "a9da14438af170d677c1e763387d4295bd405aee",
+      "git_blob_sha1": "3c0357bc4868f8184adf5a2a03c0e7e2a3570028",
       "sha256": "86c307a993b5ac4d5fa7ca8c96400f7c405faa3a56a9b8f7881d8344978d2d01",
       "size": 14048
     },
     "tests/platform-wave2-ui.browser.cjs": {
-      "git_blob_sha1": "f1e025186c75077516bf90cf995c4a8d2412d8ad",
+      "git_blob_sha1": "d8ff17dcecd14080339ba4c46921a8c4579ceca3",
       "sha256": "c72c24b12597c4bf642fa6539f257396848fd56729aa9f53dd9fc099627ceb64",
       "size": 4753
     },
     "tests/r2-ab-dispose.browser.cjs": {
-      "git_blob_sha1": "909e4c269a2c03141c9d7f841e1ab1b770b07989",
+      "git_blob_sha1": "e67830d4d32724957e4a960b905d825ea6fffb19",
       "sha256": "92b480d0c587994ece0640da34c4e533cc6afe37260e92ba50479698065b2d32",
       "size": 3997
     },
     "tests/test_m045_full_song_master_210.py": {
-      "git_blob_sha1": "9932797f2caabe0eb448411610ddfada212bd940",
+      "git_blob_sha1": "c9e3cc598155416f8e74e507617f6b2bab6c16d9",
       "sha256": "61a3412172a7e50946a4929d22f2e600e3ce736f3e6f2a5529ecb841c7610d50",
       "size": 3814
     },
     "tests/test_platform_chat_studio.py": {
-      "git_blob_sha1": "72bd1663771d32b89ff0dbb103913dd89cb3ea23",
+      "git_blob_sha1": "dbfa1d33812e346e387564a06ee27c874ad620d4",
       "sha256": "4701a1565ebb5ae0c6a20ad4e643bb864316caeb534a3510d1488dd520393b88",
       "size": 5028
     },
     "tools/m045_studio_chat_orchestrator.py": {
-      "git_blob_sha1": "ad69a9c49780188407d20158cebd4a100114a66d",
+      "git_blob_sha1": "d21907b8c2b541e8fa08ca3a883b9916f22d6aae",
       "sha256": "9497e748cefef479aeb72c1a0f0e827aac79e6fe8a6862cec5c77340f1d5820c",
       "size": 7822
     },
     "tools/platform_chat.py": {
-      "git_blob_sha1": "5c0b0f269e1cdccef90614ce60c0e051fde662a3",
+      "git_blob_sha1": "5b2a653b9de09355dcc9c7d2a61b3fd38d077696",
       "sha256": "d30af86d3449be96a4a5cc889dc97265cfd35d29c5732e2ba448d5572dbf3c4a",
       "size": 3407
     },
     "tools/studio_server.py": {
-      "git_blob_sha1": "7a76bf0e8273dd6611dc35e9911d41fc872fd613",
+      "git_blob_sha1": "b3cf2752d0c3a40d86110c71a79624f593b2a8de",
       "sha256": "c535ae954d36e669b207736f10ccb284058533b475e15436e7024a3d7f56e448",
       "size": 106019
     }
@@ -104,4 +104,4 @@
       "size": 46951
     }
   }
-}\n
+}
