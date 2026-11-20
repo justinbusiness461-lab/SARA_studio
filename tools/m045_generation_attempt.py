@@ -97,6 +97,13 @@ def _request_digest(kwargs: Dict[str, Any]) -> str:
         "lyrics": kwargs.get("lyrics"),
         "params": kwargs.get("params") or {},
     }
+    # Preserve exact historical fingerprint for unconditioned single-take
+    # attempts, including ones persisted before these optional fields existed.
+    if kwargs.get("reference_artifact_digest") is not None:
+        stable["reference_artifact_digest"] = kwargs["reference_artifact_digest"]
+        stable["audio_cover_strength"] = kwargs.get("audio_cover_strength", 1.0)
+    if kwargs.get("batch_count", 1) not in (None, 1):
+        stable["batch_count"] = kwargs["batch_count"]
     return hashlib.sha256(_json_bytes(stable)).hexdigest()
 
 
@@ -261,6 +268,11 @@ class GenerationAttemptOwner:
                 if not isinstance(stored, dict):
                     raise _conflict("missing durable resume request")
                 retry_fields = dict(stored)
+                # Optional fields omitted by legacy attempts remain omitted.
+                # Do not replay a serialized null as an invalid explicit batch.
+                for field in ("reference_artifact_digest", "audio_cover_strength", "batch_count"):
+                    if retry_fields.get(field) is None:
+                        retry_fields.pop(field, None)
                 retry_fields["headers"] = headers
                 retry_fields["synthesize_to_stage_fn"] = provider
             else:
@@ -298,7 +310,37 @@ class GenerationAttemptOwner:
         requested = kwargs.get("params") or {}
         if not isinstance(requested, dict):
             raise ValueError("invalid generation params")
+        batch_count=kwargs.get("batch_count",1)
+        if type(batch_count) is not int or not 1 <= batch_count <= 4:
+            raise ValueError("batch_count must be an integer from 1 to 4")
+        if batch_count != 1:
+            raise _conflict("MULTI_TAKE_OWNER_NOT_YET_QUALIFIED")
+        reference_digest=kwargs.get("reference_artifact_digest")
+        reference_audio=None
+        reference_strength=kwargs.get("audio_cover_strength",1.0)
+        if reference_digest is not None:
+            if not isinstance(reference_digest,str) or not HEX64.fullmatch(reference_digest):
+                raise ValueError("invalid reference_artifact_digest")
+            if (type(reference_strength) not in (float,int) or
+                    not 0.0 <= reference_strength <= 1.0):
+                raise ValueError("invalid audio_cover_strength")
+            # The caller's principal and source revision were already verified
+            # by project_operation. Reference authority must be a member of
+            # this exact revision, never CAS existence or client-provided paths.
+            from studio_server import artifact_bytes, validate_render_audio
+            revision=saved["revision"]
+            member=set(revision.get("sourceAssetDigests",[]))
+            member.update(revision.get("outputArtifactIds",[]))
+            member.update(b["artifactId"] for b in saved.get("historicalOutputBindings",[]))
+            if reference_digest not in member:
+                raise _conflict("reference audio is not bound to authorized source revision")
+            validate_render_audio(self.data_root,reference_digest)
+            reference_audio=artifact_bytes(self.data_root,reference_digest)
+        elif kwargs.get("audio_cover_strength") is not None:
+            raise ValueError("audio_cover_strength requires reference_artifact_digest")
         selective = requested.get("edit_mode") == "repaint"
+        if selective and reference_digest is not None:
+            raise _conflict("repaint and style reference cannot be combined before qualification")
         source_pcm = None
         region = None
         if selective:
@@ -400,7 +442,9 @@ class GenerationAttemptOwner:
                     "resume_request": {k: kwargs.get(k) for k in (
                         "project_id", "base_revision_id", "expected_current_revision_id",
                         "idempotency_key", "model_id", "model_version", "seed",
-                        "song_spec", "prompt", "lyrics", "params")},
+                        "song_spec", "prompt", "lyrics", "params",
+                        "reference_artifact_digest", "audio_cover_strength",
+                        "batch_count")},
                     "created_at": time.time(),
                     "updated_at": time.time(),
                     "error_code": None,
@@ -421,6 +465,15 @@ class GenerationAttemptOwner:
                         os.close(fd)
             stage_path = stage_dir / "output.wav"
             synth_params = dict(requested)
+            if reference_audio is not None:
+                reference_path=stage_dir/"reference-source.wav"
+                if reference_path.exists() and reference_path.read_bytes()!=reference_audio:
+                    raise _conflict("reference staging identity mismatch")
+                if not reference_path.exists():
+                    self.atomic_write_fn(reference_path,reference_audio)
+                synth_params["_m045_reference"]={
+                    "reference_sha256":reference_digest,
+                    "audio_cover_strength":float(reference_strength)}
             if region is not None:
                 source_path = stage_dir / "repaint-source.wav"
                 if source_path.exists() and source_path.read_bytes() != source_pcm:
@@ -480,6 +533,10 @@ class GenerationAttemptOwner:
                                 or not HEX64.fullmatch(checkpoint)
                                 or provenance.get("seed") != int(kwargs.get("seed", 0))):
                             raise ValueError("checkpoint provenance mismatch")
+                    if reference_audio is not None:
+                        if (provenance.get("reference_artifact_digest")!=reference_digest
+                                or provenance.get("reference_strength")!=float(reference_strength)):
+                            raise ValueError("reference provenance mismatch")
                     attempt["provenance"] = provenance
                 artifact_digest = self.publish_cas_object(stage_path.read_bytes())
                 if artifact_digest != media["sha256"] or not HEX64.fullmatch(artifact_digest):
