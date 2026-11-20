@@ -139,3 +139,37 @@ html.platform-mode #platformPublishStatus,html.platform-mode #platformAuthStatus
  html.platform-mode .platform-mini-player{max-width:780px;left:50%;transform:translateX(-50%);border-radius:12px 12px 0 0}
 }
 
+
+/* PLATFORM WAVE 2: artist-facing owner-backed collaboration and catalog controls. */
+html.platform-mode .platform-wave2-hub{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:8px;
+  padding-top:16px;margin-top:16px;border-top:1px solid #465670
+}
+html.platform-mode .platform-wave2-hub h3{
+  margin:15px 0 3px;font-size:1rem;font-weight:750;color:#8ee7ea
+}
+html.platform-mode .platform-wave2-hub label{font-weight:600;max-width:100%}
+html.platform-mode .platform-wave2-hub input,
+html.platform-mode .platform-wave2-hub select,
+html.platform-mode #platformChatInstruction{
+  width:100%;min-width:0;max-width:100%;font:inherit;
+  background:#111b29;color:#f0fbff;border:1px solid #58718d;
+  border-radius:9px;padding:10px;box-sizing:border-box
+}
+html.platform-mode .platform-wave2-hub select{
+  min-height:48px;min-width:48px
+}
+html.platform-mode .platform-wave2-hub button,
+html.platform-mode #platformChatSend{
+  min-height:48px;min-width:48px;touch-action:manipulation
+}
+html.platform-mode .platform-wave2-hub p{
+  overflow-wrap:anywhere;line-height:1.5;font-size:.87rem
+}
+html.platform-mode .platform-chat-result{
+  overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;
+  max-height:290px;background:#0d1b2b;color:#e3f6ff;
+  padding:12px;border-radius:8px;border:1px solid #374f6c
+}
+html.platform-mode #platformChatPanel{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+html.platform-mode #platformChatPanel[hidden]{display:none!important}
