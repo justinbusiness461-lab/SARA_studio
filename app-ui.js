@@ -493,6 +493,7 @@ function clearVerifiedPlayback() {
   }
   verifiedPlaybackSource = null;
   verifiedPlayback = null;
+  if (typeof m045Wave4Clear === "function") m045Wave4Clear();
   window.__M044_PLAYBACK_PROOF__ = null;
   paintVerifiedWaveform();
   window.__M044_PLAYBACK_STARTED__ = false;
@@ -1988,3 +1989,154 @@ function initStudioResponsiveShell() {
   if (modeButtons[0]) modeButtons[0].setAttribute('aria-current','page');
 }
 initStudioResponsiveShell();
+
+
+// Wave 004 — presentation only. Studio service remains project/revision/render authority.
+let m045Wave4Generation = 0;
+let m045Wave4PreviewUrl = null;
+let m045Wave4Busy = false;
+function m045Wave4Clear() {
+  ++m045Wave4Generation;
+  const audio = $("m045Wave4Audio");
+  if (audio) { try { audio.pause(); } catch (_) {} audio.removeAttribute("src"); audio.load(); }
+  if (m045Wave4PreviewUrl) URL.revokeObjectURL(m045Wave4PreviewUrl);
+  m045Wave4PreviewUrl = null;
+  if ($("m045Wave4Status")) $("m045Wave4Status").textContent =
+    "P3 candidate · Selection changed · rights UNVERIFIED";
+}
+function m045Wave4FillOptions() {
+  if (!skeleton) return;
+  const options = [
+    ["m045Wave4Section", (skeleton.structure && skeleton.structure.sections || []).map(x=>[x.id,x.name||x.id])],
+    ["m045Wave4Track", (skeleton.tracks||[]).filter(x=>Array.isArray(x.events) &&
+      x.events.some(e=>e.type==="NOTE_ON")).map(x=>[x.track_id,x.name||x.track_id])]
+  ];
+  for (const [id, rows] of options) {
+    const element=$(id);
+    if (!element) continue;
+    const old=element.value;
+    element.replaceChildren();
+    for (const [value,label] of rows) {
+      const option=document.createElement("option");
+      option.value=String(value);
+      option.textContent=String(label);
+      element.appendChild(option);
+    }
+    if (rows.some(x=>String(x[0])===old)) element.value=old;
+  }
+}
+function m045Wave4Context(audioRequired) {
+  if (!durableProjectRef) throw new Error("Save or open an authorized project first");
+  const ref={...durableProjectRef};
+  if (audioRequired) {
+    const p=verifiedPlayback;
+    if (!p || p.projectId!==ref.projectId || p.revisionId!==ref.revisionId ||
+        typeof p.artifactId!=="string" || !/^[0-9a-f]{64}$/.test(p.artifactId))
+      throw new Error("Verify current revision audio before transcription or mastering");
+    ref.artifactId=p.artifactId;
+  }
+  return ref;
+}
+function m045Wave4Valid(ref,openToken,requestToken) {
+  return requestToken===m045Wave4Generation &&
+    openToken===projectOpenGenerationToken &&
+    durableProjectRef && durableProjectRef.projectId===ref.projectId &&
+    durableProjectRef.revisionId===ref.revisionId;
+}
+async function m045Wave4Post(route,body) {
+  const response=await fetch(route,{method:"POST",headers:studioProjectHeaders(),body:JSON.stringify(body)});
+  const result=await response.json().catch(()=>({}));
+  if (!response.ok || result.status!=="SUCCESS") {
+    throw new Error((result.error||"HTTP "+response.status) +
+      (response.status===409?" · reopen and read authoritative state":""));
+  }
+  return result;
+}
+function m045Wave4Status(message) {
+  if ($("m045Wave4Status")) $("m045Wave4Status").textContent=message;
+}
+async function m045Wave4Action(kind) {
+  if (m045Wave4Busy) return;
+  const requireAudio = kind!=="preview";
+  let ref;
+  try { ref=m045Wave4Context(requireAudio); }
+  catch (error) { m045Wave4Status("NOT VERIFIED · "+error.message); return; }
+  const openToken=projectOpenGenerationToken;
+  const token=++m045Wave4Generation;
+  const valid=()=>m045Wave4Valid(ref,openToken,token);
+  const buttons=["m045Wave4Preview","m045Wave4Transcribe","m045Wave4Master"].map($).filter(Boolean);
+  m045Wave4Busy=true;
+  buttons.forEach(b=>b.disabled=true);
+  m045Wave4Status("Checking authorized revision · "+kind+"…");
+  try {
+    if(kind==="preview") {
+      m045Wave4FillOptions();
+      const section=$("m045Wave4Section"),track=$("m045Wave4Track");
+      if(!section?.value||!track?.value) throw new Error("Choose a saved section and instrument track");
+      const result=await m045Wave4Post("/api/m045/preview-synth",{
+        projectId:ref.projectId,revisionId:ref.revisionId,sectionId:section.value,trackId:track.value});
+      if (!valid()) return;
+      if (result.sourceRevisionId!==ref.revisionId ||
+          result.kind!=="NON_AUTHORITATIVE_FM_PREVIEW" ||
+          result.audioStatus!=="PREVIEW_NOT_PUBLISHED") throw new Error("Unqualified FM response");
+      const binary=atob(result.wavBase64);
+      const pcm=Uint8Array.from(binary,ch=>ch.charCodeAt(0));
+      const sha=await sha256Hex(pcm.buffer);
+      if(!valid()) return;
+      if(sha!==result.previewSha256) throw new Error("FM preview digest mismatch");
+      if(m045Wave4PreviewUrl) URL.revokeObjectURL(m045Wave4PreviewUrl);
+      m045Wave4PreviewUrl=URL.createObjectURL(new Blob([pcm],{type:"audio/wav"}));
+      const audio=$("m045Wave4Audio");
+      audio.src=m045Wave4PreviewUrl;
+      m045Wave4Status("FM PREVIEW · UNPUBLISHED · Not approved audio");
+    } else if(kind==="transcribe") {
+      const result=await m045Wave4Post("/api/m045/transcribe-midi",{
+        projectId:ref.projectId,revisionId:ref.revisionId,artifactId:ref.artifactId});
+      if (!valid()) return;
+      if(result.sourceRevisionId!==ref.revisionId || result.sourceArtifactId!==ref.artifactId ||
+          result.preservationTier!=="P3_RECONSTRUCTION" || result.projectRevisionCommitted!==false)
+        throw new Error("Unqualified transcription response");
+      m045Wave4Status("P3 MIDI CANDIDATE · "+result.notesDetected+
+        " estimated notes · Lossy · Human review required · No project revision changed");
+    } else if(kind==="master") {
+      const target=Number($("m045Wave4Preset").value);
+      if(![-14,-9].includes(target)) throw new Error("Unsupported mastering target");
+      const result=await m045Wave4Post("/api/m045/master",{
+        projectId:ref.projectId,revisionId:ref.revisionId,artifactId:ref.artifactId,
+        expectedCurrentRevisionId:ref.revisionId,targetLufs:target,truePeakCeilingDbtp:-1});
+      if(!valid()) return;
+      if(result.sourceRevisionId!==ref.revisionId||result.sourceArtifactId!==ref.artifactId||
+         result.rightsStatus!=="UNVERIFIED_HELD"||result.releaseCleared!==false||
+         !result.telemetry?.true_peak_verified)
+        throw new Error("Unqualified mastering receipt; reopen project for authoritative readback");
+      const receipt=result.telemetry;
+      m045Wave4Status("Master response received · "+receipt.measured_output_lufs+
+         " LUFS · "+receipt.measured_output_true_peak_dbtp+
+         " dBTP · Rights HELD · Reopening authoritative revision…");
+      await restoreProjectFromStorage(); // Authoritative promotion readback, not browser-selected truth.
+      if(!durableProjectRef || durableProjectRef.projectId!==ref.projectId ||
+         durableProjectRef.revisionId!==result.revisionId ||
+         !verifiedPlayback || verifiedPlayback.projectId!==ref.projectId ||
+         verifiedPlayback.revisionId!==result.revisionId ||
+         verifiedPlayback.artifactId!==result.artifactId ||
+         verifiedPlayback.wavSha256!==result.artifactId) {
+        m045Wave4Status("Master committed, but audio UNVERIFIED · reopen and inspect; do not retry blindly");
+        return;
+      }
+      m045Wave4Status("Master revision VERIFIED · "+receipt.measured_output_lufs+
+         " LUFS · "+receipt.measured_output_true_peak_dbtp+
+         " dBTP · Rights UNVERIFIED_HELD · NOT creatively approved");
+    }
+  } catch(error) {
+    if(valid()) m045Wave4Status("NOT VERIFIED · "+error.message);
+  } finally {
+    m045Wave4Busy=false;
+    buttons.forEach(b=>b.disabled=false);
+  }
+}
+if ($("m045Wave4Preview")) $("m045Wave4Preview").onclick=()=>m045Wave4Action("preview");
+if ($("m045Wave4Transcribe")) $("m045Wave4Transcribe").onclick=()=>m045Wave4Action("transcribe");
+if ($("m045Wave4Master")) $("m045Wave4Master").onclick=()=>m045Wave4Action("master");
+if ($("m045Wave4Section")) $("m045Wave4Section").onfocus=m045Wave4FillOptions;
+if ($("m045Wave4Track")) $("m045Wave4Track").onfocus=m045Wave4FillOptions;
+m045Wave4FillOptions();
