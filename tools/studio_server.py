@@ -1131,6 +1131,45 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
 
+        if path == "/api/m045/attempts/take-audio":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status":"BLOCKED","error":"M045 owner unavailable"})
+            try:
+                audio=M045_ATTEMPT_OWNER.read_take_audio(
+                    headers=dict(self.headers),project_id=payload["project_id"],
+                    idempotency_key=payload["idempotency_key"],
+                    take_index=payload["take_index"])
+                self.send_response(200)
+                self.send_header("Content-Type","audio/wav")
+                self.send_header("Cache-Control","no-store")
+                self.send_header("Content-Length",str(len(audio)))
+                self.end_headers()
+                self.wfile.write(audio)
+                return
+            except AttemptSecurityError as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except ProjectConflict as exc:
+                return self._json(409, {"status":"CONFLICT","error":str(exc)})
+            except (ValueError,KeyError,TypeError,OSError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
+
+        if path == "/api/m045/attempts/select-take":
+            if M045_ATTEMPT_OWNER is None:
+                return self._json(503, {"status":"BLOCKED","error":"M045 owner unavailable"})
+            try:
+                result=M045_ATTEMPT_OWNER.select_take(
+                    headers=dict(self.headers),project_id=payload["project_id"],
+                    idempotency_key=payload["idempotency_key"],
+                    take_index=payload["take_index"],
+                    expected_current_revision_id=payload["expected_current_revision_id"])
+                return self._json(200,result)
+            except AttemptSecurityError as exc:
+                return self._json(403, {"status":"DENY","error":str(exc)})
+            except ProjectConflict as exc:
+                return self._json(409, {"status":"CONFLICT","error":str(exc)})
+            except (ValueError,KeyError,TypeError,OSError) as exc:
+                return self._json(400, {"status":"ERROR","error":str(exc)})
+
         if path == "/api/m045/attempts/reconcile":
             if M045_ATTEMPT_OWNER is None:
                 return self._json(503, {"status": "BLOCKED", "error": "M045 attempt owner unavailable"})
