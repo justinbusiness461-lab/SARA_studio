@@ -8,20 +8,24 @@
   let currentArtist = null;
   let currentView = "home";
   const surfaces = {home:"platformHomePanel",explore:"platformExplorePanel",
-                    library:"platformLibraryPanel",profile:"platformProfilePanel"};
+                    library:"platformLibraryPanel",profile:"platformProfilePanel",
+                    chat:"platformChatPanel"};
   function text(id,value) {const node=$(id);if(node)node.textContent=value;}
   function changeView(view) {
     currentView=view;
-    root.classList.toggle("platform-view-studio",view==="studio"||view==="chat");
+    root.classList.toggle("platform-view-studio",view==="studio");
     for(const [key,id] of Object.entries(surfaces))$(id).hidden=key!==view;
     for(const button of $("platformNavigation").querySelectorAll("button")){
       const active=button.dataset.platformView===view;
       if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");
     }
-    if(view==="chat") $("studioPromptSurface")?.scrollIntoView({block:"start",behavior:"instant"});
+    if(view==="chat") $("platformChatInstruction")?.focus();
     if(view==="explore") loadExplore().catch(error=>text("platformExploreStatus","ERROR · "+error.message));
     if(view==="library") loadLibrary().catch(error=>text("platformLibraryStatus","ERROR · "+error.message));
-    if(view==="profile") loadProfile().catch(error=>text("platformProfileStatus","ERROR · "+error.message));
+    if(view==="profile") {
+      loadProfile().catch(error=>text("platformProfileStatus","ERROR · "+error.message));
+      refreshWave2().catch(error=>text("platformPlaylistStatus","ERROR · "+error.message));
+    }
     if(view==="home") text("platformHomeStatus","READY · Open your library or continue in Studio");
   }
   function showSignedOut(message="READY · Sign in or create your account"){
@@ -125,6 +129,109 @@
       text("platformProfileStatus","READY · Profile saved");
     }catch(error){text("platformProfileStatus","ERROR · "+error.message);}
   }
+  async function listPlaylists(){
+    const result=await request("/api/playlists");
+    const panel=$("platformMyPlaylists");panel.replaceChildren();
+    for(const item of result.playlists){
+      const card=document.createElement("div");card.className="platform-project-card";
+      card.textContent=item.title+" · "+item.visibility;panel.append(card);
+    }
+    text("platformPlaylistStatus","READY · "+result.playlists.length+" playlist(s)");
+  }
+  async function createPlaylist(){
+    text("platformPlaylistStatus","LOADING · Creating private playlist");
+    try {
+      await request("/api/playlists","POST",{title:$("platformPlaylistTitle").value,visibility:"private"});
+      await listPlaylists();
+      $("platformPlaylistTitle").value="";
+    } catch(e) {text("platformPlaylistStatus","ERROR · "+e.message);}
+  }
+  async function createAlbum(){
+    text("platformAlbumStatus","LOADING · Saving private album");
+    try {
+      const result=await request("/api/albums","POST",{title:$("platformAlbumTitle").value});
+      text("platformAlbumStatus","READY · Private album draft "+result.albumId+" · No tracks published");
+      $("platformAlbumTitle").value="";
+    }catch(e){text("platformAlbumStatus","ERROR · "+e.message);}
+  }
+  async function listWorkspaces(){
+    const result=await request("/api/workspaces");
+    const panel=$("platformMyWorkspaces"),selector=$("platformWorkspaceSelect");
+    panel.replaceChildren();selector.replaceChildren();
+    for(const item of result.workspaces){
+      const card=document.createElement("div");card.className="platform-project-card";
+      card.textContent=item.name+" · "+item.role;panel.append(card);
+      if(item.role==="owner"){
+        const opt=document.createElement("option");opt.value=item.workspaceId;opt.textContent=item.name;
+        selector.append(opt);
+      }
+    }
+    text("platformWorkspaceStatus","READY · "+result.workspaces.length+" workspace(s)");
+  }
+  async function createWorkspace(){
+    text("platformWorkspaceStatus","LOADING · Creating workspace");
+    try{
+      await request("/api/workspaces","POST",{name:$("platformWorkspaceName").value});
+      await listWorkspaces();$("platformWorkspaceName").value="";
+    }catch(e){text("platformWorkspaceStatus","ERROR · "+e.message);}
+  }
+  async function workspaceMember(action){
+    text("platformWorkspaceStatus","LOADING · Checking owner permissions");
+    try{
+      const wid=$("platformWorkspaceSelect").value;
+      if(!wid)throw new Error("Create or select a workspace");
+      const data={handle:$("platformWorkspaceInviteHandle").value.trim()};
+      if(action==="invite")data.role=$("platformWorkspaceInviteRole").value;
+      const result=await request("/api/workspaces/"+wid+"/"+action,"POST",data);
+      text("platformWorkspaceStatus","READY · "+(action==="invite"?"Invitation grant saved":"Member revoked"));
+    }catch(e){text("platformWorkspaceStatus","ERROR · "+e.message);}
+  }
+  async function showCreditBalance(){
+    text("platformCreditsStatus","LOADING · Checking authoritative ledger");
+    try{
+      const result=await request("/api/credits/balance");
+      text("platformCreditsStatus","READY · "+result.available+" available · "+result.reserved+" reserved · "+result.spent+" settled");
+    }catch(e){text("platformCreditsStatus","ERROR · "+e.message);}
+  }
+  async function socialAction(action){
+    text("platformSocialStatus","LOADING · Checking artist permissions");
+    try{
+      const result=await request("/api/social/action","POST",{action,handle:$("platformSocialHandle").value.trim()});
+      text("platformSocialStatus","READY · "+action+" recorded");
+    }catch(e){text("platformSocialStatus","ERROR · "+e.message);}
+  }
+  async function showNotifications(){
+    text("platformNotificationsStatus","LOADING · Checking notifications");
+    try{
+      const result=await request("/api/notifications"),panel=$("platformNotifications");
+      panel.replaceChildren();
+      for(const item of result.notifications){
+        const row=document.createElement("p");row.textContent=item.kind+" · "+item.actor;panel.append(row);
+      }
+      text("platformNotificationsStatus","READY · "+result.notifications.length+" notification(s)");
+    }catch(e){text("platformNotificationsStatus","ERROR · "+e.message);}
+  }
+  async function refreshWave2(){
+    await Promise.all([listPlaylists(),listWorkspaces(),showCreditBalance(),showNotifications()]);
+  }
+  async function executePlatformChat(){
+    const instruction=$("platformChatInstruction").value.trim();
+    text("platformChatStatus","LOADING · Checking authenticated command");
+    text("platformChatResult","");
+    if(!instruction){text("platformChatStatus","ERROR · Enter a command");return;}
+    try{
+      const result=await request("/api/platform/chat","POST",{instruction});
+      text("platformChatStatus",result.state+" · "+result.action);
+      text("platformChatResult",result.message||JSON.stringify(result.result,null,2));
+      if(result.action==="CREATE_PRIVATE_PLAYLIST")await listPlaylists();
+      if(result.action==="SEARCH_QUEUE_PRIVATE_PLAYLIST"&&result.result?.queue?.length){
+        const first=result.result.songs[0];
+        $("platformAudio").src=first.audioUrl;
+        text("platformNowPlaying",first.title+" · queued via Chat");
+        await listPlaylists();
+      }
+    }catch(e){text("platformChatStatus","ERROR · "+e.message);}
+  }
   async function publishCurrent(){
     text("platformPublishStatus","LOADING · Checking selected revision and rights");
     const ref=typeof durableProjectRef!=="undefined"?durableProjectRef:null;
@@ -151,6 +258,16 @@
   $("platformSignIn").addEventListener("click",()=>authenticate("signin"));
   $("platformSignUp").addEventListener("click",()=>authenticate("signup"));
   $("platformSaveProfile").addEventListener("click",saveProfile);
+  $("platformCreatePlaylist").addEventListener("click",createPlaylist);
+  $("platformCreateAlbum").addEventListener("click",createAlbum);
+  $("platformCreateWorkspace").addEventListener("click",createWorkspace);
+  $("platformWorkspaceInvite").addEventListener("click",()=>workspaceMember("invite"));
+  $("platformWorkspaceRevoke").addEventListener("click",()=>workspaceMember("revoke"));
+  $("platformCreditsRefresh").addEventListener("click",showCreditBalance);
+  $("platformFollow").addEventListener("click",()=>socialAction("follow"));
+  $("platformBlock").addEventListener("click",()=>socialAction("block"));
+  $("platformNotificationsRefresh").addEventListener("click",showNotifications);
+  $("platformChatSend").addEventListener("click",executePlatformChat);
   $("platformPublishCurrent").addEventListener("click",publishCurrent);
   $("platformLogout").addEventListener("click",async()=>{
     try{await request("/api/auth/logout","POST",{});}catch(_){}
