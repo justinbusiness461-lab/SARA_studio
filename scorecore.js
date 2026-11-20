@@ -63,6 +63,65 @@ function transposeSection(spec, { sectionId, trackId, semitones }) {
   return result;
 }
 
-const ScoreCore = { musicIntent, compileIntent, transposeSection };
+// Scratch Surgeon symbolic grid: ScoreCore owns events, not source media.
+const DJ_TECHNIQUES = Object.freeze(['baby','chirp','2_click_flare','two_deck_juggle']);
+
+function djTickToSample(spec, tick) {
+  const tb = spec && spec.timebase;
+  if (!tb || tb.meter !== '4/4' || tb.sample_rate !== 44100 ||
+      tb.ticks_per_quarter_note !== 960 ||
+      !Number.isInteger(tb.initial_bpm) || tb.initial_bpm < 60 || tb.initial_bpm > 180 ||
+      !Number.isSafeInteger(tick) || tick < 0)
+    throw new Error('unsupported DJ timeline');
+  const numerator = BigInt(tick) * 60n * 44100n;
+  const denominator = BigInt(tb.initial_bpm) * 960n;
+  const result = (numerator * 2n + denominator) / (2n * denominator);
+  if (result > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('DJ sample overflow');
+  return Number(result);
+}
+
+function toggleScratchMarker(spec, {sectionId, stepIndex, technique, deck}) {
+  if (!spec || !spec.structure || !Array.isArray(spec.structure.sections) ||
+      !Array.isArray(spec.tracks)) throw new Error('SongSpec required');
+  if (!Number.isInteger(stepIndex) || stepIndex < 0 || stepIndex >= 16)
+    throw new Error('invalid DJ step');
+  if (!DJ_TECHNIQUES.includes(technique)) throw new Error('unsupported scratch technique');
+  if (deck !== 'A' && deck !== 'B') throw new Error('invalid DJ deck');
+  const sections = spec.structure.sections.filter(sec => sec.id === sectionId);
+  if (sections.length !== 1) throw new Error('missing or ambiguous section');
+  const sec=sections[0], tick=sec.start_tick + stepIndex*480;
+  if (!Number.isSafeInteger(sec.start_tick) || !Number.isSafeInteger(sec.end_tick)
+      || tick < sec.start_tick || tick >= sec.end_tick)
+    throw new Error('DJ grid outside target section');
+  if (sec.sonic_lock === true) throw new Error('Sonic Lock protects section');
+  const djTracks=spec.tracks.filter(track => track.track_id === 'dj_scratch');
+  if (djTracks.length>1 || (djTracks.length===1 && djTracks[0].type!=='DJ'))
+    throw new Error('DJ track identity collision');
+  const original=djTracks[0];
+  if (original && original.sonic_lock === true) throw new Error('Sonic Lock protects DJ track');
+  const eventId='dj:'+sec.id+':'+tick+':'+deck;
+  const edited=JSON.parse(JSON.stringify(spec));
+  let track=edited.tracks.find(t=>t.track_id==='dj_scratch');
+  if (!track) {
+    track={track_id:'dj_scratch',name:'Scratch Surgeon',type:'DJ',muted:false,
+      sonic_lock:false,volume_db:0,pan:0,events:[]};
+    edited.tracks.push(track);
+  }
+  const matches=track.events.filter(e=>e.event_id===eventId);
+  if (matches.length>1) throw new Error('duplicate DJ event identity');
+  if (matches.length===1 && matches[0].type!=='DJ_SCRATCH_MARKER')
+    throw new Error('DJ event identity collision');
+  track.events=track.events.filter(e=>e.event_id!==eventId);
+  if (!(matches.length===1 && matches[0].technique===technique)) {
+    track.events.push({type:'DJ_SCRATCH_MARKER',event_id:eventId,tick,
+      duration_ticks:480,deck,technique,
+      sample_index:djTickToSample(spec,tick),
+      audio_status:'UNRENDERED_SOURCE_ASSET_REQUIRED'});
+    track.events.sort((a,b)=>(a.tick-b.tick) || String(a.event_id).localeCompare(String(b.event_id)));
+  }
+  return edited;
+}
+
+const ScoreCore = { musicIntent, compileIntent, transposeSection, toggleScratchMarker, djTickToSample, DJ_TECHNIQUES };
 if (typeof module !== 'undefined' && module.exports) module.exports = ScoreCore;
 else window.ScoreCore = ScoreCore;
