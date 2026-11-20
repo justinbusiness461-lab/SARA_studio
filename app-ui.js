@@ -1341,7 +1341,7 @@ if (roleEl) {
   };
 }
 
-if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator && !window.__SARA_PLATFORM_MODE__) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js").catch(() => {});
   });
