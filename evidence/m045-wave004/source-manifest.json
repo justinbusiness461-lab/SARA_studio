@@ -1,0 +1,47 @@
+{
+  "tools/m045_wave4_mastering_provenance.py": {
+    "gitBlob": "cb8965fef5bb84fdd534166dac5a20089dfa0991",
+    "sha256": "019a0d6ed7ab271b862ec1d3691c2203fba5cb26f0e7670eccd9eacc295cd1ae",
+    "bytes": 6186
+  },
+  "tools/m045_wave4_service.py": {
+    "gitBlob": "26444fa51d6da0bb62cf21b7edac450d3052f780",
+    "sha256": "6e4947635e1f15b15a19406ac850b8dd51c12c5d157f927a484765f56c84c102",
+    "bytes": 4241
+  },
+  "tests/test_m045_wave4_mastering.py": {
+    "gitBlob": "51e6a579eaeeb39483ad64196c9b5c718fbf1132",
+    "sha256": "7503a135dbd6b119589b13df3c2208889ff0cbd8afa064b52a2cbf7de2cbf5ca",
+    "bytes": 9653
+  },
+  "tests/m045-wave4-ui.browser.cjs": {
+    "gitBlob": "aa577d63c1606724a8dd7b623eb3df9c3dd189ae",
+    "sha256": "bd19627b51c28445f85bac56c00c72c6e8ac0357402dcdf9d843d14238943ebd",
+    "bytes": 9168
+  },
+  "tests/m045_wave4_fixture_server.py": {
+    "gitBlob": "c0d55d5ece6c2ceaa9bfe45d50cc163a519a9257",
+    "sha256": "d455706f45a3113feed283cede7616ceea43fa6085a46aa576782886af363b35",
+    "bytes": 1756
+  },
+  "tools/studio_server.py": {
+    "gitBlob": "d7ed75885b03024fe7ede7ef11c67ff1e6020e2e",
+    "sha256": "432d5de60a77a51bdd174aa98accc0adcdeefd4e40e9768bf4d1f691b8ca45aa",
+    "bytes": 81989
+  },
+  "app-ui.js": {
+    "gitBlob": "1bb5a10f8fa7ca7998441f252eb1a958c2d60d3a",
+    "sha256": "85ae9df4f3bc1b5ce542d97a575a4f7446786e274e077ab9a7f8b18c0f955f08",
+    "bytes": 89840
+  },
+  "index.html": {
+    "gitBlob": "46172f18f23621e81ab4f7ae5c12ee2f0d2b193d",
+    "sha256": "45c5007724a15b5443bd8acd267d9f0b0ff1d6ba89dcf5b0dfa2221bb6b6a5e8",
+    "bytes": 17212
+  },
+  "studio-shell.css": {
+    "gitBlob": "00ae5f2edd290fa3fc50c442c6c673199a4a17b3",
+    "sha256": "c82af6bd01bc8f25d5b02100cf1a3be552c24063272b5d8e9a094b97cd6c7d45",
+    "bytes": 7640
+  }
+}
