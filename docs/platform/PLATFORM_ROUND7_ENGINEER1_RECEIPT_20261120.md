@@ -2,10 +2,12 @@
 
 2026-11-20 · PF-COMPLETION-001. Canonical owner: justinbusiness461-lab/SARA_studio, feat/platform-identity-and-catalog, draft PR #37. NO changes to main or dj_rezrxtion.
 
-**Executed and independently read back product source SHA:** 5ee4a9fd7d27948a3f5969698badcab881b6384c
-**Product tree SHA:** 54a64726e9425af04d6308f826f9d646f0e61de4
+**Executed and independently read back product source SHA:** 3ef542fac2be47be240ed9daf709137e16a3df09
+**Product tree SHA:** aeca8489d20a92c070cb1e86138727fbc119a803
 **Starting baseline:** 4e9762c2bb1cad5ad368d15f45cebcbf6adf7d4b
 **Changed source/test GitHub byte match:** 8/8.
+
+**Byte identity repair:** The original source/evidence upload accidentally dropped one terminal LF via a text-reading connector. A subsequent raw GitHub bytes-versus-executor comparison exposed the discrepancy; commit 3ef542fac2be47be240ed9daf709137e16a3df09 restores the physically executed byte identities in all 8 changed source/test files (one already matched). Earlier 5ee4... and 88a3... remain history and are NOT exact-executed-source certificates.
 
 ## R7-A — Rights-bound physical Scratch Surgeon
 
