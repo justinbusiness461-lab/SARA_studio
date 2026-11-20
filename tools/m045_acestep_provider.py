@@ -35,6 +35,8 @@ class AceStepProvider:
     model_version = "ace-step-1.5"
     supports_remote_resume = True
     supports_repaint = True
+    supports_multitake = True
+    requires_batch_provenance = True
 
     def __init__(self, *, endpoint_url=None, checkpoint_dir=None, checkpoint_sha256=None,
                  api_key=None, timeout=300, poll_interval=1, max_polls=180):
@@ -149,6 +151,11 @@ class AceStepProvider:
         repaint=params.get("_m045_repaint")
         reference=params.get("_m045_reference")
         allowed={"music_length_ms"}
+        multi_count=params.get("_m045_batch_count",1)
+        if type(multi_count) is not int or not 1 <= multi_count <= 4:
+            raise ValueError("ACE_STEP_INVALID_BATCH_COUNT")
+        if multi_count > 1:
+            allowed.add("_m045_batch_count")
         if reference is not None:
             allowed.add("_m045_reference")
             if (not isinstance(reference,dict)
@@ -172,7 +179,7 @@ class AceStepProvider:
             raise ValueError("INVALID_SEED")
         body={"prompt":prompt,"lyrics":lyrics or "","audio_duration":duration/1000,
               "audio_format":"wav","model":MODEL_NAME,"task_type":"text2music",
-              "batch_size":1,"use_random_seed":False,"seed":seed,
+              "batch_size":multi_count,"use_random_seed":False,"seed":seed,
               "thinking":False, **self._music_attributes(song_spec)}
         stage=pathlib.Path(stage_dir)
         source_bytes=None
@@ -263,8 +270,50 @@ class AceStepProvider:
             files=json.loads(result) if isinstance(result,str) else result
         except ValueError as exc:
             raise ValueError("ACE_STEP_INVALID_RESULT") from exc
-        if not isinstance(files,list) or len(files)!=1 or not isinstance(files[0],dict):
+        if (not isinstance(files,list) or len(files)!=multi_count
+                or not all(isinstance(item,dict) for item in files)):
             raise ValueError("ACE_STEP_INVALID_RESULT")
+        if multi_count > 1:
+            takes=[]
+            provenance=[]
+            for index, entry in enumerate(files):
+                uri=entry.get("file")
+                if not isinstance(uri,str) or not uri.startswith("/v1/audio?path="):
+                    raise ValueError("ACE_STEP_FOREIGN_AUDIO_URL")
+                pieces=urllib.parse.urlsplit(uri)
+                if pieces.fragment or pieces.netloc or pieces.scheme or pieces.path!="/v1/audio":
+                    raise ValueError("ACE_STEP_FOREIGN_AUDIO_URL")
+                raw=self._request(uri,limit=MAX_DOWNLOAD_BYTES)
+                source_path=stage/f"download-take-{index}"
+                native_atomic_write_bytes(source_path,raw)
+                decoded=stage/f"decoded-take-{index}.wav"
+                try:
+                    proc=subprocess.run(["ffmpeg","-nostdin","-y","-v","error",
+                        "-i",str(source_path),"-vn","-ac","2","-ar","44100",
+                        "-c:a","pcm_s16le","-t","210","-f","wav",str(decoded)],
+                        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90,check=False)
+                except subprocess.TimeoutExpired as exc:
+                    raise ProviderUnavailable("ACE_STEP_DECODE_TIMEOUT") from exc
+                if proc.returncode or not decoded.is_file() or not 44 < decoded.stat().st_size <= M045_MAX_WAV_BYTES:
+                    raise ValueError("ACE_STEP_DECODE_INVALID")
+                target=stage/f"take-{index}.wav"
+                native_atomic_write_bytes(target,decoded.read_bytes())
+                metadata=_verify_wav(target)
+                if metadata["channels"]!=2 or metadata["sample_rate"]!=44100 or metadata["sample_width"]!=2:
+                    raise ValueError("ACE_STEP_CANONICAL_PCM_REQUIRED")
+                provenance.append({"take_index":index,"artifact_digest":metadata["sha256"],
+                  "source_type":"OPEN_WEIGHT_REMOTE_PROVIDER",
+                  "rights_status":"OPEN_WEIGHT_UNVERIFIED_TRAINING_DATA",
+                  "preservation_tier":"P3","model_id":self.model_id,
+                  "model_version":self.model_version,
+                  "checkpoint_sha256":self.checkpoint_sha256,
+                  "checkpoint_identity_source":"OPERATOR_CONFIGURED_UNVERIFIED",
+                  "provider_task_id":task_id[:128],
+                  "reference_artifact_digest":reference["reference_sha256"] if reference is not None else None})
+                takes.append(target)
+            native_atomic_write_bytes(stage/"provider-takes.json",
+                json.dumps(provenance,sort_keys=True).encode())
+            return takes
         file_url=files[0].get("file")
         if not isinstance(file_url,str) or not file_url.startswith("/v1/audio?path="):
             raise ValueError("ACE_STEP_FOREIGN_AUDIO_URL")
