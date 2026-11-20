@@ -40,6 +40,10 @@ const {chromium}=require('playwright');
   await page.waitForFunction(ref=>window.__M044_PLAYBACK_PROOF__?.revisionId===ref,
    fixture.current.revisionId,{timeout:25000});
   log.push({kind:'opened',state:await snapshot()});
+  await page.locator('#dockPlay').click();
+  await page.waitForFunction(()=>window.__M044_PLAYBACK_STARTED__===true,{timeout:10000});
+  await page.waitForTimeout(360);
+  log.push({kind:'playing-before-switch',state:await snapshot()});
   for(const [id,expected] of [['btnABR1',fixture.historical.revisionId],
                               ['btnABR2',fixture.current.revisionId]]){
    await page.locator('#'+id).click();
