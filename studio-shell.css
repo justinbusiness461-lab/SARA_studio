@@ -97,3 +97,45 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 #m045Wave4SampleAudio{display:block;width:100%;max-width:100%;margin-top:12px}
 #m045Wave4ExtraStatus{margin-top:10px;overflow-wrap:anywhere}
 .m045-wave4-plan-result{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;max-height:230px;overflow:auto;background:#0d1b2b;border:1px solid #34485e;border-radius:9px;padding:8px;color:#d9eaf5;font-size:.73rem}
+/* PLATFORM-01/02: real account/catalog projections; no separate music authority. */
+html.platform-mode .app{display:none}
+html.platform-mode body.platform-signed-in.platform-view-studio .app{display:block}
+html.platform-mode body.platform-signed-in{padding-bottom:calc(168px + env(safe-area-inset-bottom,0px))}
+html.platform-mode body.platform-signed-out{padding-bottom:0}
+html.platform-mode .platform-auth{min-height:90dvh;display:grid;place-items:center;padding:clamp(12px,4vw,24px)}
+html.platform-mode .platform-auth-card{width:min(100%,430px);border:1px solid #37445d;background:#161d2c;padding:20px;border-radius:16px;display:grid;gap:8px}
+.platform-auth-card h2{font-size:1.4rem;line-height:1.3}
+.platform-auth-card p{font-size:.84rem;line-height:1.5}
+.platform-eyebrow{font-weight:700;color:#72ece8}
+.platform-auth-actions{display:flex;gap:8px}
+.platform-auth-actions button{flex:1;min-width:48px;min-height:48px}
+html.platform-mode #platformShell{width:100%;max-width:100%}
+html.platform-mode .platform-top{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px;max-width:1100px;margin:auto;min-height:58px}
+html.platform-mode .platform-top strong{font-size:1rem}
+html.platform-mode .platform-top span{overflow-wrap:anywhere;color:#b7c8dc;font-size:.82rem}
+html.platform-mode .platform-top button{min-width:64px;min-height:48px}
+html.platform-mode .platform-pages{max-width:850px;margin:auto;padding:8px 12px 15px}
+html.platform-mode .platform-pages h2{font-size:1.22rem;margin:12px 0}
+html.platform-mode .platform-pages section{padding:14px;border-radius:14px;border:1px solid #37445d;background:#161d2c}
+html.platform-mode .platform-pages section[hidden]{display:none!important}
+html.platform-mode .platform-pages button,html.platform-mode .platform-pages input,html.platform-mode .platform-pages textarea{min-height:48px}
+html.platform-mode .platform-cards{display:grid;gap:10px;margin-top:12px}
+html.platform-mode .platform-song-card,html.platform-mode .platform-project-card{padding:12px;border:1px solid #354562;border-radius:12px;display:grid;gap:8px;background:#1b2639}
+html.platform-mode .platform-song-card button,html.platform-mode .platform-project-card button{min-height:48px}
+html.platform-mode #platformNavigation{position:fixed;z-index:90;bottom:0;left:0;right:0;padding:10px 8px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;background:rgba(12,18,30,.97);border-top:1px solid #37445d;justify-content:center}
+html.platform-mode #platformNavigation button{min-height:48px;min-width:48px;flex:0 1 88px;padding:8px 1px;font-size:.72rem}
+html.platform-mode #platformNavigation button[aria-current=page]{background:#136b73;outline:2px solid #73efe7}
+html.platform-mode .platform-mini-player{position:fixed;z-index:89;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:0;right:0;background:#192237;border-top:1px solid #37445d;padding:4px 12px;min-height:62px;display:flex;gap:10px;align-items:center}
+html.platform-mode .platform-mini-player span{min-width:72px;max-width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem}
+html.platform-mode .platform-mini-player audio{min-height:48px;min-width:0;flex:1;width:100%}
+html.platform-mode body.platform-view-studio #studioThumbDock{bottom:calc(137px + env(safe-area-inset-bottom,0px))}
+html.platform-mode #platformPublishPanel{max-width:560px;margin:auto;padding:8px;border:1px solid #354562;border-radius:8px}
+html.platform-mode #platformPublishPanel button{min-height:48px}
+html.platform-mode #platformPublishStatus,html.platform-mode #platformAuthStatus{font-size:.78rem;overflow-wrap:anywhere}
+@media(min-width:768px){
+ html.platform-mode .platform-pages{padding-top:20px}
+ html.platform-mode #platformNavigation{width:max-content;max-width:100%;left:50%;transform:translateX(-50%);border-radius:14px 14px 0 0}
+ html.platform-mode #platformNavigation button{flex:0 0 80px}
+ html.platform-mode .platform-mini-player{max-width:780px;left:50%;transform:translateX(-50%);border-radius:12px 12px 0 0}
+}
+
