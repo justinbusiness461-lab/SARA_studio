@@ -44,6 +44,14 @@ CAPABILITY = secrets.token_urlsafe(32)
 # never auto-issue the local principal as a public multi-user identity.
 PLATFORM_MODE = os.environ.get("SARA_PLATFORM_AUTH_MODE") == "1"
 PLATFORM_PUBLICATION_RIGHTS = None
+# External provider/job authorities are host-installed only, never HTTP minted.
+PLATFORM_CREDIT_JOB_AUTH = None
+
+def configure_platform_credit_job_authority(verifier):
+    if not callable(verifier):
+        raise ValueError("CREDIT_JOB_PROVIDER_VERIFIER_REQUIRED")
+    global PLATFORM_CREDIT_JOB_AUTH
+    PLATFORM_CREDIT_JOB_AUTH = verifier
 LOCAL_PRINCIPAL_ID = "local-studio-user"
 SESSION_PRINCIPALS = {}
 M045_ATTEMPT_OWNER = None
@@ -1291,6 +1299,31 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if path=="/api/me/profile":self._json(200,{"status":"SUCCESS","profile":store.profile(principal)});return True
             if path=="/api/me/sessions":self._json(200,{"status":"SUCCESS","sessions":store.list_sessions(principal)});return True
             self._json(200,owned_library(EXPORT_ROOT,principal));return True
+        if path.startswith("/api/playlists/"):
+            # A published playlist is intentionally readable without account
+            # login; private playlists still require exact current owner.
+            from platform_social import SocialStore
+            try:principal=self._platform_principal()
+            except ProjectConflict:principal=None
+            try:result=SocialStore(EXPORT_ROOT).read_playlist(path[len("/api/playlists/"):],
+                         viewer=principal,rights_policy=PLATFORM_PUBLICATION_RIGHTS)
+            except (PermissionError,ValueError):result=None
+            self._json(200 if result else 404,result or {"status":"NOT_FOUND"});return True
+        if path in {"/api/credits/balance","/api/notifications","/api/playlists","/api/workspaces"}:
+            try:principal=self._platform_principal()
+            except ProjectConflict:
+                self._json(403,{"status":"DENY","error":"SESSION_DENIED"});return True
+            from platform_social import SocialStore
+            from platform_billing import CreditLedger
+            from platform_workspaces import WorkspaceStore
+            if path=="/api/credits/balance":
+                self._json(200,CreditLedger(EXPORT_ROOT).balance(principal));return True
+            if path=="/api/notifications":
+                self._json(200,{"status":"SUCCESS","notifications":SocialStore(EXPORT_ROOT).notifications(principal)});return True
+            if path=="/api/playlists":
+                self._json(200,{"status":"SUCCESS","playlists":SocialStore(EXPORT_ROOT).my_playlists(principal)});return True
+            if path=="/api/workspaces":
+                self._json(200,{"status":"SUCCESS","workspaces":WorkspaceStore(EXPORT_ROOT).my_workspaces(principal)});return True
         if path in {"/api/explore","/api/search"}:
             q=query.get("q",[""])[0] if path=="/api/search" else ""
             try:self._json(200,discover(EXPORT_ROOT,PLATFORM_PUBLICATION_RIGHTS,query=q))
@@ -1348,6 +1381,114 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     db.commit()
                 return self._json(200,{"status":"SUCCESS"},cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
             principal=self._platform_principal()
+            if path=="/api/playlists":
+                from platform_social import SocialStore
+                if set(payload)!={"title","visibility"}:raise ValueError("INVALID_PLAYLIST_FIELDS")
+                return self._json(201,SocialStore(EXPORT_ROOT).create_playlist(principal,
+                    payload["title"],payload["visibility"]))
+            if path.startswith("/api/playlists/"):
+                from platform_social import SocialStore
+                rest=path[len("/api/playlists/"):].split("/")
+                if len(rest)!=2:raise ValueError("INVALID_PLAYLIST_ACTION")
+                playlist,action=rest
+                social=SocialStore(EXPORT_ROOT)
+                if action=="songs":
+                    if set(payload)!={"publicationId"}:raise ValueError("INVALID_PLAYLIST_SONG")
+                    return self._json(200,social.add_playlist_song(principal,playlist,
+                         payload["publicationId"],PLATFORM_PUBLICATION_RIGHTS))
+                if action=="visibility":
+                    if set(payload)!={"visibility"}:raise ValueError("INVALID_PLAYLIST_VISIBILITY")
+                    return self._json(200,social.set_playlist_visibility(principal,playlist,
+                         payload["visibility"]))
+                if action=="reorder":
+                    if set(payload)!={"publicationIds"}:raise ValueError("INVALID_REORDER")
+                    return self._json(200,social.reorder_playlist(principal,playlist,
+                         payload["publicationIds"]))
+                if action=="remove":
+                    if set(payload)!={"publicationId"}:raise ValueError("INVALID_PLAYLIST_REMOVE")
+                    return self._json(200,social.remove_playlist_song(principal,playlist,
+                         payload["publicationId"]))
+                raise ValueError("INVALID_PLAYLIST_ACTION")
+            if path=="/api/albums":
+                from platform_social import SocialStore
+                if set(payload)!={"title"}:raise ValueError("INVALID_ALBUM")
+                return self._json(201,SocialStore(EXPORT_ROOT).create_album(principal,payload["title"]))
+            if path.startswith("/api/albums/") and path.endswith("/release"):
+                from platform_social import SocialStore
+                if set(payload)!={"publicationIds","confirmDisclosure"}:raise ValueError("INVALID_ALBUM_RELEASE")
+                return self._json(200,SocialStore(EXPORT_ROOT).release_album(
+                  principal,path[len("/api/albums/"):-len("/release")],payload["publicationIds"],
+                  payload["confirmDisclosure"],PLATFORM_PUBLICATION_RIGHTS))
+            if path=="/api/social/action":
+                from platform_social import SocialStore
+                social=SocialStore(EXPORT_ROOT)
+                action=payload.get("action")
+                if action in {"follow","unfollow","block"}:
+                    if set(payload)!={"action","handle"}:raise ValueError("SOCIAL_FIELDS")
+                    profile=store.public_profile(payload["handle"])
+                    if not profile:raise PlatformDenied("ARTIST_NOT_FOUND")
+                    with store._db() as db:
+                        target=db.execute("SELECT principal FROM accounts WHERE handle=?",(profile["handle"],)).fetchone()["principal"]
+                    return self._json(200,{"status":"SUCCESS","changed":getattr(social,action)(principal,target)})
+                if action in {"like","unlike","comment"}:
+                    if action=="comment" and set(payload)=={"action","publicationId","body"}:
+                        return self._json(201,social.comment(principal,payload["publicationId"],
+                           payload["body"],PLATFORM_PUBLICATION_RIGHTS))
+                    if action in {"like","unlike"} and set(payload)=={"action","publicationId"}:
+                        result=(social.like(principal,payload["publicationId"],PLATFORM_PUBLICATION_RIGHTS)
+                           if action=="like" else social.unlike(principal,payload["publicationId"]))
+                        return self._json(200,{"status":"SUCCESS","changed":result})
+                if action=="comment-settings" and set(payload)=={"action","enabled"}:
+                    return self._json(200,social.set_comments_enabled(principal,payload["enabled"]))
+                raise ValueError("SOCIAL_ACTION_DENIED")
+            if path=="/api/workspaces":
+                from platform_workspaces import WorkspaceStore
+                if set(payload)!={"name"}:raise ValueError("WORKSPACE_FIELDS")
+                return self._json(201,WorkspaceStore(EXPORT_ROOT).create(principal,payload["name"]))
+            if path.startswith("/api/workspaces/"):
+                from platform_workspaces import WorkspaceStore
+                parts=path[len("/api/workspaces/"):].split("/")
+                if len(parts)!=2:raise ValueError("WORKSPACE_PATH_DENIED")
+                workspace,action=parts
+                ws=WorkspaceStore(EXPORT_ROOT)
+                if action=="invite" and set(payload)=={"handle","role"}:
+                    return self._json(200,ws.invite(principal,workspace,payload["handle"],payload["role"]))
+                if action=="revoke" and set(payload)=={"handle"}:
+                    return self._json(200,ws.revoke(principal,workspace,payload["handle"]))
+                if action=="bind" and set(payload)=={"projectId"}:
+                    return self._json(200,ws.bind_project(principal,workspace,payload["projectId"]))
+                if action=="project" and set(payload) in ({"projectId"},{"projectId","revisionId"}):
+                    return self._json(200,ws.read_member_project(EXPORT_ROOT,principal,workspace,
+                      payload["projectId"],payload.get("revisionId")))
+                if action=="audio" and set(payload)=={"projectId","revisionId","artifactId"}:
+                    audio=ws.read_member_audio(EXPORT_ROOT,principal,workspace,
+                       payload["projectId"],payload["artifactId"],payload["revisionId"])
+                    self.send_response(200);self.send_header("Content-Type","audio/wav")
+                    self.send_header("Cache-Control","no-store")
+                    self.send_header("Content-Length",str(len(audio)))
+                    self.end_headers();self.wfile.write(audio);return None
+                raise ValueError("WORKSPACE_ACTION_DENIED")
+            if path=="/api/credits/quote":
+                from platform_billing import CreditLedger
+                if set(payload)!={"units"}:raise ValueError("INVALID_CREDIT_QUOTE")
+                return self._json(200,CreditLedger(EXPORT_ROOT).quote(principal,payload["units"]))
+            if path in {"/api/credits/reserve","/api/credits/finalize"}:
+                if PLATFORM_CREDIT_JOB_AUTH is None:
+                    return self._json(503,{"status":"BLOCKED","error":"HOST_JOB_AUTHORITY_MISSING"})
+                from platform_billing import CreditLedger
+                if not PLATFORM_CREDIT_JOB_AUTH(path,principal,payload):
+                    raise PlatformDenied("HOST_JOB_AUTHORITY_DENIED")
+                ledger=CreditLedger(EXPORT_ROOT)
+                if path.endswith("/reserve") and set(payload)=={"jobKey","credits"}:
+                    return self._json(200,ledger.reserve(principal,payload["jobKey"],payload["credits"]))
+                if path.endswith("/finalize") and set(payload)=={"jobKey","outcome"}:
+                    return self._json(200,ledger.finalize(principal,payload["jobKey"],payload["outcome"]))
+                raise ValueError("CREDIT_ACTION_DENIED")
+            if path=="/api/platform/chat":
+                from platform_chat import run_platform_chat
+                if set(payload)!={"instruction"}:raise ValueError("INVALID_CHAT_COMMAND")
+                return self._json(200,run_platform_chat(EXPORT_ROOT,principal,payload["instruction"],
+                    PLATFORM_PUBLICATION_RIGHTS))
             if path=="/api/me/sessions/revoke":
                 if set(payload)!={"sessionId"}:raise ValueError("INVALID_REVOKE")
                 return self._json(200,store.revoke_session(principal,payload["sessionId"]))
@@ -1471,7 +1612,11 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
 
-        if PLATFORM_MODE and (path.startswith("/api/auth/") or path=="/api/me/sessions/revoke"
+        if PLATFORM_MODE and (path.startswith("/api/auth/") or
+                              path.startswith("/api/playlists") or path.startswith("/api/albums") or
+                              path.startswith("/api/social/") or path.startswith("/api/workspaces") or
+                              path.startswith("/api/credits/") or path=="/api/platform/chat" or
+                              path=="/api/me/sessions/revoke"
                               or path=="/api/publications" or
                               (path.startswith("/api/publications/") and path.endswith("/unpublish"))):
             return self._platform_post(path,payload)
