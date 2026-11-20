@@ -64,3 +64,65 @@ def authorized_master(root,payload,principal_id):
    "rightsStatus":"UNVERIFIED_HELD","releaseCleared":False,
    "preservationTier":"P3","audioStatus":"RENDERED_BOUND_NOT_CREATIVELY_APPROVED",
    "telemetry":telemetry}
+
+# Wave004 owner-disjoint extensions: proposal and preview consumers only.
+# Master's existing render/CAS publication owner above is NOT modified.
+
+def authorized_compound_plan(root,payload,principal_id):
+ if not principal_id:raise PermissionError('SESSION_REQUIRED')
+ if not isinstance(payload,dict) or set(payload)!={'projectId','revisionId','instruction'}:
+  raise ValueError('COMPOUND_REQUEST_FIELDS_INVALID')
+ from studio_server import project_operation
+ from m045_edit_proposal import compile_compound_plan
+ selected=project_operation(root,{'projectId':payload['projectId'],
+    'revisionId':payload['revisionId']},principal_id=principal_id)
+ if selected['manifest']['projectId']!=payload['projectId'] or selected['revision']['revisionId']!=payload['revisionId']:
+  raise ValueError('COMPOUND_SOURCE_REVISION_MISMATCH')
+ plan=compile_compound_plan(payload['instruction'],selected['songSpec'])
+ return {'status':'SUCCESS','kind':'NON_AUTHORITATIVE_COMPOUND_PLAN',
+   'projectId':payload['projectId'],'sourceRevisionId':payload['revisionId'],**plan}
+
+
+def authorized_sample_transform(root,payload,principal_id):
+ if not principal_id:raise PermissionError('SESSION_REQUIRED')
+ if not isinstance(payload,dict) or set(payload)!={'projectId','revisionId','artifactId','transform','parameters'}:
+  raise ValueError('SAMPLE_PREVIEW_REQUEST_FIELDS_INVALID')
+ from studio_server import project_operation,project_audio_bytes
+ from m045_sample_lab_dsp import slice_sample,resonant_lowpass,metallic_comb,rate_pitch_shift,apply_effect_graph
+ import io,wave,base64
+ selected=project_operation(root,{'projectId':payload['projectId'],'revisionId':payload['revisionId']},principal_id=principal_id)
+ if selected['manifest']['projectId']!=payload['projectId'] or selected['revision']['revisionId']!=payload['revisionId']:
+  raise ValueError('SAMPLE_SOURCE_REVISION_MISMATCH')
+ source=project_audio_bytes(root,{'projectId':payload['projectId'],
+  'revisionId':payload['revisionId'],'artifactId':payload['artifactId']},principal_id=principal_id)
+ if hashlib.sha256(source).hexdigest()!=payload['artifactId']:
+  raise ValueError('SAMPLE_SOURCE_HASH_MISMATCH')
+ operation=payload['transform'];params=payload['parameters']
+ if not isinstance(params,dict):raise ValueError('SAMPLE_TRANSFORM_PARAMETERS_INVALID')
+ if operation=='slice' and set(params)=={'startFrame','endFrame'}:
+  result=slice_sample(source,params['startFrame'],params['endFrame'])
+ elif operation=='lowpass' and set(params)=={'startFrame','endFrame','cutoffHz','q'}:
+  result=resonant_lowpass(slice_sample(source,params['startFrame'],params['endFrame']),params['cutoffHz'],params['q'])
+ elif operation=='metallic_comb' and set(params)=={'startFrame','endFrame','delayMs','feedback'}:
+  result=metallic_comb(slice_sample(source,params['startFrame'],params['endFrame']),params['delayMs'],params['feedback'])
+ elif operation=='rate_pitch' and set(params)=={'startFrame','endFrame','semitones'}:
+  result=rate_pitch_shift(slice_sample(source,params['startFrame'],params['endFrame']),params['semitones'])
+ elif operation=='modular_graph' and set(params)=={'nodes','outputId'}:
+  result=apply_effect_graph(source,params['nodes'],params['outputId'])
+ else:raise ValueError('SAMPLE_TRANSFORM_OPERATION_UNSUPPORTED')
+ if len(result)>4*1024*1024:raise ValueError('SAMPLE_PREVIEW_EXCEEDS_SIZE_BOUND')
+ with wave.open(io.BytesIO(result),'rb') as decoded:
+  pcm=decoded.readframes(decoded.getnframes())
+ output_sha=hashlib.sha256(result).hexdigest()
+ chain=params['nodes'] if operation=='modular_graph' else [{'operation':operation,**params}]
+ provenance=CanonicalProvenanceRecord(
+  artifact_sha256=output_sha,pcm_sha256=hashlib.sha256(pcm).hexdigest(),
+  project_id=payload['projectId'],revision_id=payload['revisionId'],
+  origin_type='DSP_TRANSFORM',preservation_tier='P3',rights_status='UNVERIFIED_HELD',
+  parent_artifact_sha256s=[payload['artifactId']],transform_chain=chain).to_dict()
+ return {'status':'SUCCESS','kind':'NON_AUTHORITATIVE_SAMPLE_PREVIEW',
+  'projectId':payload['projectId'],'sourceRevisionId':payload['revisionId'],
+  'sourceArtifactId':payload['artifactId'],'previewArtifactSha256':output_sha,
+  'wavBase64':base64.b64encode(result).decode('ascii'),
+  'provenance':provenance,'sourceMutation':False,'projectRevisionCommitted':False,
+  'audioPublication':'NONE','requiresCreativeApproval':True}

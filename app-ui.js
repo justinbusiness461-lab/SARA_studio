@@ -1996,6 +1996,7 @@ let m045Wave4Generation = 0;
 let m045Wave4PreviewUrl = null;
 let m045Wave4Busy = false;
 function m045Wave4Clear() {
+  if (typeof m045Wave4ExtraClear === 'function') m045Wave4ExtraClear();
   ++m045Wave4Generation;
   const audio = $("m045Wave4Audio");
   if (audio) { try { audio.pause(); } catch (_) {} audio.removeAttribute("src"); audio.load(); }
@@ -2140,3 +2141,79 @@ if ($("m045Wave4Master")) $("m045Wave4Master").onclick=()=>m045Wave4Action("mast
 if ($("m045Wave4Section")) $("m045Wave4Section").onfocus=m045Wave4FillOptions;
 if ($("m045Wave4Track")) $("m045Wave4Track").onfocus=m045Wave4FillOptions;
 m045Wave4FillOptions();
+
+// Wave004 Sample Lab + Compound Planner: subordinate presentation only.
+let m045Wave4ExtraUrl=null;
+function m045Wave4ExtraClear() {
+  const audio=$('m045Wave4SampleAudio');
+  if(audio){audio.pause();audio.removeAttribute('src');audio.load();delete audio.dataset.previewDigest;}
+  if(m045Wave4ExtraUrl){URL.revokeObjectURL(m045Wave4ExtraUrl);m045Wave4ExtraUrl=null;}
+  if($('m045Wave4PlanResult'))$('m045Wave4PlanResult').textContent='';
+  if($('m045Wave4ExtraStatus'))$('m045Wave4ExtraStatus').textContent='Candidate cleared on source/revision selection change.';
+}
+function m045Wave4ExtraStatus(message){
+  const status=$('m045Wave4ExtraStatus');if(status)status.textContent=message;
+}
+async function m045Wave4ExtraAction(kind){
+  if(m045Wave4Busy)return;
+  const requireAudio=kind!=='compound';
+  let ref;
+  try {ref=m045Wave4Context(requireAudio);}
+  catch(error){m045Wave4ExtraStatus('NOT VERIFIED · '+String(error.message||error));return;}
+  if(m045LocksDirty){m045Wave4ExtraStatus('NOT VERIFIED · Save Sonic Lock changes before preview');return;}
+  const openToken=projectOpenGenerationToken;
+  const token=++m045Wave4Generation;
+  m045Wave4ExtraClear();
+  m045Wave4Busy=true;
+  const valid=()=>m045Wave4Valid(ref,openToken,token);
+  m045Wave4ExtraStatus('Checking lawful revision and requested scope…');
+  try {
+    let path,body={...ref};
+    if(kind==='compound'){
+      path='/api/m045/compound-plan';body.instruction=$('m045Wave4CompoundIntent').value;
+    }else if(['slice','bass','metal'].includes(kind)){
+      path='/api/m045/sample-preview';
+      body.transform=kind==='slice'?'slice':kind==='bass'?'lowpass':'metallic_comb';
+      body.parameters=kind==='slice'?{startFrame:0,endFrame:44100}:
+        kind==='bass'?{startFrame:0,endFrame:44100,cutoffHz:900,q:0.707}:
+        {startFrame:0,endFrame:44100,delayMs:3,feedback:0.55};
+    }else throw new Error('Operation unqualified');
+    const data=await m045Wave4Post(path,body);
+    if(!valid())return;
+    if(data.projectId!==ref.projectId||data.sourceRevisionId!==ref.revisionId)
+      throw new Error('Result does not belong to the selected source revision');
+    if(kind==='compound'){
+      if(window.ScoreCore?.validateCompoundEditPlan)
+        window.ScoreCore.validateCompoundEditPlan(data,skeleton);
+      $('m045Wave4PlanResult').textContent=JSON.stringify({
+        kind:data.kind,operations:data.operations,preservedSectionIds:data.preservedSectionIds,
+        audioPreservationProof:data.audioPreservationProof,revisionCommitted:data.revisionCommitted,
+        sourceRevisionId:data.sourceRevisionId},null,2);
+      m045Wave4ExtraStatus('PROPOSED · No song change committed; preservation still requires rendering and proof');
+    }else{
+      if(typeof data.wavBase64!=='string'||data.wavBase64.length>6*1024*1024)
+        throw new Error('Candidate preview too large');
+      const decoded=atob(data.wavBase64);const bytes=new Uint8Array(decoded.length);
+      for(let i=0;i<decoded.length;i++)bytes[i]=decoded.charCodeAt(i);
+      const digest=await sha256Hex(bytes.buffer);
+      if(!valid())return;
+      if(digest!==data.previewArtifactSha256)throw new Error('Sample preview digest mismatch');
+      m045Wave4ExtraUrl=URL.createObjectURL(new Blob([bytes],{type:'audio/wav'}));
+      const audio=$('m045Wave4SampleAudio');audio.src=m045Wave4ExtraUrl;
+      audio.dataset.previewDigest=digest;audio.load();
+      $('m045Wave4PlanResult').textContent=JSON.stringify({
+        kind:data.kind,sourceRevisionId:data.sourceRevisionId,
+        sourceArtifactId:data.sourceArtifactId,previewArtifactSha256:digest,
+        provenance:data.provenance,sourceMutation:data.sourceMutation,
+        projectRevisionCommitted:data.projectRevisionCommitted,audioPublication:data.audioPublication},null,2);
+      m045Wave4ExtraStatus('UNPUBLISHED SAMPLE PREVIEW · Source intact · Rights UNVERIFIED_HELD · Audition required');
+    }
+  }catch(error){
+    if(valid())m045Wave4ExtraStatus('NOT VERIFIED · '+String(error.message||error));
+  }finally{m045Wave4Busy=false;}
+}
+for(const [id,kind] of Object.entries({
+  m045Wave4CompoundBtn:'compound',m045Wave4SampleSlice:'slice',
+  m045Wave4SampleBass:'bass',m045Wave4SampleMetal:'metal'})){
+  const button=$(id);if(button)button.onclick=()=>m045Wave4ExtraAction(kind);
+}

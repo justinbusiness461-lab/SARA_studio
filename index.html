@@ -100,6 +100,21 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <label for="m045Wave4Preset">Mastering loudness</label>
 <select id="m045Wave4Preset" aria-label="Select measured loudness target"><option value="-14">Streaming · −14 LUFS</option><option value="-9">Club · −9 LUFS</option></select>
 <button id="m045Wave4Master" class="secondary" type="button">Master Verified Revision</button>
+<div id="m045Wave4SamplePanel" aria-label="Compound editing and non-destructive Sample Lab">
+<h4>Compound Edit Planner · Sample Lab™</h4>
+<p class="hint">Plan a change without touching the current song. Preview approved source audio only; slicing and filtering never create rights clearance or a new revision.</p>
+<label for="m045Wave4CompoundIntent">Artist instruction (multi-clause)</label>
+<textarea id="m045Wave4CompoundIntent" rows="3">Keep the hook exactly the same, slow down the middle verse a little, make the bass darker, add a weird metallic sound.</textarea>
+<div class="m045-wave4-sample-actions">
+<button id="m045Wave4CompoundBtn" class="secondary" type="button">Preview Compound Edit Plan</button>
+<button id="m045Wave4SampleSlice" class="secondary" type="button">Sample · Slice First 44,100 Frames</button>
+<button id="m045Wave4SampleBass" class="secondary" type="button">Sample · Darker Bass</button>
+<button id="m045Wave4SampleMetal" class="secondary" type="button">Sample · Metallic Comb</button>
+</div>
+<div id="m045Wave4ExtraStatus" role="status" aria-live="polite" class="status warn">No Sample Lab candidate published or approved.</div>
+<pre id="m045Wave4PlanResult" class="m045-wave4-plan-result" aria-label="Compound edit plan and Sample Lab lineage" tabindex="0"></pre>
+<audio id="m045Wave4SampleAudio" controls preload="none" aria-label="Uncommitted Sample Lab audition candidate"></audio>
+</div>
 <div id="m045Wave4Status" class="status warn" role="status" aria-live="polite">P3 candidate · No mastered output · rights UNVERIFIED</div>
 </section>
 <div class="status warn" id="m045Proof" role="status" aria-live="polite">DECLARED · No committed generation attempt · audio quality UNVERIFIED</div>

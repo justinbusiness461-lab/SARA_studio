@@ -1,0 +1,8 @@
+'use strict';
+const test=require('node:test');const assert=require('node:assert/strict');
+const ScoreCore=require('../scorecore.js');
+const spec={structure:{sections:[{id:'h',name:'Chorus',sonic_lock:true,start_tick:0,end_tick:3840},{id:'v2',name:'Verse',sonic_lock:false,start_tick:3840,end_tick:7680}]},tracks:[{track_id:'bass',sonic_lock:false},{track_id:'percussion',sonic_lock:false}]};
+const plan={schemaVersion:'sara.compound-edit-plan.v1',operations:[{kind:'vocalPhrasing',sectionId:'v2',targetScope:{sectionId:'v2'},preservationTier:'P3',status:'PROPOSAL_ONLY'},{kind:'filter',trackId:'bass',targetScope:{trackId:'bass'},preservationTier:'P2',status:'PROPOSAL_ONLY'}],preservedSectionIds:['h'],revisionCommitted:false,audioPreservationProof:'NOT_CLAIMED',requiresApproval:true};
+test('Wave4 ScoreCore validates scoped read-only compound plan',()=>{const snapshot=JSON.stringify(spec);assert.equal(ScoreCore.validateCompoundEditPlan(plan,spec).valid,true);assert.equal(JSON.stringify(spec),snapshot)});
+test('Wave4 ScoreCore rejects a locked chorus target and false commit',()=>{assert.throws(()=>ScoreCore.validateCompoundEditPlan({...plan,operations:[{kind:'vocalPhrasing',sectionId:'h',targetScope:{sectionId:'h'},preservationTier:'P3',status:'PROPOSAL_ONLY'}]},spec),/lock/i);assert.throws(()=>ScoreCore.validateCompoundEditPlan({...plan,revisionCommitted:true},spec),/authority/i)});
+test('Wave4 ScoreCore rejects duplicate/unknown operations and missing preserved scopes',()=>{assert.throws(()=>ScoreCore.validateCompoundEditPlan({...plan,operations:[...plan.operations,plan.operations[1]]},spec),/duplicate/i);assert.throws(()=>ScoreCore.validateCompoundEditPlan({...plan,preservedSectionIds:[]},spec),/preserv/i)});

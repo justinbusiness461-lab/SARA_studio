@@ -133,6 +133,41 @@ function toggleScratchMarker(spec, {sectionId, stepIndex, technique, deck}) {
   return edited;
 }
 
-const ScoreCore = { musicIntent, compileIntent, transposeSection, toggleScratchMarker, djTickToSample, DJ_TECHNIQUES };
+/** Validate server-authored compound intent as read-only ScoreCore consumer; no mutation. */
+function validateCompoundEditPlan(plan,spec) {
+  if (!plan || !spec || plan.schemaVersion!=='sara.compound-edit-plan.v1' ||
+      !Array.isArray(plan.operations) || !Array.isArray(plan.preservedSectionIds) ||
+      plan.revisionCommitted!==false || plan.requiresApproval!==true ||
+      plan.audioPreservationProof!=='NOT_CLAIMED')
+    throw new Error('compound authority not qualified');
+  const sections=spec.structure?.sections||[], tracks=spec.tracks||[];
+  const preserved=new Set(plan.preservedSectionIds);
+  for(const sec of sections) if(sec.sonic_lock===true && !preserved.has(sec.id))
+    throw new Error('compound preservation scope missing');
+  const seen=new Set();
+  for(const op of plan.operations){
+    if (!op || op.status!=='PROPOSAL_ONLY') throw new Error('compound authority not qualified');
+    let key;
+    if(op.kind==='vocalPhrasing' && op.preservationTier==='P3'){
+      const sec=sections.filter(s=>s.id===op.sectionId);
+      if(sec.length!==1)throw new Error('compound target ambiguous');
+      if(sec[0].sonic_lock===true||preserved.has(op.sectionId))throw new Error('compound locked section');
+      if(op.targetScope?.sectionId!==op.sectionId)throw new Error('compound target mismatch');
+      key='section:'+op.sectionId;
+    }else if((op.kind==='filter'||op.kind==='metallic') && op.preservationTier==='P2'){
+      const track=tracks.filter(t=>t.track_id===op.trackId);
+      if(track.length!==1)throw new Error('compound target ambiguous');
+      if(track[0].sonic_lock===true)throw new Error('compound locked track');
+      if(op.targetScope?.trackId!==op.trackId)throw new Error('compound target mismatch');
+      key=op.kind+':'+op.trackId;
+    }else throw new Error('compound operation unsupported');
+    if(seen.has(key))throw new Error('compound duplicate operation');
+    seen.add(key);
+  }
+  if(!seen.size)throw new Error('compound empty plan');
+  return Object.freeze({valid:true,operations:seen.size,revisionCommitted:false});
+}
+
+const ScoreCore = { musicIntent, compileIntent, transposeSection, toggleScratchMarker, djTickToSample, DJ_TECHNIQUES, validateCompoundEditPlan };
 if (typeof module !== 'undefined' && module.exports) module.exports = ScoreCore;
 else window.ScoreCore = ScoreCore;

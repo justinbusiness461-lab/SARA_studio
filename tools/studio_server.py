@@ -1278,7 +1278,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview"}:
             try:
                 principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
             except ProjectConflict as e:
@@ -1292,6 +1292,17 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload,dict): raise ValueError("object required")
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
+
+        if path in {"/api/m045/compound-plan", "/api/m045/sample-preview"}:
+            try:
+                from m045_wave4_service import authorized_compound_plan,authorized_sample_transform
+                operation = (authorized_compound_plan if path.endswith("compound-plan")
+                             else authorized_sample_transform)
+                return self._json(200,operation(EXPORT_ROOT,payload,principal_id))
+            except (ProjectConflict,PermissionError) as exc:
+                return self._json(403,{"status":"DENY","error":str(exc)})
+            except (ValueError,KeyError,TypeError,OSError,wave.Error,EOFError) as exc:
+                return self._json(400,{"status":"ERROR","error":str(exc)})
 
         if path == "/api/m045/master":
             try:

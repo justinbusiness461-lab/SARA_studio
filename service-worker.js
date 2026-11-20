@@ -1,5 +1,5 @@
 /* SongForge PWA — 2.20.0 M043 candidate */
-const CACHE_NAME = 'sara-studio-rs002-race-v2';
+const CACHE_NAME = 'sara-studio-wave004-compound-sample-v1';
 const ASSETS = [
   './',
   './index.html',
