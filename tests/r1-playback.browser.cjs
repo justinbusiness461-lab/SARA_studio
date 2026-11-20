@@ -132,6 +132,15 @@ test('fresh Studio process reopens exact R1 and refetches same authorized WAV', 
   const audio = await audioP;
   const bytes = await audio.body();
   const digest = crypto.createHash('sha256').update(bytes).digest('hex');
+  // The HTTP body can arrive before the browser finishes WAV metadata decode.
+  // Wait for the *exact* expected source proof, not any non-null presentation.
+  await page.waitForFunction(expected => {
+    const proof=window.__M044_PLAYBACK_PROOF__;
+    return proof?.projectId===expected.projectId &&
+           proof?.revisionId===expected.revisionId &&
+           proof?.artifactId===expected.artifactId;
+  }, {projectId:first.projectId,revisionId:first.revisionId,artifactId:first.artifactId},
+     {timeout:20000});
   const second = await page.evaluate(() => window.__M044_PLAYBACK_PROOF__);
 
   assert.equal(opened.revision.revisionId, first.revisionId);
