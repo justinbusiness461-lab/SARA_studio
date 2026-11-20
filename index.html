@@ -115,6 +115,21 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <select id="editTrack"></select>
 <div id="matrix" class="matrix"></div>
 </div>
+<div class="card" id="djScratchCard">
+<h3>Scratch Surgeon™ — Two-Deck Beat Grid</h3>
+<p class="muted">Symbolic DJ markers are editable ScoreCore events. Save the project to commit them. Audio rendering requires an authorized scratch sample; no synthetic performance is silently substituted.</p>
+<label for="djTechnique">Scratch technique</label>
+<select id="djTechnique">
+<option value="baby">Baby</option>
+<option value="chirp">Chirp</option>
+<option value="2_click_flare">2-click flare</option>
+<option value="two_deck_juggle">Two-deck juggle</option>
+</select>
+<label for="djDeck">Deck</label>
+<select id="djDeck"><option value="A">Deck A</option><option value="B">Deck B</option></select>
+<div id="djGrid" class="matrix" aria-label="Scratch performance step grid"></div>
+<div id="djGridStatus" class="status warn" role="status" aria-live="polite">Select a section and add a scratch marker. Audio UNRENDERED.</div>
+</div>
 
 
 <div class="card">
