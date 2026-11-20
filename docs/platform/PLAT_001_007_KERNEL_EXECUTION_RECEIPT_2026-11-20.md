@@ -38,7 +38,7 @@
 
 ## Cryptographic provenance of logs
 
-These are SHA-256 of actual KERNEL test log bytes, computed at the executor boundary (not copied log files). The logs are not yet durably stored in repository; checksum does not equal independently replayed certification.
+These are SHA-256 of actual KERNEL test log bytes, computed at the executor boundary. All 12 raw text logs are durably committed under `docs/platform/evidence/kernel_20261120/` with exact GitHub readback. The log digests provide evidence identity, **not** independent cross-executor replay or release certification.
 
 ```
 backend-green.log           17b40ba41616bc4dc82f1f8e0dfadca3a6e270b64683d36606b352fb32415c08
