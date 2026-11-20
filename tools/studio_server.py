@@ -769,6 +769,64 @@ def render_publish_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     return result
 
 
+def render_authorized_scratch_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID):
+    """Studio-owned scratch render using only lawful revision/CAS association."""
+    from m045_scratch_dsp import render_scratch_mix, waveform_pcm
+    if not isinstance(request,dict):
+        raise ValueError("scratch request required")
+    pid=project_id(request.get("projectId"))
+    rid=request.get("revisionId")
+    base_id=request.get("baseArtifactId")
+    refs=request.get("sampleAssetDigests")
+    selected=project_operation(root,{"projectId":pid,"revisionId":rid},principal_id=principal_id)
+    revision=selected["revision"]
+    spec=selected["songSpec"]
+    if not isinstance(refs,dict) or not isinstance(base_id,str):
+        raise ValueError("invalid scratch artifact references")
+    base=project_audio_bytes(root,{"projectId":pid,"revisionId":rid,"artifactId":base_id},principal_id=principal_id)
+    waveform_pcm(base)
+    tracks=[t for t in spec["tracks"] if t.get("track_id")=="dj_scratch"]
+    if len(tracks)!=1 or tracks[0].get("muted") is True:
+        raise ProjectConflict("no active scratch track")
+    events=tracks[0]["events"]
+    if not events or len(events)>128:
+        raise ValueError("scratch marker count unavailable")
+    validate_dj_scratch_authority(spec)
+    if set(refs)!={event["event_id"] for event in events}:
+        raise ProjectConflict("scratch source map does not match source revision")
+    bpm=spec["timebase"]["initial_bpm"]
+    window=(2*480*60*44100+bpm*960)//(2*bpm*960)
+    if not 0<window<=44100*8:
+        raise ValueError("scratch window unsupported")
+    performances=[]
+    for marker in events:
+        digest=refs[marker["event_id"]]
+        if not isinstance(digest,str) or not re.fullmatch("[a-f0-9]{64}",digest):
+            raise ValueError("invalid scratch source digest")
+        if digest not in revision["sourceAssetDigests"]:
+            raise ProjectConflict("scratch source not attached to authorized revision")
+        data=artifact_bytes(Path(root).resolve(),digest)
+        waveform_pcm(data)
+        performances.append({"marker":marker,"sample_asset_wav":data,
+                             "source_asset_digest":digest})
+    output,proof=render_scratch_mix(base,performances,window_frames=window)
+    identity={"schema":"sara.scratch.render.v1","sourceRevisionId":rid,
+        "baseArtifactId":base_id,
+        "sourceAssetDigests":{k:refs[k] for k in sorted(refs)}}
+    op="scratch:"+hashlib.sha256(project_json(identity)).hexdigest()[:48]
+    published=render_publish_operation(root,{"projectId":pid,"sourceRevisionId":rid,
+        "operationId":op,"filename":"scratch-render.wav","subdirectory":"scratch",
+        "data_bytes":list(output)},principal_id=principal_id)
+    selected_revision=published["revision"]["revisionId"]
+    digest=hashlib.sha256(output).hexdigest()
+    readback=project_audio_bytes(root,{"projectId":pid,"revisionId":selected_revision,
+                                      "artifactId":digest},principal_id=principal_id)
+    if readback!=output:
+        raise ValueError("scratch render readback mismatch")
+    return {"projectId":pid,"sourceRevisionId":rid,"revisionId":selected_revision,
+            "artifactId":digest,"proof":proof,"operationId":op}
+
+
 def project_audio_bytes(root, request, principal_id=LOCAL_PRINCIPAL_ID):
     root = Path(root).resolve()
     pid = project_id(request.get("projectId"))
@@ -1287,6 +1345,15 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError, IndexError) as e:
                 return self._json(400, {"status": "ERROR", "error": str(e)})
 
+        if path == "/api/m045/scratch/render":
+            try:
+                return self._json(200, render_authorized_scratch_operation(
+                    EXPORT_ROOT, payload, principal_id=principal_id))
+            except ProjectConflict as e:
+                return self._json(409, {"status":"CONFLICT","error":str(e)})
+            except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
+                return self._json(400, {"status":"ERROR",
+                    "error":"scratch source or revision authority unqualified"})
         if path == "/api/projects/render":
             try:
                 return self._json(200, render_publish_operation(EXPORT_ROOT, payload, principal_id=principal_id))
