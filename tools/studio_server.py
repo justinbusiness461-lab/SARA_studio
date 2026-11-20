@@ -40,6 +40,10 @@ except ImportError:  # pragma: no cover - keeps unrelated tooling importable
     GenerationAttemptOwner = None
 
 CAPABILITY = secrets.token_urlsafe(32)
+# Default preserves the existing local studio. Opt-in requires explicit login;
+# never auto-issue the local principal as a public multi-user identity.
+PLATFORM_MODE = os.environ.get("SARA_PLATFORM_AUTH_MODE") == "1"
+PLATFORM_PUBLICATION_RIGHTS = None
 LOCAL_PRINCIPAL_ID = "local-studio-user"
 SESSION_PRINCIPALS = {}
 M045_ATTEMPT_OWNER = None
@@ -65,12 +69,25 @@ def issue_studio_session(principal_id=LOCAL_PRINCIPAL_ID):
     return token
 
 def resolve_studio_session(token):
+    if PLATFORM_MODE:
+        from platform_identity import PlatformStore, PlatformDenied
+        try:
+            return PlatformStore(EXPORT_ROOT).session_principal(token)
+        except PlatformDenied as error:
+            raise ProjectConflict("session denied") from error
     if not isinstance(token, str) or not token:
         raise ProjectConflict("session denied")
     principal_id = SESSION_PRINCIPALS.get(token)
     if principal_id is None:
         raise ProjectConflict("session denied")
     return principal_id
+
+def configure_platform_publication_rights(policy):
+    """Host-only verified rights provider; HTTP requests may not set this."""
+    if not callable(policy):
+        raise ValueError("HOST_VERIFIED_RIGHTS_POLICY_REQUIRED")
+    global PLATFORM_PUBLICATION_RIGHTS
+    PLATFORM_PUBLICATION_RIGHTS = policy
 
 
 def configure_m045_generation(owner, synthesize_to_stage_fn):
@@ -1249,6 +1266,108 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
     def _host_allowed(self):
         return self.headers.get("Host") in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"}
 
+    def _platform_principal(self):
+        from http.cookies import SimpleCookie
+        raw = self.headers.get("Cookie", "")
+        if not raw or len(raw)>2048:
+            raise ProjectConflict("session denied")
+        cookies=SimpleCookie()
+        try:cookies.load(raw)
+        except Exception:raise ProjectConflict("session denied")
+        token=cookies["sara_session"].value if "sara_session" in cookies else ""
+        return resolve_studio_session(token)
+
+    def _platform_get(self, path):
+        from platform_identity import PlatformStore,PlatformDenied
+        from platform_catalog import discover,public_song,public_profile,playable_public_audio,owned_library
+        from urllib.parse import parse_qs,urlsplit
+        store=PlatformStore(EXPORT_ROOT)
+        query=parse_qs(urlsplit(self.path).query)
+        if path in {"/api/me", "/api/me/sessions", "/api/me/profile", "/api/me/library"}:
+            try:principal=self._platform_principal()
+            except ProjectConflict:
+                self._json(403,{"status":"DENY","error":"SESSION_DENIED"});return True
+            if path=="/api/me":self._json(200,{"status":"SUCCESS","account":store.profile(principal)});return True
+            if path=="/api/me/profile":self._json(200,{"status":"SUCCESS","profile":store.profile(principal)});return True
+            if path=="/api/me/sessions":self._json(200,{"status":"SUCCESS","sessions":store.list_sessions(principal)});return True
+            self._json(200,owned_library(EXPORT_ROOT,principal));return True
+        if path in {"/api/explore","/api/search"}:
+            q=query.get("q",[""])[0] if path=="/api/search" else ""
+            try:self._json(200,discover(EXPORT_ROOT,PLATFORM_PUBLICATION_RIGHTS,query=q))
+            except ValueError:self._json(400,{"status":"ERROR","error":"INVALID_SEARCH"})
+            return True
+        if path.startswith("/api/artists/"):
+            result=public_profile(EXPORT_ROOT,path[len("/api/artists/"):],PLATFORM_PUBLICATION_RIGHTS)
+            self._json(200 if result else 404,result or {"status":"NOT_FOUND"});return True
+        if path.startswith("/api/songs/"):
+            suffix=path[len("/api/songs/"):]
+            if suffix.endswith("/audio"):
+                pub_id=suffix[:-6]
+                audio=playable_public_audio(EXPORT_ROOT,pub_id,PLATFORM_PUBLICATION_RIGHTS)
+                if audio is None:self._json(404,{"status":"NOT_FOUND"});return True
+                self.send_response(200)
+                self.send_header("Content-Type","audio/wav")
+                self.send_header("Cache-Control","no-store")
+                self.send_header("Content-Length",str(len(audio)))
+                self.end_headers()
+                self.wfile.write(audio)
+                return True
+            song=public_song(EXPORT_ROOT,suffix,PLATFORM_PUBLICATION_RIGHTS)
+            self._json(200 if song else 404,song or {"status":"NOT_FOUND"});return True
+        if path.startswith("/api/"):
+            self._json(404,{"status":"NOT_FOUND"});return True
+        return False
+
+    def _platform_post(self,path,payload):
+        from platform_identity import PlatformStore, PlatformDenied, PlatformConflict
+        from platform_catalog import authorized_publish,publication_unpublish
+        store=PlatformStore(EXPORT_ROOT)
+        try:
+            if path=="/api/auth/signup":
+                if set(payload)!={"handle","password","displayName"}:
+                    raise ValueError("INVALID_SIGNUP_FIELDS")
+                account=store.register(payload["handle"],payload["password"],payload["displayName"])
+                return self._json(201,{"status":"SUCCESS",**account})
+            if path=="/api/auth/login":
+                if set(payload)!={"handle","password"}:
+                    raise ValueError("INVALID_LOGIN_FIELDS")
+                token,session=store.login(payload["handle"],payload["password"])
+                # Local loopback proof mode: on deployed HTTPS use Secure cookie.
+                # HTTPS terminating proxy/internet deployment must be qualified separately.
+                cookie="sara_session="+token+"; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800"
+                return self._json(200,{"status":"SUCCESS",**session},cookie=cookie)
+            if path=="/api/auth/logout":
+                principal=self._platform_principal()
+                from http.cookies import SimpleCookie
+                jar=SimpleCookie();jar.load(self.headers.get("Cookie",""))
+                token=jar["sara_session"].value
+                digest=hashlib.sha256(token.encode()).hexdigest()
+                with store._db() as db:
+                    db.execute("BEGIN IMMEDIATE")
+                    db.execute("UPDATE sessions SET revoked=1 WHERE token_digest=? AND principal=?",(digest,principal))
+                    db.commit()
+                return self._json(200,{"status":"SUCCESS"},cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
+            principal=self._platform_principal()
+            if path=="/api/me/sessions/revoke":
+                if set(payload)!={"sessionId"}:raise ValueError("INVALID_REVOKE")
+                return self._json(200,store.revoke_session(principal,payload["sessionId"]))
+            if path=="/api/publications":
+                if PLATFORM_PUBLICATION_RIGHTS is None:
+                    return self._json(503,{"status":"BLOCKED","error":"VERIFIED_RIGHTS_HOST_POLICY_MISSING"})
+                pub=authorized_publish(EXPORT_ROOT,payload,principal,PLATFORM_PUBLICATION_RIGHTS)
+                return self._json(201,{"status":"SUCCESS",**pub})
+            if path.startswith("/api/publications/") and path.endswith("/unpublish"):
+                if payload:raise ValueError("UNPUBLISH_BODY_DENIED")
+                result=publication_unpublish(EXPORT_ROOT,path[len("/api/publications/"):-len("/unpublish")],principal)
+                return self._json(200,result)
+            return self._json(404,{"status":"NOT_FOUND"})
+        except PlatformConflict as error:
+            return self._json(409,{"status":"CONFLICT","error":str(error)})
+        except (ProjectConflict,PlatformDenied,PermissionError):
+            return self._json(403,{"status":"DENY","error":"UNAUTHORIZED_OR_UNQUALIFIED"})
+        except (ValueError,KeyError,TypeError):
+            return self._json(400,{"status":"ERROR","error":"INVALID_PLATFORM_REQUEST"})
+
     def do_GET(self):
         if not self._host_allowed(): return self._json(403,{"status":"ERROR","error":"host denied"})
         if self.headers.get("Origin") and not authorized_origin(self.headers["Origin"], self.headers["Host"]):
@@ -1256,32 +1375,40 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         path=unquote(self.path.split("?",1)[0])
         if path.startswith("/workspace") or path.startswith("/.git"):
             return self._json(403,{"status":"ERROR","error":"private storage"})
+        if PLATFORM_MODE and path.startswith("/api/"):
+            return self._platform_get(path)
         if path in {"/","/index.html"}:
-            # Fresh same-origin capability, never cached by the service worker.
-            session = issue_studio_session(LOCAL_PRINCIPAL_ID)
+            # In platform mode, anonymous view gets ONLY a same-origin
+            # capability, not a local principal or authorization token.
+            if PLATFORM_MODE:
+                bootstrap="window.__SARA_PLATFORM_MODE__=true;document.documentElement.classList.add('platform-mode');window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";"
+            else:
+                session=issue_studio_session(LOCAL_PRINCIPAL_ID)
+                bootstrap="window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";"
             body=(ROOT/"index.html").read_text().replace(
-                "<head>",
-                "<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";</script>"
+                "<head>","<head><script>"+bootstrap+"</script>"
             ).encode()
-            self.send_response(200);self.send_header("Content-Type","text/html");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
-        public={"/studio-shell.css","/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
+            self.send_response(200);self.send_header("Content-Type","text/html")
+            self.send_header("Cache-Control","no-store")
+            self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
+        public={"/studio-shell.css","/platform-ui.js","/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
         if path not in public: return self._json(404,{"status":"ERROR","error":"not a public asset"})
         return super().do_GET()
 
     def do_OPTIONS(self):
         if not authorized_origin(self.headers.get("Origin"), self.headers.get("Host")):
             return self._json(403,{"status":"ERROR","error":"origin denied"})
-        if self.headers.get("Access-Control-Request-Method") not in {"GET","POST"}:
+        if self.headers.get("Access-Control-Request-Method") not in {"GET","POST","PUT"}:
             return self._json(403,{"status":"ERROR","error":"method denied"})
         requested={v.strip().lower() for v in self.headers.get("Access-Control-Request-Headers","").split(",") if v.strip()}
         if not requested <= {"authorization","content-type","x-studio-capability","x-studio-session"}:
             return self._json(403,{"status":"ERROR","error":"headers denied"})
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Methods","GET, POST")
+        self.send_header("Access-Control-Allow-Methods","GET, POST, PUT")
         self.send_header("Access-Control-Allow-Headers","Authorization, Content-Type, X-Studio-Capability, X-Studio-Session")
         self.end_headers()
 
-    def _json(self, code: int, obj: dict):
+    def _json(self, code: int, obj: dict, cookie=None):
         body = json.dumps(obj).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
@@ -1289,8 +1416,36 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", self.headers["Origin"])
             self.send_header("Vary", "Origin")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control","no-store")
+        if cookie:self.send_header("Set-Cookie",cookie)
         self.end_headers()
         self.wfile.write(body)
+
+    def do_PUT(self):
+        if not PLATFORM_MODE:
+            return self._json(404,{"status":"NOT_FOUND"})
+        if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
+            return self._json(403,{"status":"DENY"})
+        if not secrets.compare_digest(self.headers.get("X-Studio-Capability",""),CAPABILITY):
+            return self._json(403,{"status":"DENY"})
+        if unquote(self.path.split("?",1)[0])!="/api/me/profile":
+            return self._json(404,{"status":"NOT_FOUND"})
+        try:
+            principal=self._platform_principal()
+            length=int(self.headers.get("Content-Length","-1"))
+            if length<0 or length>4096:raise ValueError("INVALID_BODY_LENGTH")
+            body=json.loads(self.rfile.read(length))
+            from platform_identity import PlatformStore
+            profile=PlatformStore(EXPORT_ROOT).update_profile(principal,body)
+            return self._json(200,{"status":"SUCCESS","profile":profile})
+        except ProjectConflict:return self._json(403,{"status":"DENY"})
+        except Exception as exc:
+            from platform_identity import PlatformConflict,PlatformDenied
+            if isinstance(exc,PlatformConflict):return self._json(409,{"status":"CONFLICT"})
+            if isinstance(exc,PlatformDenied):return self._json(403,{"status":"DENY"})
+            if isinstance(exc,(ValueError,KeyError,TypeError)):
+                return self._json(400,{"status":"ERROR","error":"INVALID_PROFILE_REQUEST"})
+            raise
 
     def do_POST(self):
         if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
@@ -1302,7 +1457,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         principal_id = None
         if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant"}:
             try:
-                principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
+                principal_id = (self._platform_principal() if PLATFORM_MODE
+                  else resolve_studio_session(self.headers.get("X-Studio-Session", "")))
             except ProjectConflict as e:
                 return self._json(403, {"status": "DENY", "error": str(e)})
         try:
@@ -1314,6 +1470,21 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload,dict): raise ValueError("object required")
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
+
+        if PLATFORM_MODE and (path.startswith("/api/auth/") or path=="/api/me/sessions/revoke"
+                              or path=="/api/publications" or
+                              (path.startswith("/api/publications/") and path.endswith("/unpublish"))):
+            return self._platform_post(path,payload)
+
+        if PLATFORM_MODE and not (
+            path.startswith("/api/projects/") or
+            path in {"/api/m045/transcribe-midi","/api/m045/preview-synth",
+                "/api/m045/master","/api/m045/compound-plan",
+                "/api/m045/sample-preview","/api/m045/soundtrack-grant"}):
+            # The legacy local-only endpoints rely on ambient LOCAL principal,
+            # capability-only auth or unchecked paths. None are admitted to
+            # the multi-user platform until their owner contracts are repaired.
+            return self._json(403,{"status":"DENY","error":"PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED"})
 
         if path in {"/api/m045/compound-plan", "/api/m045/sample-preview"}:
             try:
