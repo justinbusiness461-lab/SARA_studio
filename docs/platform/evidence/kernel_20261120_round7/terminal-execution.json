@@ -1,0 +1,132 @@
+{
+  "automatedExecutions": 425,
+  "baselineHead": "4e9762c2bb1cad5ad368d15f45cebcbf6adf7d4b",
+  "branch": "feat/platform-identity-and-catalog",
+  "chromium": {
+    "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+    "failed": 0,
+    "log": "chromium-full-28.log",
+    "passed": 28,
+    "skipped": 0
+  },
+  "cinemaRepoTouched": false,
+  "date": "2026-11-20",
+  "evidenceSha256": {
+    "chromium-full-28.log": {
+      "bytes": 6640,
+      "sha256": "03222903c0ad323e9869852a9c8128b0092fa836437b897ac1a6df8c1def2fe2"
+    },
+    "mix-modal-green.log": {
+      "bytes": 4348,
+      "sha256": "1bcb3668c3aa759bac72fa4f5a17f96b83db67ea585c944abcd17b2a2cfc2c1a"
+    },
+    "mix-modal-red.log": {
+      "bytes": 8014,
+      "sha256": "8995f7276dbbceb33fe6db0a9009cee2d0b0ee863f12d3ccf33d84383648a0a2"
+    },
+    "node-full-42.log": {
+      "bytes": 8527,
+      "sha256": "97bd1488074bbe3cb3f4e6091287f3a62cde5fd1d8efec891eac1df89599c556"
+    },
+    "physical-fixtures.json": {
+      "bytes": 4694,
+      "sha256": "ac8bc5778db8a2db17fc66846b8ae4b4661a3820dbbe38418e292eb235143c2e"
+    },
+    "physical-focused-green.log": {
+      "bytes": 9082,
+      "sha256": "aaa7cada8f089f35f8ef82af57b3aa866b8ae17f55ec044c164249ba4ddc75b5"
+    },
+    "physical-probe-executed.py": {
+      "bytes": 3691,
+      "sha256": "9b9500ba721988ce3e75a298487850181b2ba90b37f909c40f437a81d815917b"
+    },
+    "physical-probe.log": {
+      "bytes": 639,
+      "sha256": "f7a155c05a4351701da3fd7dc0241aa815e5bd990d9e8be4f9140c1ab1d1e0e3"
+    },
+    "python-full-355.log": {
+      "bytes": 86625,
+      "sha256": "c8c6e5dd77e23ae2ce603be12f52c2e55db06f7d9ecbedb4e772d6f24bce4fe4"
+    },
+    "scratch-green.log": {
+      "bytes": 6006,
+      "sha256": "853e4df62f95d6bd4b4a4fe127243db95212cb10ee01dd6a0a495b3add13c04e"
+    },
+    "scratch-red.log": {
+      "bytes": 6543,
+      "sha256": "9f3586e55e2f24fd663dc3e687787455fa74d6737d3eb6d68c4cd6cbb34855e9"
+    }
+  },
+  "executedCommitScope": "ALL_THREE_SUITES_IDENTICAL_SOURCE_TREE",
+  "focusedTests": {
+    "mixAndModal": "RED_THEN_GREEN",
+    "physicalDecode": "FFPROBE_FFMPEG_TEST_FIXTURES_ONLY",
+    "scratch": "RED_THEN_GREEN"
+  },
+  "gate3Authorized": false,
+  "knownHolds": [
+    "Scratch sample rights validated by ephemeral TEST host callback, no production rights registry or revocation policy",
+    "Scratch rendered from synthetic source and unapproved as creative work; Chat marker and render are separate operations",
+    "Dry-stem reconstruction uses synthetic PCM f64 inputs, source CAS membership and current revision; rights and creative stems unqualified",
+    "Mix owner bounded at 32 MiB total stems; full 180-second dry-stem production not certified",
+    "No Modal GPU allocation, paid provider, checkpoint-bytes verification, real song generation or listening",
+    "Public /account/delete route remains not externally deployed",
+    "Store billing, secure production auth, Apple/Google physical native devices and release publication remain unverified",
+    "Cinema PR91 mixed-revision per-shot grants and full 7-mode H3 physical gate still outstanding",
+    "Cinema separate legacy tools suite has fixture/environment failures and skips: not an unconditional all-repo PASS",
+    "No independent GPT3 Gate1/2 certification received"
+  ],
+  "mainTouched": false,
+  "modal": {
+    "chargesIncurredUsd": 0,
+    "gpuAllocated": false,
+    "modalApiCall": false,
+    "modelCheckpointPhysicalVerification": false,
+    "priceQuote": "NOT_VERIFIED",
+    "state": "PREFLIGHT_ONLY"
+  },
+  "node": {
+    "command": "node --test tests/*.test.cjs",
+    "failed": 0,
+    "log": "node-full-42.log",
+    "passed": 42,
+    "skipped": 0
+  },
+  "physicalTestArtifacts": {
+    "creativeApproved": false,
+    "mixFrames": 1200,
+    "mixWavSha256": "4eedfbc12ce655ebd184b23b21484487d57e2952324d12760967291148ad75a9",
+    "realArtistAudio": false,
+    "scratchFrames": 44100,
+    "scratchWavSha256": "d9a1ba271d8ac4513390a03a18f0214b0c3f32af84d339643c0125d898fff7c3"
+  },
+  "pr": 37,
+  "prDraft": true,
+  "productCommit": "5ee4a9fd7d27948a3f5969698badcab881b6384c",
+  "productTree": "54a64726e9425af04d6308f826f9d646f0e61de4",
+  "python": {
+    "command": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -v",
+    "failed": 0,
+    "log": "python-full-355.log",
+    "passed": 355,
+    "skipped": 0
+  },
+  "releaseReady": false,
+  "repo": "justinbusiness461-lab/SARA_studio",
+  "schema": "sara.platform.round7.engineer1.terminal.v1",
+  "sourceFilesReadback": {
+    "count": 8,
+    "matched": 8,
+    "method": "INDEPENDENT_GITHUB_RAW_BY_COMMIT_BYTE_MATCH"
+  },
+  "sourceSha256": {
+    "tests/test_platform_identity_and_catalog.py": "92b5194c2959c3bf3d66ed8022f4beb59db8c61ecc99588ea473891620c7e45d",
+    "tests/test_platform_round7_mix_owner.py": "9ba9ed526bbc360b11afb6027fd08632d2f59b51e2be8f9553a5ada240430a52",
+    "tests/test_platform_round7_modal_preflight.py": "208cd0c2ea9143aeb561f4ce8220b3a6a834aa66c3b5e0919c3ff7c0b5625bdd",
+    "tests/test_platform_round7_scratch_rights.py": "8f85d139091030595fab5855a0ac78d364e07df4332ac1ddd5a702d4bcfa191f",
+    "tools/m045_modal_trial_preflight.py": "13bc0f68a5b4cfb5ea3814745a9247b4e14e47d1f286f87691e7d615ebda46f0",
+    "tools/m045_rights_bound_scratch.py": "7902fad61d8c1319f177f8a3fcdeecd6f711525d16e4a5e5efb5f64472e87efb",
+    "tools/m045_stem_reconstruction_owner.py": "bde9b4510cee8e66d858a64be873f57d7b4cea6b00a15d34e44e30f7ea1bf593",
+    "tools/studio_server.py": "d0abb942f8f423ed5625a57257dbaee9cdc0a6936cc7c573be517f12f570f9d6"
+  }
+}

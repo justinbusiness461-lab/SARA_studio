@@ -1,0 +1,106 @@
+..........EFE
+======================================================================
+ERROR: test_host_denial_then_verified_rights_produces_exact_pcm_wav_revision (tests.test_platform_round7_scratch_rights.RightsBoundScratchHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_scratch_rights.py", line 57, in test_host_denial_then_verified_rights_produces_exact_pcm_wav_revision
+    self.configure_rights(None)
+  File "/tmp/sara-round7/tests/test_platform_round7_scratch_rights.py", line 47, in configure_rights
+    studio.configure_platform_scratch_sample_rights(lambda principal,pid,rid,event,digest:
+AttributeError: module 'studio_server' has no attribute 'configure_platform_scratch_sample_rights'
+
+======================================================================
+ERROR: test_unbound_sample_and_foreign_principal_never_earn_rights (tests.test_platform_round7_scratch_rights.RightsBoundScratchHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_scratch_rights.py", line 80, in test_unbound_sample_and_foreign_principal_never_earn_rights
+    self.configure_rights("ARTIST_ORIGINAL")
+  File "/tmp/sara-round7/tests/test_platform_round7_scratch_rights.py", line 47, in configure_rights
+    studio.configure_platform_scratch_sample_rights(lambda principal,pid,rid,event,digest:
+AttributeError: module 'studio_server' has no attribute 'configure_platform_scratch_sample_rights'
+
+======================================================================
+FAIL: test_missing_host_policy_and_spoofed_rights_fail_closed (tests.test_platform_round7_scratch_rights.RightsBoundScratchHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_scratch_rights.py", line 52, in test_missing_host_policy_and_spoofed_rights_fail_closed
+    self.assertEqual(self.render()[0],503)
+AssertionError: 403 != 503
+
+----------------------------------------------------------------------
+Ran 13 tests in 8.720s
+
+FAILED (failures=1, errors=2)
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-38e3b557fdd2af8401aa1a1aadda9dcc HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-38e3b557fdd2af8401aa1a1aadda9dcc/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-38e3b557fdd2af8401aa1a1aadda9dcc/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-38e3b557fdd2af8401aa1a1aadda9dcc/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
