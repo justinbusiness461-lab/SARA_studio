@@ -1,0 +1,33 @@
+test_180_second_cas_revision_and_cold_restart_historical_source (test_m045_full_length_mastering.FullLengthMasterBoundary) ... ERROR
+test_210_second_pcm_stereo_master_is_physically_decodable_and_measured (test_m045_full_length_mastering.FullLengthMasterBoundary) ... ERROR
+
+======================================================================
+ERROR: test_180_second_cas_revision_and_cold_restart_historical_source (test_m045_full_length_mastering.FullLengthMasterBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tests/test_m045_full_length_mastering.py", line 55, in test_180_second_cas_revision_and_cold_restart_historical_source
+    receipt=authorized_master(parent,{'projectId':'a'*32,'revisionId':rid,
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tools/m045_wave4_service.py", line 25, in authorized_master
+    mastered,telemetry=master_wav_to_lufs_target(wav_bytes=source,
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tools/m045_wave4_mastering_provenance.py", line 88, in master_wav_to_lufs_target
+    _validate_audio(wav_bytes)
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tools/m045_wave4_mastering_provenance.py", line 69, in _validate_audio
+    raise ValueError("MASTER_INPUT_UNSUPPORTED_LENGTH")
+ValueError: MASTER_INPUT_UNSUPPORTED_LENGTH
+
+======================================================================
+ERROR: test_210_second_pcm_stereo_master_is_physically_decodable_and_measured (test_m045_full_length_mastering.FullLengthMasterBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tests/test_m045_full_length_mastering.py", line 30, in test_210_second_pcm_stereo_master_is_physically_decodable_and_measured
+    master,telemetry=master_wav_to_lufs_target(wav_bytes=source,target_lufs=-14.0,
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tools/m045_wave4_mastering_provenance.py", line 88, in master_wav_to_lufs_target
+    _validate_audio(wav_bytes)
+  File "/tmp/gate12/SARA_studio-15b6d3f15fe2a122933133f34d43c7dc7aaba28c/tools/m045_wave4_mastering_provenance.py", line 69, in _validate_audio
+    raise ValueError("MASTER_INPUT_UNSUPPORTED_LENGTH")
+ValueError: MASTER_INPUT_UNSUPPORTED_LENGTH
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.043s
+
+FAILED (errors=2)
