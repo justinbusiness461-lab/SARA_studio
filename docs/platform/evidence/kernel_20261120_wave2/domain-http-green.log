@@ -1,0 +1,203 @@
+test_chat_search_and_credit_share_owner_services (tests.test_platform_wave2.Wave2Test) ... ok
+test_chat_sensitive_publish_is_only_a_plan (tests.test_platform_wave2.Wave2Test) ... ok
+test_chat_unsupported_fails_closed (tests.test_platform_wave2.Wave2Test) ... ok
+test_fin_ambiguous_job_does_not_auto_refund (tests.test_platform_wave2.Wave2Test) ... ok
+test_fin_duplicate_signed_webhook_does_not_mint (tests.test_platform_wave2.Wave2Test) ... ok
+test_fin_settle_or_refund_fail_pre_commit (tests.test_platform_wave2.Wave2Test) ... ok
+test_fin_two_concurrent_reserves_do_not_overdraw (tests.test_platform_wave2.Wave2Test) ... ok
+test_soc_album_cannot_silently_publish_private_song (tests.test_platform_wave2.Wave2Test) ... ok
+test_soc_comments_disabled_and_block (tests.test_platform_wave2.Wave2Test) ... ok
+test_soc_follow_like_idempotency_and_block (tests.test_platform_wave2.Wave2Test) ... ok
+test_soc_notifications_idempotent_and_private (tests.test_platform_wave2.Wave2Test) ... ok
+test_soc_playlist_cannot_leak_private_or_unqualified_publications (tests.test_platform_wave2.Wave2Test) ... ok
+test_soc_playlist_reorder_and_visibility_owner_only (tests.test_platform_wave2.Wave2Test) ... ok
+test_workspace_cannot_attach_foreign_project (tests.test_platform_wave2.Wave2Test) ... ok
+test_workspace_owner_invite_role_revoke (tests.test_platform_wave2.Wave2Test) ... ok
+test_acc01_entry_does_not_bootstrap_local_user (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc02_signup_login_cross_session_and_revoke (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc03_concurrent_handle_uniqueness_and_bio_sanitization (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc04_cross_owner_cas_and_public_deny (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc05_legacy_mutations_are_not_user_bound_and_must_be_blocked (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_profile_and_session_survive_fresh_store (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub01_no_public_listing_without_approval (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub02_unbound_cas_and_rights_always_fail_closed (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub03_explicit_publication_explore_search_stream_unpublish (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub04_historical_takes_cannot_become_public (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_http_authorized_listings_exclude_other_artist_data (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_chat_balance_search_and_sensitive_publish_no_auto_commit (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_credit_spend_and_provider_grant_always_fail_without_host_authority (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_host_authorized_credit_job_reserve_settle_and_no_overdraft (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_qualified_playlist_revalidates_unpublish_without_leaking_private_audio (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_real_public_social_comments_block_and_album_disclosure (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_social_playlist_artist_only_and_public_visibility (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_workspace_invite_member_revoke_no_cas_shortcut (tests.test_platform_wave2_http.Wave2HTTP) ... [Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-5b7063e0c71d842880c57c019ba34966 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-5b7063e0c71d842880c57c019ba34966/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-5b7063e0c71d842880c57c019ba34966/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-5b7063e0c71d842880c57c019ba34966/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/playlists HTTP/1.1" 201 -
+[Studio-Server] "POST /api/workspaces HTTP/1.1" 201 -
+[Studio-Server] "GET /api/playlists HTTP/1.1" 200 -
+[Studio-Server] "GET /api/playlists HTTP/1.1" 200 -
+[Studio-Server] "GET /api/workspaces HTTP/1.1" 200 -
+[Studio-Server] "GET /api/workspaces HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/credits/quote HTTP/1.1" 200 -
+[Studio-Server] "POST /api/credits/reserve HTTP/1.1" 503 -
+[Studio-Server] "POST /api/credits/finalize HTTP/1.1" 503 -
+[Studio-Server] "POST /api/credits/grant HTTP/1.1" 404 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/credits/reserve HTTP/1.1" 200 -
+[Studio-Server] "POST /api/credits/reserve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/credits/finalize HTTP/1.1" 403 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 200 -
+[Studio-Server] "POST /api/credits/finalize HTTP/1.1" 200 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "POST /api/playlists HTTP/1.1" 201 -
+[Studio-Server] "POST /api/playlists/pl-6764b69788a109f25337da6d4660907d/songs HTTP/1.1" 200 -
+[Studio-Server] "GET /api/playlists/pl-6764b69788a109f25337da6d4660907d HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-2f691856e231195d0fb828fda94ae68b/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/playlists/pl-6764b69788a109f25337da6d4660907d HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-2f691856e231195d0fb828fda94ae68b/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 200 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 200 -
+[Studio-Server] "GET /api/notifications HTTP/1.1" 200 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 201 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 200 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 403 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 200 -
+[Studio-Server] "POST /api/social/action HTTP/1.1" 403 -
+[Studio-Server] "POST /api/albums HTTP/1.1" 201 -
+[Studio-Server] "POST /api/albums/alb-cde6e96ce3da3819f036ddc6e91efee2/release HTTP/1.1" 403 -
+[Studio-Server] "POST /api/albums/alb-cde6e96ce3da3819f036ddc6e91efee2/release HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/playlists HTTP/1.1" 201 -
+[Studio-Server] "GET /api/playlists/pl-f07935117bdde495431ead423b312aed HTTP/1.1" 404 -
+[Studio-Server] "POST /api/playlists/pl-f07935117bdde495431ead423b312aed/visibility HTTP/1.1" 403 -
+[Studio-Server] "POST /api/playlists/pl-f07935117bdde495431ead423b312aed/visibility HTTP/1.1" 200 -
+[Studio-Server] "GET /api/playlists/pl-f07935117bdde495431ead423b312aed HTTP/1.1" 200 -
+[Studio-Server] "POST /api/playlists/pl-f07935117bdde495431ead423b312aed/songs HTTP/1.1" 403 -
+ok
+test_http_workspace_real_revision_audio_denies_after_revoke (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+test_http_zero_auth_stays_denied_for_credit_social_and_chat (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 16.393s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces HTTP/1.1" 201 -
+[Studio-Server] "POST /api/workspaces/ws-beeff5463e57374f5f0ad4371726227f/invite HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-beeff5463e57374f5f0ad4371726227f/bind HTTP/1.1" 403 -
+[Studio-Server] "POST /api/workspaces/ws-beeff5463e57374f5f0ad4371726227f/revoke HTTP/1.1" 403 -
+[Studio-Server] "POST /api/workspaces/ws-beeff5463e57374f5f0ad4371726227f/revoke HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-beeff5463e57374f5f0ad4371726227f/project HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces HTTP/1.1" 201 -
+[Studio-Server] "POST /api/workspaces/ws-4fac6d0f048e0352f18c0c2e5e77f2fa/bind HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-4fac6d0f048e0352f18c0c2e5e77f2fa/invite HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-4fac6d0f048e0352f18c0c2e5e77f2fa/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-4fac6d0f048e0352f18c0c2e5e77f2fa/revoke HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-4fac6d0f048e0352f18c0c2e5e77f2fa/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/workspaces/ws-4fac6d0f048e0352f18c0c2e5e77f2fa/project HTTP/1.1" 403 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 403 -
+[Studio-Server] "GET /api/playlists HTTP/1.1" 403 -
+[Studio-Server] "GET /api/notifications HTTP/1.1" 403 -
+[Studio-Server] "GET /api/workspaces HTTP/1.1" 403 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/playlists HTTP/1.1" 403 -
+[Studio-Server] "POST /api/workspaces HTTP/1.1" 403 -
+[Studio-Server] "POST /api/credits/reserve HTTP/1.1" 403 -
