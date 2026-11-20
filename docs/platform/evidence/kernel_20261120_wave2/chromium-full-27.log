@@ -1,0 +1,229 @@
+TAP version 13
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+not ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 47405.151026
+  type: 'test'
+  location: '/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/m045-dj-grid.browser.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.selectOption: Timeout 12000ms exceeded.
+    Call log:
+      - waiting for locator('#djDeck')
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/m045-dj-grid.browser.cjs:40:32)
+  ...
+# Subtest: HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+ok 2 - HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+  ---
+  duration_ms: 4940.66756
+  type: 'test'
+  ...
+# Subtest: RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+not ok 3 - RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+  ---
+  duration_ms: 75469.517798
+  type: 'test'
+  location: '/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/m045-mobile-endurance.browser.cjs:28:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/m045-mobile-endurance.browser.cjs:52:52)
+  ...
+# Subtest: M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+ok 4 - M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+  ---
+  duration_ms: 44711.742839
+  type: 'test'
+  ...
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 5 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 52979.560548
+  type: 'test'
+  ...
+# Subtest: Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+ok 6 - Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+  ---
+  duration_ms: 35829.14848
+  type: 'test'
+  ...
+# Subtest: Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+ok 7 - Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+  ---
+  duration_ms: 6106.481469
+  type: 'test'
+  ...
+# Subtest: Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+ok 8 - Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+  ---
+  duration_ms: 8538.50166
+  type: 'test'
+  ...
+# Subtest: Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+ok 9 - Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+  ---
+  duration_ms: 4210.606222
+  type: 'test'
+  ...
+# Subtest: Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+ok 10 - Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+  ---
+  duration_ms: 7377.75446
+  type: 'test'
+  ...
+# Subtest: shared-device account B never reads cached A project/attempt pointer
+ok 11 - shared-device account B never reads cached A project/attempt pointer
+  ---
+  duration_ms: 5727.844175
+  type: 'test'
+  ...
+# Subtest: platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+ok 12 - platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+  ---
+  duration_ms: 14543.558107
+  type: 'test'
+  ...
+# Subtest: local offline ScoreCore shell contains zero session or capability bearer tokens
+ok 13 - local offline ScoreCore shell contains zero session or capability bearer tokens
+  ---
+  duration_ms: 4237.540091
+  type: 'test'
+  ...
+# Subtest: authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+ok 14 - authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+  ---
+  duration_ms: 7004.072431
+  type: 'test'
+  ...
+# Subtest: Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+ok 15 - Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+  ---
+  duration_ms: 4722.442044
+  type: 'test'
+  ...
+# Subtest: Studio loads ScoreCore, persists Generate, and reopens the exact revision
+ok 16 - Studio loads ScoreCore, persists Generate, and reopens the exact revision
+  ---
+  duration_ms: 16925.454005
+  type: 'test'
+  ...
+# Subtest: Installed Studio precaches the matching ScoreCore adapter
+ok 17 - Installed Studio precaches the matching ScoreCore adapter
+  ---
+  duration_ms: 8679.627019
+  type: 'test'
+  ...
+# Subtest: Generate reaches verified revision-bound WAV before Play is enabled
+not ok 18 - Generate reaches verified revision-bound WAV before Play is enabled
+  ---
+  duration_ms: 41875.608499
+  type: 'test'
+  location: '/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r1-playback.browser.cjs:52:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('#btnPlay')
+        - locator resolved to <button id="btnPlay">Play</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - performing click action
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r1-playback.browser.cjs:86:34)
+  ...
+# Subtest: audio retrieval failure never presents Generate as playable
+ok 19 - audio retrieval failure never presents Generate as playable
+  ---
+  duration_ms: 9356.156873
+  type: 'test'
+  ...
+# Subtest: fresh Studio process reopens exact R1 and refetches same authorized WAV
+ok 20 - fresh Studio process reopens exact R1 and refetches same authorized WAV
+  ---
+  duration_ms: 36418.972119
+  type: 'test'
+  ...
+# Subtest: Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+ok 21 - Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+  ---
+  duration_ms: 40114.680445
+  type: 'test'
+  ...
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+not ok 22 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 115124.362618
+  type: 'test'
+  location: '/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r2-ab.browser.cjs:136:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r2-ab.browser.cjs:165:14)
+  ...
+# Subtest: late R1 A-B response cannot replace newer R2 selection
+ok 23 - late R1 A-B response cannot replace newer R2 selection
+  ---
+  duration_ms: 46880.202565
+  type: 'test'
+  ...
+# Subtest: A/B exposes completion only after transport, proof, artifact and position agree
+not ok 24 - A/B exposes completion only after transport, proof, artifact and position agree
+  ---
+  duration_ms: 81617.322761
+  type: 'test'
+  location: '/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r2-ab.browser.cjs:215:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r2-ab.browser.cjs:249:14)
+  ...
+# Subtest: fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+not ok 25 - fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+  ---
+  duration_ms: 89208.987923
+  type: 'test'
+  location: '/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r2-cold-reopen.browser.cjs:66:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/r2-cold-reopen.browser.cjs:127:14)
+  ...
+# Subtest: RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+ok 26 - RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+  ---
+  duration_ms: 8771.97158
+  type: 'test'
+  ...
+# Subtest: mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+ok 27 - mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+  ---
+  duration_ms: 29050.808655
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 21
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 859358.041374
