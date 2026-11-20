@@ -9,7 +9,8 @@ import re
 from platform_identity import PlatformDenied
 
 _ALLOWED_FIELDS=frozenset({"projectId","revisionId","artifactId",
- "selectedTrackId","selectedBars","playlistId","publicationId"})
+ "selectedTrackId","selectedBars","playlistId","publicationId",
+ "cinemaProjectId","sectionId","fps"})
 _PROTECTED=frozenset({"REPAINT","ADD_SCRATCH","TRANSCRIBE_MIDI","MASTER",
  "TOGGLE_LOCK","CREATE_MUSIC_VIDEO_GRANT"})
 
@@ -104,6 +105,12 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
  if action in {"REPAINT","ADD_SCRATCH"} and not bars:missing.append("selectedBars")
  if action in {"MASTER","TRANSCRIBE_MIDI","SAMPLE_PREVIEW","CREATE_MUSIC_VIDEO_GRANT"} and not artifact:
   missing.append("artifactId")
+ if action=="CREATE_MUSIC_VIDEO_GRANT":
+  for field in ("cinemaProjectId","sectionId"):
+   value=context.get(field)
+   if not value:missing.append(field)
+  if context.get("fps","24/1") not in ("24/1","30000/1001"):
+   raise ValueError("INVALID_GRANT_FRAME_RATE")
  if missing:
   return _need(action,missing=missing,projectId=pid,sourceRevisionId=rid,
     message="Choose exactly which track, bars or accepted audio to operate on.")
@@ -124,6 +131,25 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
   return _need(action,missing=["transform","parameters"],projectId=pid,sourceRevisionId=rid,
      route="/api/m045/sample-preview",
      message="Choose exact bounded sample transform and parameters; preview is P3, unpublished and rights held.")
+ if action=="TOGGLE_LOCK":
+  chosen_track=next(t for t in chosen["songSpec"]["tracks"] if t["track_id"]==target_track)
+  originally_locked=chosen_track.get("sonic_lock") is True
+  return _result("APPROVAL_REQUIRED",action,projectId=pid,sourceRevisionId=rid,
+    sourceArtifactId=artifact,selectedTrackId=target_track,
+    proposedRequest={"projectId":pid,"revisionId":rid,"targetTrackId":target_track,
+      "expectedLocked":originally_locked,"setLocked":not originally_locked},
+    message="Approve the exact Sonic Lock transition on the selected track. This commits a new immutable revision.")
+ if action=="CREATE_MUSIC_VIDEO_GRANT":
+  import re as _re
+  for field in ("cinemaProjectId","sectionId"):
+   if not isinstance(context[field],str) or not _re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}",context[field]):
+    raise ValueError("INVALID_GRANT_TARGET")
+  return _result("APPROVAL_REQUIRED",action,projectId=pid,sourceRevisionId=rid,
+    sourceArtifactId=artifact,
+    proposedRequest={"projectId":pid,"revisionId":rid,"artifactId":artifact,
+      "cinemaProjectId":context["cinemaProjectId"],"sectionId":context["sectionId"],
+      "fps":context.get("fps","24/1")},
+    message="Approve host-signed cinema grant for this exact film, section, revision, accepted audio and frame rate; no film proof is implied.")
  route={"REPAINT":"/api/m045/compound-plan","TRANSCRIBE_MIDI":"/api/m045/transcribe-midi",
    "CREATE_MUSIC_VIDEO_GRANT":"/api/m045/soundtrack-grant"}.get(action)
  proposed={"projectId":pid,"revisionId":rid,"artifactId":artifact} if action=="TRANSCRIBE_MIDI" else None
@@ -134,4 +160,3 @@ def orchestrate_studio_chat(root,principal,instruction,context=None,rights_polic
    message="Review exact source, scope, locks, rights and impact. Commit only through the existing Studio owner.")
  if proposed:response["proposedRequest"]=proposed
  return response
-

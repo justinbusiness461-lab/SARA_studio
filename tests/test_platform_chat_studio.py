@@ -76,7 +76,9 @@ class StudioChatRound2(unittest.TestCase):
  def test_soundtrack_grant_requires_existing_authority(self):
   r=self.ask("Create music video grant",self.ref)[2]
   self.assertEqual(r["action"],"CREATE_MUSIC_VIDEO_GRANT")
-  self.assertEqual(r["state"],"APPROVAL_REQUIRED")
+  self.assertEqual(r["state"],"CLARIFICATION_REQUIRED")
+  self.assertIn("cinemaProjectId",r["missing"])
+  self.assertIn("sectionId",r["missing"])
  def test_generate_is_client_studio_command_not_fake_committed_song(self):
   r=self.ask("Generate 92 BPM southern rock song",{})[2]
   self.assertEqual(r["state"],"STUDIO_ACTION_READY")
@@ -96,4 +98,3 @@ class StudioChatRound2(unittest.TestCase):
   self.assertEqual(r[0],403,r[2])
 
 if __name__=="__main__":unittest.main()
-

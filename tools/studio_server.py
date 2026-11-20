@@ -46,6 +46,15 @@ PLATFORM_MODE = os.environ.get("SARA_PLATFORM_AUTH_MODE") == "1"
 PLATFORM_PUBLICATION_RIGHTS = None
 # External provider/job authorities are host-installed only, never HTTP minted.
 PLATFORM_CREDIT_JOB_AUTH = None
+PLATFORM_NATIVE_STORE_VERIFIER = None
+
+def configure_platform_native_store_verifier(verifier):
+    """Host only. Must independently verify Apple/Google transaction status."""
+    if not callable(verifier):
+        raise ValueError("NATIVE_STORE_HOST_VERIFIER_REQUIRED")
+    global PLATFORM_NATIVE_STORE_VERIFIER
+    PLATFORM_NATIVE_STORE_VERIFIER = verifier
+
 
 def configure_platform_credit_job_authority(verifier):
     if not callable(verifier):
@@ -1468,6 +1477,15 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_header("Content-Length",str(len(audio)))
                     self.end_headers();self.wfile.write(audio);return None
                 raise ValueError("WORKSPACE_ACTION_DENIED")
+            if path=="/api/billing/native-receipt":
+                if set(payload)!={"store","transactionId","productId","receipt"}:
+                    raise ValueError("INVALID_NATIVE_RECEIPT_FIELDS")
+                if PLATFORM_NATIVE_STORE_VERIFIER is None:
+                    from platform_chat_approval import PlatformServiceUnavailable
+                    raise PlatformServiceUnavailable("NATIVE_STORE_HOST_VERIFIER_NOT_CONFIGURED")
+                from platform_native_receipt import receive_verified_native_purchase
+                return self._json(200,receive_verified_native_purchase(
+                    EXPORT_ROOT,principal,payload,PLATFORM_NATIVE_STORE_VERIFIER))
             if path=="/api/credits/quote":
                 from platform_billing import CreditLedger
                 if set(payload)!={"units"}:raise ValueError("INVALID_CREDIT_QUOTE")
@@ -1513,12 +1531,17 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 result=publication_unpublish(EXPORT_ROOT,path[len("/api/publications/"):-len("/unpublish")],principal)
                 return self._json(200,result)
             return self._json(404,{"status":"NOT_FOUND"})
-        except PlatformConflict as error:
-            return self._json(409,{"status":"CONFLICT","error":str(error)})
-        except (ProjectConflict,PlatformDenied,PermissionError):
-            return self._json(403,{"status":"DENY","error":"UNAUTHORIZED_OR_UNQUALIFIED"})
-        except (ValueError,KeyError,TypeError):
-            return self._json(400,{"status":"ERROR","error":"INVALID_PLATFORM_REQUEST"})
+        except Exception as error:
+            from platform_chat_approval import PlatformServiceUnavailable
+            if isinstance(error,PlatformServiceUnavailable):
+                return self._json(503,{"status":"BLOCKED","error":str(error)})
+            if isinstance(error,PlatformConflict):
+                return self._json(409,{"status":"CONFLICT","error":str(error)})
+            if isinstance(error,(ProjectConflict,PlatformDenied,PermissionError)):
+                return self._json(403,{"status":"DENY","error":"UNAUTHORIZED_OR_UNQUALIFIED"})
+            if isinstance(error,(ValueError,KeyError,TypeError)):
+                return self._json(400,{"status":"ERROR","error":"INVALID_PLATFORM_REQUEST"})
+            raise
 
     def do_GET(self):
         if not self._host_allowed(): return self._json(403,{"status":"ERROR","error":"host denied"})
@@ -1627,6 +1650,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                               path.startswith("/api/playlists") or path.startswith("/api/albums") or
                               path.startswith("/api/social/") or path.startswith("/api/workspaces") or
                               path.startswith("/api/credits/") or
+                              path=="/api/billing/native-receipt" or
                               path in {"/api/platform/chat","/api/m045/chat","/api/m045/chat/approve"} or
                               path=="/api/me/sessions/revoke"
                               or path=="/api/publications" or
