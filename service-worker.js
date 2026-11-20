@@ -1,8 +1,7 @@
 /* SongForge PWA — 2.20.0 M043 candidate */
-const CACHE_NAME = 'sara-studio-wave004-compound-sample-v1';
+const CACHE_NAME = 'sara-studio-platform-safe-static-v1';
 const ASSETS = [
-  './',
-  './index.html',
+  './platform-ui.js',
   './studio-shell.css',
   './app-core.js',
   './scorecore.js',
@@ -33,7 +32,8 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || new URL(e.request.url).pathname.startsWith('/api/')) return;
   if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request).catch(() => caches.match('./index.html'))); return;
+    // Never cache or replay an injected identity/capability bootstrap offline.
+    e.respondWith(fetch(e.request)); return;
   }
   e.respondWith(
     caches.match(e.request).then((cached) => {
@@ -43,7 +43,7 @@ self.addEventListener('fetch', (e) => {
         const clone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
         return res;
-      }).catch(() => caches.match('./index.html'));
+      });
     })
   );
 });
