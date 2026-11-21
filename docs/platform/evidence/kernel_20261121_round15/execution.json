@@ -1,0 +1,142 @@
+{
+  "branch": "feat/platform-identity-and-catalog",
+  "configuredRegressionPass": true,
+  "date": "2026-11-21",
+  "evidenceFiles": [
+    {
+      "bytes": 1546,
+      "originalBytes": 1546,
+      "originalSha256": "0f7399eb55941683daf9f7f7a6a5c877346420257a0f4f9930152c9c5153dfb2",
+      "path": "docs/platform/evidence/kernel_20261121_round15/feature-red.log",
+      "sha256": "0f7399eb55941683daf9f7f7a6a5c877346420257a0f4f9930152c9c5153dfb2"
+    },
+    {
+      "bytes": 831,
+      "originalBytes": 831,
+      "originalSha256": "e7a89025f3c3649b9a0935ac4fefc4b22335fbc487b9d0370fbb2bb14f2633c1",
+      "path": "docs/platform/evidence/kernel_20261121_round15/bundle-red.log",
+      "sha256": "e7a89025f3c3649b9a0935ac4fefc4b22335fbc487b9d0370fbb2bb14f2633c1"
+    },
+    {
+      "bytes": 260,
+      "originalBytes": 260,
+      "originalSha256": "0c412378b38be5de83b250b8cd49733e58386939ded583a859daf3223e6f278d",
+      "path": "docs/platform/evidence/kernel_20261121_round15/bundle-green.log",
+      "sha256": "0c412378b38be5de83b250b8cd49733e58386939ded583a859daf3223e6f278d"
+    },
+    {
+      "bytes": 6354,
+      "originalBytes": 6354,
+      "originalSha256": "2029186ea9350f7613b8483724edf8229ac19348dc27133b73172f05cbabb561",
+      "path": "docs/platform/evidence/kernel_20261121_round15/scoped-python.log",
+      "sha256": "2029186ea9350f7613b8483724edf8229ac19348dc27133b73172f05cbabb561"
+    },
+    {
+      "bytes": 6354,
+      "originalBytes": 6354,
+      "originalSha256": "b0d5e2e90e843085c5ca0812b2494f4c76d590c5f49234d4ac45d64e442a5c2d",
+      "path": "docs/platform/evidence/kernel_20261121_round15/independent-scoped-python.log",
+      "sha256": "b0d5e2e90e843085c5ca0812b2494f4c76d590c5f49234d4ac45d64e442a5c2d"
+    },
+    {
+      "bytes": 658,
+      "originalBytes": 658,
+      "originalSha256": "ab0150114b2647c3671f5c0d248918e648093f93de9717ed684de9bd49115505",
+      "path": "docs/platform/evidence/kernel_20261121_round15/twenty-second-physical.log",
+      "sha256": "ab0150114b2647c3671f5c0d248918e648093f93de9717ed684de9bd49115505"
+    },
+    {
+      "bytes": 4463,
+      "originalBytes": 131251,
+      "originalSha256": "13e71bf7a46fcc8ee09479a1a6aff9ce708b2b2301f3b802e1726bd1c67096ac",
+      "path": "docs/platform/evidence/kernel_20261121_round15/full-python.log.gz",
+      "sha256": "286419a3376115bf677e4415d2b9c1bc43bc06d3ed46baebab9901d0bcddf959"
+    },
+    {
+      "bytes": 10348,
+      "originalBytes": 10348,
+      "originalSha256": "d5ef763f9516c197519243a71d00f5b4bde2feed4298748bbb66d94d97e2f4e7",
+      "path": "docs/platform/evidence/kernel_20261121_round15/full-node.log",
+      "sha256": "d5ef763f9516c197519243a71d00f5b4bde2feed4298748bbb66d94d97e2f4e7"
+    },
+    {
+      "bytes": 2159,
+      "originalBytes": 7952,
+      "originalSha256": "6ef7f923a6f001f500c6d4789d6476373b24786acdb94255165420cc7cecd392",
+      "path": "docs/platform/evidence/kernel_20261121_round15/full-chromium-serial.log.gz",
+      "sha256": "71e516e8c0f4bca43429b5b32827fe824ac3784222857dc577692f12292eb27a"
+    }
+  ],
+  "hostGates": {
+    "appleGoogleNativeRelease": "HOLD_UNVERIFIED",
+    "humanListening": "HOLD_NO_HUMAN_AUDITION",
+    "modalGpuExecution": "HOLD_NO_EXTERNAL_DEPLOY_OR_CALL",
+    "modelWeightsCheckpointIntegrity": "HOLD_DIGEST_CLAIM_ONLY",
+    "musicCopyrightRights": "HOLD_UNVERIFIED_HELD",
+    "operatorPaidExecution": "HOLD_NOT_IMPLEMENTED",
+    "soundcloudLiveOauthExchange": "HOLD_UNIMPLEMENTED",
+    "soundcloudRemoteUpload": "HOLD_UNIMPLEMENTED",
+    "studioMainMerge": "HOLD_NOT_ATTEMPTED",
+    "truePeakMeterCertification": "HOLD_REFERENCE_METER_NOT_INDEPENDENTLY_CERTIFIED"
+  },
+  "parentProductCommits": [
+    "9782aee1c944250bc0daeb95042e25c83be9711a",
+    "e4fa0119560f96520c1b504d6a67e7eec198917b"
+  ],
+  "productCommitSha": "5df824bf1eeb73c898f81926995894de3d53013c",
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "runtimeClaims": {
+    "externalChargesInR15LoopbackReceiptsUsd": 0,
+    "externalSpendAuthorized": false,
+    "networkCallsMadeByR15Adapters": 0,
+    "paidGpuAllocationsByR15Adapters": 0
+  },
+  "schemaVersion": "sara.engineering.round15.evidence.v1",
+  "sourceBytes": [
+    {
+      "bytes": 12290,
+      "path": "tools/m045_gate3_live_trial_harness.py",
+      "sha256": "e0aeade8ad5708b6a56ef54ba32a63fefbb93ca26de3d34fc2117cedc79b52b9"
+    },
+    {
+      "bytes": 5687,
+      "path": "tools/platform_soundcloud_adapter.py",
+      "sha256": "fcc12cf44b04c90682ea5363f5a6ee3b0335073639a9526c11773c8ffeb854dd"
+    },
+    {
+      "bytes": 14577,
+      "path": "tests/test_m045_gate3_live_trial_harness.py",
+      "sha256": "c53e1a968cb912098f36deccc9fb8b4b097e4c0088dec72c23b33fe5b9e68299"
+    }
+  ],
+  "testResults": {
+    "chromium": {
+      "cancelled": 0,
+      "exitCode": 0,
+      "fail": 0,
+      "pass": 33,
+      "skipped": 0,
+      "tests": 33
+    },
+    "node": {
+      "cancelled": 0,
+      "exitCode": 0,
+      "fail": 0,
+      "pass": 51,
+      "skipped": 0,
+      "tests": 51
+    },
+    "python": {
+      "durationSec": 694.814,
+      "exitCode": 0,
+      "failures": [],
+      "passed": true,
+      "tests": 601
+    },
+    "scopedFirstRun": {
+      "failed": 0,
+      "passed": 26,
+      "tests": 26
+    }
+  }
+}

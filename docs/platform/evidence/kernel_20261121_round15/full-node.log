@@ -1,0 +1,316 @@
+TAP version 13
+# Subtest: render completion retains captured revision and publishes one durable transaction
+ok 1 - render completion retains captured revision and publishes one durable transaction
+  ---
+  duration_ms: 1.714381
+  type: 'test'
+  ...
+# Subtest: render path refuses legacy split write/commit publication
+ok 2 - render path refuses legacy split write/commit publication
+  ---
+  duration_ms: 0.437466
+  type: 'test'
+  ...
+# Subtest: scratch grid toggles one exact canonical marker and leaves all other events P0-identical
+ok 3 - scratch grid toggles one exact canonical marker and leaves all other events P0-identical
+  ---
+  duration_ms: 10.729093
+  type: 'test'
+  ...
+# Subtest: two deck markers at same tick coexist with deterministic identities
+ok 4 - two deck markers at same tick coexist with deterministic identities
+  ---
+  duration_ms: 16.679709
+  type: 'test'
+  ...
+# Subtest: Sonic Lock and invalid step/technique/deck fail without mutating SongSpec
+ok 5 - Sonic Lock and invalid step/technique/deck fail without mutating SongSpec
+  ---
+  duration_ms: 1.551477
+  type: 'test'
+  ...
+# Subtest: sample clocks are rational-rounded and report event render as UNQUALIFIED
+ok 6 - sample clocks are rational-rounded and report event render as UNQUALIFIED
+  ---
+  duration_ms: 0.734632
+  type: 'test'
+  ...
+# Subtest: Wave4 ScoreCore validates scoped read-only compound plan
+ok 7 - Wave4 ScoreCore validates scoped read-only compound plan
+  ---
+  duration_ms: 1.089013
+  type: 'test'
+  ...
+# Subtest: Wave4 ScoreCore rejects a locked chorus target and false commit
+ok 8 - Wave4 ScoreCore rejects a locked chorus target and false commit
+  ---
+  duration_ms: 0.529865
+  type: 'test'
+  ...
+# Subtest: Wave4 ScoreCore rejects duplicate/unknown operations and missing preserved scopes
+ok 9 - Wave4 ScoreCore rejects duplicate/unknown operations and missing preserved scopes
+  ---
+  duration_ms: 0.318248
+  type: 'test'
+  ...
+# Subtest: propose/validate/preview is immutable P0 event-local, no commit
+ok 10 - propose/validate/preview is immutable P0 event-local, no commit
+  ---
+  duration_ms: 4.011447
+  type: 'test'
+  ...
+# Subtest: ambiguous command is blocked, not inventing an edit
+ok 11 - ambiguous command is blocked, not inventing an edit
+  ---
+  duration_ms: 0.572539
+  type: 'test'
+  ...
+# Subtest: duplicate semantic name and stale snapshot fail closed
+ok 12 - duplicate semantic name and stale snapshot fail closed
+  ---
+  duration_ms: 0.181612
+  type: 'test'
+  ...
+# Subtest: sonic lock denies target mutation
+ok 13 - sonic lock denies target mutation
+  ---
+  duration_ms: 0.168402
+  type: 'test'
+  ...
+# Subtest: commit requires approval; canonical API receives pinned R1 and no audio claims
+ok 14 - commit requires approval; canonical API receives pinned R1 and no audio claims
+  ---
+  duration_ms: 1.035323
+  type: 'test'
+  ...
+# Subtest: stale canonical revision conflict is never retried optimistically
+ok 15 - stale canonical revision conflict is never retried optimistically
+  ---
+  duration_ms: 0.354411
+  type: 'test'
+  ...
+# Subtest: mobile 2x8 DJ pads explicit while desktop keeps canonical matrix
+ok 16 - mobile 2x8 DJ pads explicit while desktop keeps canonical matrix
+  ---
+  duration_ms: 1.668763
+  type: 'test'
+  ...
+# Subtest: viewport contract covers exact required six
+ok 17 - viewport contract covers exact required six
+  ---
+  duration_ms: 0.536174
+  type: 'test'
+  ...
+# Subtest: web environment rejects native secure storage and never falls back to localStorage
+ok 18 - web environment rejects native secure storage and never falls back to localStorage
+  ---
+  duration_ms: 1.144176
+  type: 'test'
+  ...
+# Subtest: native file import verifies physical SHA256 and rejects forged checksum
+ok 19 - native file import verifies physical SHA256 and rejects forged checksum
+  ---
+  duration_ms: 6.610195
+  type: 'test'
+  ...
+# Subtest: native plugin absence and mismatched export never claim local file publication
+ok 20 - native plugin absence and mismatched export never claim local file publication
+  ---
+  duration_ms: 2.587571
+  type: 'test'
+  ...
+# Subtest: NS-001 native bridge denies web fallback for secure credential
+ok 21 - NS-001 native bridge denies web fallback for secure credential
+  ---
+  duration_ms: 2.159699
+  type: 'test'
+  ...
+# Subtest: NS-002 native credential key and value inputs are bounded
+ok 22 - NS-002 native credential key and value inputs are bounded
+  ---
+  duration_ms: 0.24693
+  type: 'test'
+  ...
+# Subtest: NS-003 native file import must verify SHA and remain unassigned
+ok 23 - NS-003 native file import must verify SHA and remain unassigned
+  ---
+  duration_ms: 5.671137
+  type: 'test'
+  ...
+# Subtest: NS-004 native file rejects invalid digest even if plugin returns a file
+ok 24 - NS-004 native file rejects invalid digest even if plugin returns a file
+  ---
+  duration_ms: 1.949924
+  type: 'test'
+  ...
+# Subtest: NS-005 export rejects false sha before native save
+ok 25 - NS-005 export rejects false sha before native save
+  ---
+  duration_ms: 0.772649
+  type: 'test'
+  ...
+# Subtest: NS-006 audio-route guard requires actual native session plugin
+ok 26 - NS-006 audio-route guard requires actual native session plugin
+  ---
+  duration_ms: 0.322864
+  type: 'test'
+  ...
+# Subtest: NS-007 disconnected audio route and lost focus pause immediately
+ok 27 - NS-007 disconnected audio route and lost focus pause immediately
+  ---
+  duration_ms: 0.944858
+  type: 'test'
+  ...
+# Subtest: NS-008 native store receipts cannot directly assert credits or verification
+ok 28 - NS-008 native store receipts cannot directly assert credits or verification
+  ---
+  duration_ms: 0.309785
+  type: 'test'
+  ...
+# Subtest: NS-009 release config denies remote URLs, requires both native binaries for ship
+ok 29 - NS-009 release config denies remote URLs, requires both native binaries for ship
+  ---
+  duration_ms: 2.605638
+  type: 'test'
+  ...
+# Subtest: positive: sequential A then B retains latest B
+ok 30 - positive: sequential A then B retains latest B
+  ---
+  duration_ms: 1.22629
+  type: 'test'
+  ...
+# Subtest: newer B wins when older A server open resolves after B
+ok 31 - newer B wins when older A server open resolves after B
+  ---
+  duration_ms: 0.212709
+  type: 'test'
+  ...
+# Subtest: newer B wins when older A WAV verification resolves after B
+ok 32 - newer B wins when older A WAV verification resolves after B
+  ---
+  duration_ms: 5.982654
+  type: 'test'
+  ...
+# Subtest: newest open failure leaves no previous playback proof
+ok 33 - newest open failure leaves no previous playback proof
+  ---
+  duration_ms: 0.670476
+  type: 'test'
+  ...
+# Subtest: shared ScoreCore loads in a browser without CommonJS
+ok 34 - shared ScoreCore loads in a browser without CommonJS
+  ---
+  duration_ms: 2.289744
+  type: 'test'
+  ...
+# Subtest: prompt UI uses qualified intent and saves only after successful compile
+ok 35 - prompt UI uses qualified intent and saves only after successful compile
+  ---
+  duration_ms: 1.616905
+  type: 'test'
+  ...
+# Subtest: release packaging retains shared browser adapter
+ok 36 - release packaging retains shared browser adapter
+  ---
+  duration_ms: 1.071688
+  type: 'test'
+  ...
+# Subtest: responsive shell loads external stylesheet and allows accessible zoom
+ok 37 - responsive shell loads external stylesheet and allows accessible zoom
+  ---
+  duration_ms: 0.94023
+  type: 'test'
+  ...
+# Subtest: project bar, unified thumb transport, navigation and live proof retain source controls
+ok 38 - project bar, unified thumb transport, navigation and live proof retain source controls
+  ---
+  duration_ms: 0.499229
+  type: 'test'
+  ...
+# Subtest: thumb and step grid minimum 48 px and safe-area composition are styled
+ok 39 - thumb and step grid minimum 48 px and safe-area composition are styled
+  ---
+  duration_ms: 0.172779
+  type: 'test'
+  ...
+# Subtest: responsive shell does not duplicate the canonical production control ids
+ok 40 - responsive shell does not duplicate the canonical production control ids
+  ---
+  duration_ms: 1.687961
+  type: 'test'
+  ...
+# Subtest: intent retains prompt, explicit musical constraints and reproducible seed
+ok 41 - intent retains prompt, explicit musical constraints and reproducible seed
+  ---
+  duration_ms: 3.854682
+  type: 'test'
+  ...
+# Subtest: unsupported meter and contradictory explicit tempo fail rather than silently coerce
+ok 42 - unsupported meter and contradictory explicit tempo fail rather than silently coerce
+  ---
+  duration_ms: 0.369253
+  type: 'test'
+  ...
+# Subtest: unsupported keys and invalid seeds fail explicitly
+ok 43 - unsupported keys and invalid seeds fail explicitly
+  ---
+  duration_ms: 0.138858
+  type: 'test'
+  ...
+# Subtest: bass octave edit changes only notes starting inside the chosen section
+ok 44 - bass octave edit changes only notes starting inside the chosen section
+  ---
+  duration_ms: 2.875333
+  type: 'test'
+  ...
+# Subtest: invalid target, ambiguous IDs and out of range pitches fail atomically
+ok 45 - invalid target, ambiguous IDs and out of range pitches fail atomically
+  ---
+  duration_ms: 0.819109
+  type: 'test'
+  ...
+# Subtest: section end is exclusive and straddling-note edits require explicit later policy
+ok 46 - section end is exclusive and straddling-note edits require explicit later policy
+  ---
+  duration_ms: 0.662403
+  type: 'test'
+  ...
+# Subtest: baseline: targeted bass transpose preserves non-targets and input
+ok 47 - baseline: targeted bass transpose preserves non-targets and input
+  ---
+  duration_ms: 1.387582
+  type: 'test'
+  ...
+# Subtest: reject overlapping named sections instead of ambiguous target
+ok 48 - reject overlapping named sections instead of ambiguous target
+  ---
+  duration_ms: 0.445498
+  type: 'test'
+  ...
+# Subtest: reject unsafe integer section ticks
+ok 49 - reject unsafe integer section ticks
+  ---
+  duration_ms: 0.231807
+  type: 'test'
+  ...
+# Subtest: baseline: note crossing selected section rejects
+ok 50 - baseline: note crossing selected section rejects
+  ---
+  duration_ms: 0.151768
+  type: 'test'
+  ...
+# Subtest: reject unsafe note end arithmetic before silent precision loss
+ok 51 - reject unsafe note end arithmetic before silent precision loss
+  ---
+  duration_ms: 0.175203
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 286.101445
