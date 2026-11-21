@@ -1,0 +1,56 @@
+======================================================================
+ERROR: test_no_environment_flag_cannot_open_socket_or_advance_revision (test_m045_modal_live_client.ModalLoopbackContract) (value=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 96, in test_no_environment_flag_cannot_open_socket_or_advance_revision
+    self.execute(transport=self.adapter(environment=env))
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 74, in adapter
+    from m045_modal_live_client import ModalAceStepHttpProvider
+ModuleNotFoundError: No module named 'm045_modal_live_client'
+
+======================================================================
+ERROR: test_no_environment_flag_cannot_open_socket_or_advance_revision (test_m045_modal_live_client.ModalLoopbackContract) (value='0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 96, in test_no_environment_flag_cannot_open_socket_or_advance_revision
+    self.execute(transport=self.adapter(environment=env))
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 74, in adapter
+    from m045_modal_live_client import ModalAceStepHttpProvider
+ModuleNotFoundError: No module named 'm045_modal_live_client'
+
+======================================================================
+ERROR: test_no_environment_flag_cannot_open_socket_or_advance_revision (test_m045_modal_live_client.ModalLoopbackContract) (value='true')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 96, in test_no_environment_flag_cannot_open_socket_or_advance_revision
+    self.execute(transport=self.adapter(environment=env))
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 74, in adapter
+    from m045_modal_live_client import ModalAceStepHttpProvider
+ModuleNotFoundError: No module named 'm045_modal_live_client'
+
+======================================================================
+ERROR: test_no_environment_flag_cannot_open_socket_or_advance_revision (test_m045_modal_live_client.ModalLoopbackContract) (value='yes')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 96, in test_no_environment_flag_cannot_open_socket_or_advance_revision
+    self.execute(transport=self.adapter(environment=env))
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 74, in adapter
+    from m045_modal_live_client import ModalAceStepHttpProvider
+ModuleNotFoundError: No module named 'm045_modal_live_client'
+
+======================================================================
+ERROR: test_no_environment_flag_cannot_open_socket_or_advance_revision (test_m045_modal_live_client.ModalLoopbackContract) (value=' 1 ')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 96, in test_no_environment_flag_cannot_open_socket_or_advance_revision
+    self.execute(transport=self.adapter(environment=env))
+  File "/tmp/studio-r16/source/tests/test_m045_modal_live_client.py", line 74, in adapter
+    from m045_modal_live_client import ModalAceStepHttpProvider
+ModuleNotFoundError: No module named 'm045_modal_live_client'
+
+----------------------------------------------------------------------
+Ran 1 test in 4.110s
+
+FAILED (errors=5)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
