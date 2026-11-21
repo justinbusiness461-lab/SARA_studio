@@ -95,6 +95,13 @@ class Gate3LoopbackTrial(unittest.TestCase):
               loopback_transport=LoopbackWavTransport(wav_of(seconds=2)),
               receipt_signing_key=KEY)
         self.assertEqual(self.current(),before)
+    def test_failed_decode_consumes_token_and_retry_requires_new_host_authorization(self):
+        t=self.token();prior=self.current()
+        with self.assertRaises(ValueError):self.execute(audio=b'RIFFnotawav',token=t)
+        self.assertEqual(self.current(),prior)
+        with self.assertRaises(PlatformDenied):self.execute(token=t)
+        self.assertEqual(self.current(),prior)
+
     def test_token_double_redeem_denied_without_changing_current_again(self):
         token=self.token()
         self.execute(token=token)
@@ -136,6 +143,29 @@ class Gate3LoopbackTrial(unittest.TestCase):
               scope=self.scope,spend_store=self.store,spend_token=self.token(),
               loopback_transport=None,receipt_signing_key=KEY)
         self.assertEqual(self.current(),before)
+
+    def test_human_listening_zip_is_exact_audio_and_signed_receipt_not_publication(self):
+        import zipfile,json
+        from studio_server import project_audio_bytes
+        from m045_gate3_live_trial_harness import verify_gate3_listening_receipt
+        result=self.execute()
+        location=self.f.root/'projects'/self.src['projectId']/'gate3-listening-receipts'/(
+            result['artifactId']+'.zip')
+        self.assertTrue(location.is_file())
+        self.assertEqual(hashlib.sha256(location.read_bytes()).hexdigest(),result['listeningBundleSha256'])
+        with zipfile.ZipFile(location) as bundle:
+            self.assertEqual(set(bundle.namelist()),{'audio.wav','listening-receipt.json','listening-rubric.txt'})
+            wav=bundle.read('audio.wav')
+            receipt=json.loads(bundle.read('listening-receipt.json'))
+            rubric=bundle.read('listening-rubric.txt').decode('utf-8')
+        self.assertEqual(wav,project_audio_bytes(self.f.root,{
+            'projectId':self.src['projectId'],'revisionId':result['revisionId'],
+            'artifactId':result['artifactId']},principal_id=self.a['principalId']))
+        self.assertTrue(verify_gate3_listening_receipt(receipt,KEY))
+        self.assertEqual(receipt,result['listeningReceipt'])
+        self.assertIn('Human listening',rubric)
+        self.assertIn('not creative approval',rubric.lower())
+        self.assertFalse(result['listeningBundlePublished'])
 
 class SoundCloudOfflineAdapter(unittest.TestCase):
     def setUp(self):

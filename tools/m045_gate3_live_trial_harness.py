@@ -17,6 +17,7 @@ import secrets
 import struct
 import subprocess
 import wave
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -200,7 +201,33 @@ def run_bounded_gate3_trial_pipeline(*,root,principal_id,scope,spend_store,
     # It cannot authorize CAS, grant rights, or select a project revision.
     receipt_path=root/'projects'/scope['projectId']/'gate3-listening-receipts'/(digest+'.json')
     native_atomic_write_bytes(receipt_path,_signature_fields(receipt))
+    # Restricted local human audition pack: never a public/remote media grant.
+    # Only canonical project_audio_bytes supplied its WAV, no CAS path scan.
+    output=io.BytesIO()
+    rubric=('Human listening review — S.A.R.A. Studio™ Gate 3\n'
+        '1. Compare groove and song identity against the artist intent.\n'
+        '2. Listen for clipping, artifacts, timing errors and failed transitions.\n'
+        '3. Check vocals and DJ performance by ear, not inferred metrics.\n'
+        '4. Artist approval requires a separate explicit decision.\n'
+        'This bundle is not creative approval or release authorization.\n')
+    with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
+        for name,body in (('audio.wav',reread),
+                ('listening-receipt.json',_signature_fields(receipt)),
+                ('listening-rubric.txt',rubric.encode('utf-8'))):
+            info=zipfile.ZipInfo(name,date_time=(1980,1,1,0,0,0))
+            info.compress_type=zipfile.ZIP_DEFLATED
+            info.external_attr=0o600<<16
+            archive.writestr(info,body,compress_type=zipfile.ZIP_DEFLATED,compresslevel=6)
+    packed=output.getvalue()
+    with zipfile.ZipFile(io.BytesIO(packed)) as check:
+        if check.testzip() is not None or check.read('audio.wav')!=reread:
+            raise ValueError('GATE3_BUNDLE_READBACK_DENIED')
+    native_atomic_write_bytes(receipt_path.with_suffix('.zip'),packed)
+    packet_digest=hashlib.sha256(packed).hexdigest()
+    if hashlib.sha256(receipt_path.with_suffix('.zip').read_bytes()).hexdigest()!=packet_digest:
+        raise ValueError('GATE3_BUNDLE_DURABILITY_READBACK_DENIED')
     return {'state':'COMMITTED','mode':'DRY_RUN_ONLY',
+            'listeningBundleSha256':packet_digest,'listeningBundlePublished':False,
             'projectId':scope['projectId'],'revisionId':revision,'artifactId':digest,
             'preservationTier':'P3','rightsStatus':'UNVERIFIED_HELD',
             'creativeApproved':False,'releaseReady':False,
