@@ -108,13 +108,26 @@ def verify_gate3_listening_receipt(receipt,host_key):
         return False
 
 def run_bounded_gate3_trial_pipeline(*,root,principal_id,scope,spend_store,
-    spend_token,loopback_transport,receipt_signing_key,allow_live_network=False):
+    spend_token,loopback_transport,receipt_signing_key,allow_live_network=False,
+    http_transport=None,trial_request=None):
     """Offline-only loopback integration; no network provider is wired.
 
     The existing Gate3 spend token is NOT a live authorization, even when
     admitted by a host. A true paid executor requires an independent provider
     cost-cap/rights/checkout authority and is outside this implementation.
     """
+    if http_transport is not None:
+        # Host has NOT qualified provider-side billing limits, cost/source
+        # provenance, rights or a paid network issuer. This path admits
+        # only explicitly configured LOCAL_LOOPBACK_HTTP test transports.
+        if allow_live_network is not False or loopback_transport is not None:
+            raise PlatformDenied('GATE3_REAL_LIVE_DISPATCH_NOT_AUTHORIZED')
+        from m045_modal_live_client import run_bounded_local_http_gate3_trial
+        return run_bounded_local_http_gate3_trial(
+            root=root,principal_id=principal_id,scope=scope,
+            spend_store=spend_store,spend_token=spend_token,
+            provider=http_transport,request=trial_request,
+            receipt_signing_key=receipt_signing_key)
     if allow_live_network is not False:
         raise PlatformDenied('GATE3_LIVE_EXECUTOR_NOT_INSTALLED')
     if type(loopback_transport) is not LoopbackWavTransport:
@@ -175,7 +188,16 @@ def run_bounded_gate3_trial_pipeline(*,root,principal_id,scope,spend_store,
         'revisionId':revision,'artifactId':digest},principal_id=principal_id)
     if reread!=normalized:
         raise PlatformDenied('GATE3_IMMUTABLE_AUDIO_READBACK_MISMATCH')
-    receipt=_sign_receipt({
+    return _publish_gate3_audition(root,scope,expected,revision,digest,reread,
+                                  physical,receipt_signing_key)
+
+def _publish_gate3_audition(root,scope,expected,revision,digest,reread,physical,
+                            receipt_signing_key,*,preservation_tier='P3',
+                            extra_receipt=None,extra_result=None):
+    """One Studio receipt and ZIP authority for R15 offline and R16 loopback.
+    It is NOT a media/rights grant, publication receipt or project selector."""
+    root=Path(root).resolve()
+    receipt=_sign_receipt({**{
         'schemaVersion':'sara.gate3.listening.evaluation.v1',
         'mode':'DRY_RUN_ONLY','sourceProjectId':scope['projectId'],
         'sourceProjectRevisionId':expected,
@@ -189,14 +211,14 @@ def run_bounded_gate3_trial_pipeline(*,root,principal_id,scope,spend_store,
         'truePeakDbtp4xReference':physical['true_peak_dbtp'],
         'meterConformance':physical['meterConformance'],
         'meterImplementation':physical['peakImplementation'],
-        'preservationTier':'P3','rightsStatus':'UNVERIFIED_HELD',
+        'preservationTier':preservation_tier,'rightsStatus':'UNVERIFIED_HELD',
         'creativeApproved':False,'audioListenedByHuman':False,
         'artistListeningRequired':True,
         'releaseReady':False,'remoteProviderCalled':False,
         'gpuAllocated':False,'chargesIncurredUsd':0,
         'maxUsdCentsScope':scope['maxUsdCents'],
         'maxAudioDurationSec':scope['maxAudioDurationSec']
-    },receipt_signing_key)
+    },**(extra_receipt or {})},receipt_signing_key)
     # Informational proof is subordinate to the immutable Studio revision.
     # It cannot authorize CAS, grant rights, or select a project revision.
     receipt_path=root/'projects'/scope['projectId']/'gate3-listening-receipts'/(digest+'.json')
@@ -229,7 +251,7 @@ def run_bounded_gate3_trial_pipeline(*,root,principal_id,scope,spend_store,
     return {'state':'COMMITTED','mode':'DRY_RUN_ONLY',
             'listeningBundleSha256':packet_digest,'listeningBundlePublished':False,
             'projectId':scope['projectId'],'revisionId':revision,'artifactId':digest,
-            'preservationTier':'P3','rightsStatus':'UNVERIFIED_HELD',
+            'preservationTier':preservation_tier,'rightsStatus':'UNVERIFIED_HELD',
             'creativeApproved':False,'releaseReady':False,
             'networkCallsMade':0,'gpuAllocated':False,'chargesIncurredUsd':0,
-            'listeningReceipt':receipt}
+            'listeningReceipt':receipt,**(extra_result or {})}
