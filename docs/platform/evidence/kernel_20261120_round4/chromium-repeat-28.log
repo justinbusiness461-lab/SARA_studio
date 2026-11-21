@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 8986.068624
+  type: 'test'
+  ...
+# Subtest: HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+ok 2 - HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+  ---
+  duration_ms: 1332.0334
+  type: 'test'
+  ...
+# Subtest: RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+ok 3 - RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+  ---
+  duration_ms: 11861.889303
+  type: 'test'
+  ...
+# Subtest: M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+ok 4 - M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+  ---
+  duration_ms: 4511.520761
+  type: 'test'
+  ...
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 5 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 4766.607646
+  type: 'test'
+  ...
+# Subtest: Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+ok 6 - Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+  ---
+  duration_ms: 4857.92348
+  type: 'test'
+  ...
+# Subtest: Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+ok 7 - Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+  ---
+  duration_ms: 1597.786455
+  type: 'test'
+  ...
+# Subtest: Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+ok 8 - Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+  ---
+  duration_ms: 1250.461685
+  type: 'test'
+  ...
+# Subtest: Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+ok 9 - Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+  ---
+  duration_ms: 707.272328
+  type: 'test'
+  ...
+# Subtest: Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+ok 10 - Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+  ---
+  duration_ms: 672.32931
+  type: 'test'
+  ...
+# Subtest: shared-device account B never reads cached A project/attempt pointer
+ok 11 - shared-device account B never reads cached A project/attempt pointer
+  ---
+  duration_ms: 714.130737
+  type: 'test'
+  ...
+# Subtest: platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+ok 12 - platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+  ---
+  duration_ms: 1613.696373
+  type: 'test'
+  ...
+# Subtest: local offline ScoreCore shell contains zero session or capability bearer tokens
+ok 13 - local offline ScoreCore shell contains zero session or capability bearer tokens
+  ---
+  duration_ms: 546.788908
+  type: 'test'
+  ...
+# Subtest: authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+ok 14 - authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+  ---
+  duration_ms: 898.757557
+  type: 'test'
+  ...
+# Subtest: Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+ok 15 - Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+  ---
+  duration_ms: 6728.191979
+  type: 'test'
+  ...
+# Subtest: Studio loads ScoreCore, persists Generate, and reopens the exact revision
+ok 16 - Studio loads ScoreCore, persists Generate, and reopens the exact revision
+  ---
+  duration_ms: 3706.281109
+  type: 'test'
+  ...
+# Subtest: Installed Studio precaches the matching ScoreCore adapter
+ok 17 - Installed Studio precaches the matching ScoreCore adapter
+  ---
+  duration_ms: 692.314489
+  type: 'test'
+  ...
+# Subtest: Generate reaches verified revision-bound WAV before Play is enabled
+ok 18 - Generate reaches verified revision-bound WAV before Play is enabled
+  ---
+  duration_ms: 3471.679513
+  type: 'test'
+  ...
+# Subtest: audio retrieval failure never presents Generate as playable
+ok 19 - audio retrieval failure never presents Generate as playable
+  ---
+  duration_ms: 3928.522806
+  type: 'test'
+  ...
+# Subtest: fresh Studio process reopens exact R1 and refetches same authorized WAV
+ok 20 - fresh Studio process reopens exact R1 and refetches same authorized WAV
+  ---
+  duration_ms: 7414.319087
+  type: 'test'
+  ...
+# Subtest: R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+ok 21 - R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+  ---
+  duration_ms: 2057.777038
+  type: 'test'
+  ...
+# Subtest: Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+ok 22 - Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+  ---
+  duration_ms: 5061.481699
+  type: 'test'
+  ...
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+ok 23 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 7453.664965
+  type: 'test'
+  ...
+# Subtest: late R1 A-B response cannot replace newer R2 selection
+ok 24 - late R1 A-B response cannot replace newer R2 selection
+  ---
+  duration_ms: 5875.61958
+  type: 'test'
+  ...
+# Subtest: A/B exposes completion only after transport, proof, artifact and position agree
+ok 25 - A/B exposes completion only after transport, proof, artifact and position agree
+  ---
+  duration_ms: 6687.942522
+  type: 'test'
+  ...
+# Subtest: fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+ok 26 - fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+  ---
+  duration_ms: 8318.667974
+  type: 'test'
+  ...
+# Subtest: RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+ok 27 - RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+  ---
+  duration_ms: 2276.584854
+  type: 'test'
+  ...
+# Subtest: mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+ok 28 - mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+  ---
+  duration_ms: 2982.718732
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 118006.540705

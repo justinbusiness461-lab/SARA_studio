@@ -1,0 +1,61 @@
+test_add_to_playlist_uses_public_catalog_no_private_digest_shortcut (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_audio_to_midi_requires_lawful_artifact (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_chat_still_rejects_credit_mint_and_unbounded_requests (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_foreign_project_denied_before_studio_plan (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_generate_is_client_studio_command_not_fake_committed_song (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_lock_requires_exact_track_and_never_auto_commits (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_no_target_returns_structured_clarification (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_repaint_needs_disambiguated_track_and_bars (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_repaint_with_explicit_target_is_proposal_not_audio_change (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_sample_preview_source_bound_and_unpublished (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_scratch_needs_beat_target (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_soundtrack_grant_requires_existing_authority (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_source_bound_master_requires_explicit_artist_approval (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 9.203s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 200 -

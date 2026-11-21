@@ -1,0 +1,191 @@
+{
+  "branch": "feat/platform-identity-and-catalog",
+  "costAndNetwork": {
+    "externalUsdSpent": 0,
+    "liveModalCalls": 0,
+    "liveModalDeploys": 0,
+    "loopbackCostHeaderTrustedForBilling": false,
+    "operatorEnvFlagNotSufficientForLiveAuthorization": true,
+    "paidGpuAllocations": 0,
+    "soundcloudCalls": 0,
+    "tokenState": "DRY_RUN_ONLY"
+  },
+  "date": "2026-11-21",
+  "evidenceFiles": [
+    {
+      "bytes": 3893,
+      "originalBytes": 3893,
+      "originalSha256": "568fe621607ddb97a4bbe8ee58b9121303dd5d68c2f4a0c37a311d6994db50b8",
+      "path": "docs/platform/evidence/kernel_20261121_round16/r16-red-initial.log",
+      "sha256": "568fe621607ddb97a4bbe8ee58b9121303dd5d68c2f4a0c37a311d6994db50b8"
+    },
+    {
+      "bytes": 7055,
+      "originalBytes": 7055,
+      "originalSha256": "ddfdf801ad6f0e5d9c164b6173246dd3364c996d20312b96270dbcccf986fc66",
+      "path": "docs/platform/evidence/kernel_20261121_round16/r16-budget-classification-red.log",
+      "sha256": "ddfdf801ad6f0e5d9c164b6173246dd3364c996d20312b96270dbcccf986fc66"
+    },
+    {
+      "bytes": 205,
+      "originalBytes": 205,
+      "originalSha256": "b02d35b0a3f844bd3718ad5bc68657cda20bebe061b79b371845171c0597130f",
+      "path": "docs/platform/evidence/kernel_20261121_round16/r16-budget-classification-green.log",
+      "sha256": "b02d35b0a3f844bd3718ad5bc68657cda20bebe061b79b371845171c0597130f"
+    },
+    {
+      "bytes": 1079,
+      "originalBytes": 1079,
+      "originalSha256": "3354e29b52429c46c72af5ee60afc672d94fa2b590ded54bf6c2bf169df12152",
+      "path": "docs/platform/evidence/kernel_20261121_round16/r16-nine-scenario-green.log",
+      "sha256": "3354e29b52429c46c72af5ee60afc672d94fa2b590ded54bf6c2bf169df12152"
+    },
+    {
+      "bytes": 6354,
+      "originalBytes": 6354,
+      "originalSha256": "aa1dd6f5fa017332cce625ce3ab1c1f92848badee54fcfc48f999c47318117d2",
+      "path": "docs/platform/evidence/kernel_20261121_round16/r15-compat-green.log",
+      "sha256": "aa1dd6f5fa017332cce625ce3ab1c1f92848badee54fcfc48f999c47318117d2"
+    },
+    {
+      "bytes": 374,
+      "originalBytes": 374,
+      "originalSha256": "6740efcf0367c04f577420ed6a6382a8e4f96ca9b6d8a5d26449319c9e86faa1",
+      "path": "docs/platform/evidence/kernel_20261121_round16/independent-uncertain-submission.log",
+      "sha256": "6740efcf0367c04f577420ed6a6382a8e4f96ca9b6d8a5d26449319c9e86faa1"
+    },
+    {
+      "bytes": 316,
+      "originalBytes": 316,
+      "originalSha256": "207765880ff790388652496055cc41e98d4d9668e44fd771698869dfb558e358",
+      "path": "docs/platform/evidence/kernel_20261121_round16/independent-p1-modal-hold.log",
+      "sha256": "207765880ff790388652496055cc41e98d4d9668e44fd771698869dfb558e358"
+    },
+    {
+      "bytes": 820,
+      "originalBytes": 820,
+      "originalSha256": "e21b953615d135854bab16e1180e60d04f991f85d23a1c139b92a0c683874738",
+      "path": "docs/platform/evidence/kernel_20261121_round16/independent-20s-physical.log",
+      "sha256": "e21b953615d135854bab16e1180e60d04f991f85d23a1c139b92a0c683874738"
+    },
+    {
+      "bytes": 1079,
+      "originalBytes": 1079,
+      "originalSha256": "ba6335528111ad6676cf2c2531a306f760a28c63b3c444ea618938333897934d",
+      "path": "docs/platform/evidence/kernel_20261121_round16/independent-round16-green.log",
+      "sha256": "ba6335528111ad6676cf2c2531a306f760a28c63b3c444ea618938333897934d"
+    },
+    {
+      "bytes": 897,
+      "originalBytes": 897,
+      "originalSha256": "bb7112ac408b74b49cfe41c6da6c7556f07aef7df8f2988151f56a0c56aa3389",
+      "path": "docs/platform/evidence/kernel_20261121_round16/independent-p1-physical.log",
+      "sha256": "bb7112ac408b74b49cfe41c6da6c7556f07aef7df8f2988151f56a0c56aa3389"
+    },
+    {
+      "bytes": 4470,
+      "originalBytes": 132232,
+      "originalSha256": "9e14677688caedfb7081895b667f79d5d318a2b92083df83a2e9be38b1679718",
+      "path": "docs/platform/evidence/kernel_20261121_round16/full-python.log.gz",
+      "sha256": "bf248f752fe7f31642e5374ffc8885a271954a551dd57a177f0575fae87cc473"
+    },
+    {
+      "bytes": 10344,
+      "originalBytes": 10344,
+      "originalSha256": "ea00d41383a6d590b7dee06996dff47ace7dfa199bca3f49c10d5b65b5bf8ab8",
+      "path": "docs/platform/evidence/kernel_20261121_round16/full-node.log",
+      "sha256": "ea00d41383a6d590b7dee06996dff47ace7dfa199bca3f49c10d5b65b5bf8ab8"
+    },
+    {
+      "bytes": 10344,
+      "originalBytes": 10344,
+      "originalSha256": "b7b11c88c7615dd5c20b11b91a73473d3f1645650e605959bd410f35364b2861",
+      "path": "docs/platform/evidence/kernel_20261121_round16/independent-node.log",
+      "sha256": "b7b11c88c7615dd5c20b11b91a73473d3f1645650e605959bd410f35364b2861"
+    },
+    {
+      "bytes": 2159,
+      "originalBytes": 7954,
+      "originalSha256": "f06ad9b57d08637c3dbbbf6f1a711593f966f1fba7339ced0479e1da9b97feb2",
+      "path": "docs/platform/evidence/kernel_20261121_round16/full-browser-serial.log.gz",
+      "sha256": "43c63781c3b9f34486d06a59d3ed3e0d4a19e3964e67018c17152161f1720293"
+    }
+  ],
+  "gates": {
+    "actualAceStepAudioQuality": "HOLD_NOT_RENDERED_OR_LISTENED",
+    "commercialMusicRights": "HOLD_UNVERIFIED_HELD",
+    "exactProductConfiguredTests": "PASS",
+    "humanCreativeApproval": "HOLD_NOT_GRANTED",
+    "independentCheckpointDigestAndWeights": "HOLD_UNVERIFIED",
+    "independentProviderSideUsd1HardBillingCap": "HOLD_NOT_IMPLEMENTED",
+    "localHttpTransportOnly": "PASS",
+    "mainMerge": "HOLD_NOT_ATTEMPTED",
+    "nativeStoreRelease": "HOLD_NOT_CERTIFIED",
+    "realModalHttpsDispatch": "HOLD_DISABLED_IN_SOURCE",
+    "soundcloudPublication": "HOLD_DISABLED"
+  },
+  "parentEvidenceHead": "1bd7822436ce19a428e8da368b756fe7256f2136",
+  "physicalAndRecovery": {
+    "daw210VerifiedPhysical": {
+      "peakRssKiB": 454540,
+      "sha256": "64a304b8f0db10d449fe7cc3ba91e9d9442bf184fbcbfdde5e9998255cfaf8cd",
+      "state": "VERIFIED_UNMODIFIED_BUNDLE",
+      "zipBytes": 222269212
+    },
+    "localHttpCallsAreNotModalProviderCalls": true,
+    "repaint": "R2 -> R3 441000 total frames, sample interval [88200,176400), exact outside PCM16 P1 and historical R2 readable",
+    "twentySecondFullSong": "20s, 882000 frames at 44100 Hz stereo PCM16, local HTTP loopback only",
+    "uncertainAfterHttp500": "SUBMISSION_UNCERTAIN, CURRENT unchanged, no blind retry"
+  },
+  "prNumber": 37,
+  "productCommitSha": "8d9ca7a3ee600f4dc94d1d92b73d63bfd82c7a10",
+  "regression": {
+    "aggregateExecuted": 694,
+    "aggregatePassed": 694,
+    "chromium": {
+      "cancelled": 0,
+      "exitCode": 0,
+      "fail": 0,
+      "pass": 33,
+      "skipped": 0,
+      "tests": 33
+    },
+    "independentR16LocalHostTestsPassed": 9,
+    "node": {
+      "cancelled": 0,
+      "exitCode": 0,
+      "fail": 0,
+      "pass": 51,
+      "skipped": 0,
+      "tests": 51
+    },
+    "python": {
+      "durationSec": 742.672,
+      "exitCode": 0,
+      "passed": true,
+      "testErrors": [],
+      "tests": 610
+    },
+    "r15CompatibilityTestsPassed": 26,
+    "r16LocalHostTestsPassed": 9
+  },
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "schemaVersion": "sara.engineering.round16.evidence.v1",
+  "sourceReadbacks": [
+    {
+      "bytes": 19196,
+      "path": "tools/m045_modal_live_client.py",
+      "sha256": "45785ed72c4c59c88ed6a2166d5398f077cc4631902448d7d860f61e1ab053f0"
+    },
+    {
+      "bytes": 13738,
+      "path": "tools/m045_gate3_live_trial_harness.py",
+      "sha256": "a2b91ac914ac205402ef6ff1df82d9aeb5262b821671a4991f1f7c59c1b1ff3f"
+    },
+    {
+      "bytes": 14210,
+      "path": "tests/test_m045_modal_live_client.py",
+      "sha256": "2625477659a584042c65ca6b46b1b43039f305d12e6f48f78d1f94da9f383c9b"
+    }
+  ]
+}

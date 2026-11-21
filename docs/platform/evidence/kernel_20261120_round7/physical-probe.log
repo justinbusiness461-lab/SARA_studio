@@ -1,0 +1,6 @@
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+{"fixtureReceiptSha256": "ac8bc5778db8a2db17fc66846b8ae4b4661a3820dbbe38418e292eb235143c2e", "scratchWavSha256": "d9a1ba271d8ac4513390a03a18f0214b0c3f32af84d339643c0125d898fff7c3", "scratchFrames": 44100, "mixWavSha256": "4eedfbc12ce655ebd184b23b21484487d57e2952324d12760967291148ad75a9", "mixFrames": 1200, "modalGpuAllocated": false, "modalChargesUsd": 0}

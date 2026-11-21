@@ -1,0 +1,101 @@
+FF...........
+======================================================================
+FAIL: test_absent_host_provider_must_not_fake_a_repaint_or_publish_audio (tests.test_platform_round6_repaint.ApprovedRepaintHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round6/tests/test_platform_round6_repaint.py", line 63, in test_absent_host_provider_must_not_fake_a_repaint_or_publish_audio
+    self.assertEqual(self.approve(challenge)[0],503)
+AssertionError: 409 != 503
+
+======================================================================
+FAIL: test_approved_p1_exact_pcm_outside_region_and_replay_denied (tests.test_platform_round6_repaint.ApprovedRepaintHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round6/tests/test_platform_round6_repaint.py", line 71, in test_approved_p1_exact_pcm_outside_region_and_replay_denied
+    self.assertEqual(s,200,out)
+AssertionError: 409 != 200 : {'status': 'CONFLICT', 'error': 'CANONICAL_OWNER_EXECUTOR_UNQUALIFIED'}
+
+----------------------------------------------------------------------
+Ran 13 tests in 9.389s
+
+FAILED (failures=2)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat/approve HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat/approve HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat/approve HTTP/1.1" 409 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat/approve HTTP/1.1" 409 -
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-eb2c355d92eb3e6d101b910a8a63a08c HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-eb2c355d92eb3e6d101b910a8a63a08c/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-eb2c355d92eb3e6d101b910a8a63a08c/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-eb2c355d92eb3e6d101b910a8a63a08c/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -

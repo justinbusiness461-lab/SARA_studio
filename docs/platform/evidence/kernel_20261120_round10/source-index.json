@@ -1,0 +1,44 @@
+[
+  {
+    "base64Path": "/tmp/r10-product-staging/0.b64",
+    "bytes": 7324,
+    "gitBlobSha1": "fa02cfb58a9bd65a17086743597ca22f93aa9fe6",
+    "path": "tools/m045_modal_trial_runner.py",
+    "sha256": "ef22cace405b37db5834784faca236d304964838ab2105c251ec4307d2744691"
+  },
+  {
+    "base64Path": "/tmp/r10-product-staging/1.b64",
+    "bytes": 15800,
+    "gitBlobSha1": "957926c7ba7ee973354e2504c39b86c5dceec914",
+    "path": "tools/m045_daw_export.py",
+    "sha256": "b0839cdc4c610217d6eda6e5567fbd524a317a63cdf0d9ffa82bc65a536e83ba"
+  },
+  {
+    "base64Path": "/tmp/r10-product-staging/2.b64",
+    "bytes": 5766,
+    "gitBlobSha1": "cfa00131dee310e3ad5395d68e08aa2258635fb3",
+    "path": "tools/m045_stem_reconstruction_owner.py",
+    "sha256": "079312b68eb281188d5e02279680253608013c9dc1013d47af99c39cd04ed3ca"
+  },
+  {
+    "base64Path": "/tmp/r10-product-staging/3.b64",
+    "bytes": 117042,
+    "gitBlobSha1": "4be8997f7e474ed42209f5ef1970712df32d7700",
+    "path": "tools/studio_server.py",
+    "sha256": "bdaf10057b02d931e154bb20353cb91f3c5cc23bd4012f619178325c9ed49a90"
+  },
+  {
+    "base64Path": "/tmp/r10-product-staging/4.b64",
+    "bytes": 4574,
+    "gitBlobSha1": "532c0f58f1df9ccaf05da7ab9b2e6255e3214f59",
+    "path": "tests/test_m045_modal_trial_runner.py",
+    "sha256": "c37e1d4e39f0eb5e415eab8c3843a66189848de5991429e9f6bd7c9068feab7c"
+  },
+  {
+    "base64Path": "/tmp/r10-product-staging/5.b64",
+    "bytes": 6973,
+    "gitBlobSha1": "06cacd5b2a54f2226dacc885e4b25a686bb3b114",
+    "path": "tests/test_m045_daw_export.py",
+    "sha256": "3b35e1a885b18096a43dd59434a1d4c9cbbaaebdd23a4ba8041c7ad10623d8ba"
+  }
+]

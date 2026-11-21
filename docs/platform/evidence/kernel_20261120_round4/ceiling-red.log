@@ -1,0 +1,18 @@
+test_approved_master_true_peak_violation_409_no_revision_claim_or_retry (tests.test_platform_approval_challenge.ApprovalHTTP) ... FAIL
+
+======================================================================
+FAIL: test_approved_master_true_peak_violation_409_no_revision_claim_or_retry (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 83, in test_approved_master_true_peak_violation_409_no_revision_claim_or_retry
+    self.assertEqual(status,409,result)
+AssertionError: 400 != 409 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+----------------------------------------------------------------------
+Ran 1 test in 0.647s
+
+FAILED (failures=1)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat/approve HTTP/1.1" 400 -

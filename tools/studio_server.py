@@ -5,6 +5,7 @@ from __future__ import annotations
 import lyric_timeline as lyrics
 import io
 import wave
+import zipfile
 import http.server
 import json
 import math
@@ -40,6 +41,36 @@ except ImportError:  # pragma: no cover - keeps unrelated tooling importable
     GenerationAttemptOwner = None
 
 CAPABILITY = secrets.token_urlsafe(32)
+# Default preserves the existing local studio. Opt-in requires explicit login;
+# never auto-issue the local principal as a public multi-user identity.
+PLATFORM_MODE = os.environ.get("SARA_PLATFORM_AUTH_MODE") == "1"
+PLATFORM_PUBLICATION_RIGHTS = None
+# External provider/job authorities are host-installed only, never HTTP minted.
+PLATFORM_CREDIT_JOB_AUTH = None
+PLATFORM_NATIVE_STORE_VERIFIER = None
+PLATFORM_SCRATCH_RIGHTS_POLICY = None
+
+def configure_platform_scratch_sample_rights(policy):
+    """Host-installed source/rights authority; browser cannot mint permissions."""
+    if not callable(policy):
+        raise ValueError("SCRATCH_SAMPLE_HOST_RIGHTS_CALLBACK_REQUIRED")
+    global PLATFORM_SCRATCH_RIGHTS_POLICY
+    PLATFORM_SCRATCH_RIGHTS_POLICY = policy
+
+
+def configure_platform_native_store_verifier(verifier):
+    """Host only. Must independently verify Apple/Google transaction status."""
+    if not callable(verifier):
+        raise ValueError("NATIVE_STORE_HOST_VERIFIER_REQUIRED")
+    global PLATFORM_NATIVE_STORE_VERIFIER
+    PLATFORM_NATIVE_STORE_VERIFIER = verifier
+
+
+def configure_platform_credit_job_authority(verifier):
+    if not callable(verifier):
+        raise ValueError("CREDIT_JOB_PROVIDER_VERIFIER_REQUIRED")
+    global PLATFORM_CREDIT_JOB_AUTH
+    PLATFORM_CREDIT_JOB_AUTH = verifier
 LOCAL_PRINCIPAL_ID = "local-studio-user"
 SESSION_PRINCIPALS = {}
 M045_ATTEMPT_OWNER = None
@@ -48,6 +79,12 @@ M045_SYNTHESIZE_TO_STAGE = None
 M045_GRANT_SIGNING_RING = None
 M045_GRANT_RIGHTS_POLICY = None
 MAX_REQUEST = 64 * 1024 * 1024
+# R13: DAW verification has its own bounded *streaming* binary path, not the
+# JSON memory cap. Maximum accepted on-wire ZIP 256 MiB; no imported authority.
+MAX_DAW_VERIFY_UPLOAD = 256 * 1024 * 1024
+import threading
+DAW_VERIFY_SLOT = threading.BoundedSemaphore(1)
+
 MAX_ARTIFACT = 16 * 1024 * 1024
 # Host-generated, provenance-checked full-length masters only; all raw
 # exports and unproven caller-supplied artifacts keep the 16 MiB ceiling.
@@ -65,12 +102,25 @@ def issue_studio_session(principal_id=LOCAL_PRINCIPAL_ID):
     return token
 
 def resolve_studio_session(token):
+    if PLATFORM_MODE:
+        from platform_identity import PlatformStore, PlatformDenied
+        try:
+            return PlatformStore(EXPORT_ROOT).session_principal(token)
+        except PlatformDenied as error:
+            raise ProjectConflict("session denied") from error
     if not isinstance(token, str) or not token:
         raise ProjectConflict("session denied")
     principal_id = SESSION_PRINCIPALS.get(token)
     if principal_id is None:
         raise ProjectConflict("session denied")
     return principal_id
+
+def configure_platform_publication_rights(policy):
+    """Host-only verified rights provider; HTTP requests may not set this."""
+    if not callable(policy):
+        raise ValueError("HOST_VERIFIED_RIGHTS_POLICY_REQUIRED")
+    global PLATFORM_PUBLICATION_RIGHTS
+    PLATFORM_PUBLICATION_RIGHTS = policy
 
 
 def configure_m045_generation(owner, synthesize_to_stage_fn):
@@ -94,33 +144,43 @@ def configure_m045_soundtrack_grant(signing_ring, rights_policy):
     M045_GRANT_RIGHTS_POLICY = rights_policy
 
 
-def make_m045_native_owner(root):
+def make_m045_native_owner(root, scoped_principal=None, host_delegation_token=None):
     """Bind M045 to the existing project, session, revision and CAS authorities."""
     if GenerationAttemptOwner is None:
         raise RuntimeError("M045_GENERATION_OWNER_UNAVAILABLE")
     root = Path(root).resolve()
+    bound_principal=scoped_principal if scoped_principal is not None else LOCAL_PRINCIPAL_ID
+    if scoped_principal is not None and (not isinstance(host_delegation_token,str)
+                                         or len(host_delegation_token)<32):
+        raise ValueError("HOST_APPROVAL_DELEGATION_TOKEN_REQUIRED")
+    def resolve_bearer(token):
+        if scoped_principal is None:
+            return resolve_studio_session(token)
+        if not isinstance(token,str) or not secrets.compare_digest(token,host_delegation_token):
+            raise ProjectConflict("host-delegated generation denied")
+        return bound_principal
 
     def authorize(principal_id, pid, capability):
         if capability != "generate":
             return False
-        project_owner_directory(root, project_id(pid), principal_id, allow_create=False)
-        # The current owner callback contract can only commit for the local
-        # principal. Other principals fail closed until principal-bound commits.
-        return principal_id == LOCAL_PRINCIPAL_ID
+        if principal_id != bound_principal:
+            return False
+        project_owner_directory(root, project_id(pid), bound_principal, allow_create=False)
+        return True
 
     def read_revision(pid, rid):
         request = {"projectId": project_id(pid)}
         if rid != "CURRENT":
             request["revisionId"] = rid
         try:
-            return project_operation(root, request, principal_id=LOCAL_PRINCIPAL_ID)["revision"]
+            return project_operation(root, request, principal_id=bound_principal)["revision"]
         except (ValueError, FileNotFoundError):
             return None
 
     def list_revisions(pid):
         pid = project_id(pid)
-        directory = project_owner_directory(root, pid, LOCAL_PRINCIPAL_ID, allow_create=False)
-        manifest = project_operation(root, {"projectId": pid}, principal_id=LOCAL_PRINCIPAL_ID)["manifest"]
+        directory = project_owner_directory(root, pid, bound_principal, allow_create=False)
+        manifest = project_operation(root, {"projectId": pid}, principal_id=bound_principal)["manifest"]
         found = {}
         for path in sorted((directory / "revisions").glob("*.json")):
             revision, _, _ = project_revision(root, directory, pid, path.stem)
@@ -142,7 +202,7 @@ def make_m045_native_owner(root):
                         or receipt.get("productionTimelineDigest") != found[rid]["productionTimelineDigest"]):
                     raise ProjectConflict("M045 historical identity mismatch")
                 authorized = project_operation(root, {"projectId": pid, "revisionId": rid},
-                                               principal_id=LOCAL_PRINCIPAL_ID)
+                                               principal_id=bound_principal)
                 authorized_digests = {binding["artifactId"] for binding in
                                       authorized.get("historicalOutputBindings", [])}
                 if (not isinstance(receipt.get("artifactIds"), list)
@@ -168,7 +228,7 @@ def make_m045_native_owner(root):
             "operationContext": {"kind": "m045_generation", "attemptId": kwargs["attempt_id"]},
         }
         current = project_operation(root, {"projectId": kwargs["project_id"]},
-                                    principal_id=LOCAL_PRINCIPAL_ID)["manifest"]["currentRevisionId"]
+                                    principal_id=bound_principal)["manifest"]["currentRevisionId"]
         if current != kwargs["expected_current_revision_id"]:
             # Historical renders may bind to an ancestor but never promote it.
             # project_operation verifies ancestry, exact source SongSpec, digest
@@ -178,11 +238,11 @@ def make_m045_native_owner(root):
                 "sourceRevisionId": kwargs["expected_current_revision_id"],
                 "attemptId": kwargs["attempt_id"],
             }
-        return project_operation(root, request, commit=True, principal_id=LOCAL_PRINCIPAL_ID)
+        return project_operation(root, request, commit=True, principal_id=bound_principal)
 
     return GenerationAttemptOwner(
         data_root=root,
-        resolve_session_principal=resolve_studio_session,
+        resolve_session_principal=resolve_bearer,
         authorize_project=authorize,
         read_revision=read_revision,
         list_project_revisions=list_revisions,
@@ -379,6 +439,36 @@ def project_owner_directory(root, pid, principal_id, allow_create=False):
         os.close(fd)
 
 
+def artifact_digest_verified(root,digest):
+    """Stream-check CAS source integrity without loading 210s f64 stems.
+
+    This only validates CAS identity; project ownership and revision
+    membership are separately enforced by project_operation before reads.
+    """
+    if not isinstance(digest,str) or not re.fullmatch(r"[a-f0-9]{64}",digest):
+        raise ValueError("invalid artifact digest")
+    path=Path(root)/"objects"/digest[:2]/digest
+    try:
+        fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
+    except OSError as error:
+        # Preserve the old Studio API's explicit invalid/unavailable media
+        # ValueError contract while using O_NOFOLLOW and streamed hashing.
+        raise ValueError("referenced artifact unavailable") from error
+    try:
+        import stat
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise ValueError("artifact object is not regular")
+        h=hashlib.sha256()
+        with os.fdopen(fd,"rb") as stream:
+            fd=-1
+            for part in iter(lambda:stream.read(1024*1024),b""):h.update(part)
+        if h.hexdigest()!=digest:
+            raise ValueError("referenced artifact corruption")
+        return True
+    finally:
+        if fd>=0:os.close(fd)
+
+
 def artifact_bytes(root, digest):
     if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
         raise ValueError("invalid artifact digest")
@@ -463,7 +553,7 @@ def project_revision(root, directory, pid, rid):
     if timeline["songSpecDigest"] != revision["songSpecDigest"]:
         raise ValueError("timeline source mismatch")
     for aid in revision["sourceAssetDigests"] + revision["outputArtifactIds"]:
-        artifact_bytes(root, aid)
+        artifact_digest_verified(root, aid)
     if revision.get("lyricTimelineDigest"):
         doc, _ = lyric_read(root, revision["lyricTimelineDigest"])
         if doc["sourceArtifactId"] not in revision["sourceAssetDigests"]:
@@ -1168,7 +1258,7 @@ def project_operation(root, request, commit=False, lyric=False, principal_id=LOC
             if doc['sourceArtifactId'] not in sources: raise ValueError('cannot drop lyric audio source')
         if not isinstance(sources, list) or not isinstance(outputs, list) or len(sources) + len(outputs) > 128:
             raise ValueError("invalid artifact bindings")
-        for aid in sources + outputs: artifact_bytes(root, aid)
+        for aid in sources + outputs: artifact_digest_verified(root, aid)
         spec_bytes = project_json(spec)
         song_digest = persist_export(root, "SongSpec.json", "project-metadata", spec_bytes)["sha256"]
         timeline = {"formatVersion": 1, "songSpecDigest": song_digest, "timebase": spec["timebase"], "sections": spec["structure"]["sections"], "tracks": spec["tracks"]}
@@ -1237,6 +1327,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
     def log_message(self, fmt, *args):
+        # Bearer preview URLs must not enter access logs or console telemetry.
+        if args and isinstance(args[0],str) and '/api/previews/' in args[0]:
+            args=('[redacted private preview request]',*args[1:])
         print(f"[Studio-Server] {fmt % args}")
 
     def end_headers(self):
@@ -1249,6 +1342,386 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
     def _host_allowed(self):
         return self.headers.get("Host") in {f"localhost:{PORT}", f"127.0.0.1:{PORT}"}
 
+    def _platform_principal(self):
+        from http.cookies import SimpleCookie
+        raw = self.headers.get("Cookie", "")
+        if not raw or len(raw)>2048:
+            raise ProjectConflict("session denied")
+        cookies=SimpleCookie()
+        try:cookies.load(raw)
+        except Exception:raise ProjectConflict("session denied")
+        token=cookies["sara_session"].value if "sara_session" in cookies else ""
+        return resolve_studio_session(token)
+
+    def _platform_get(self, path):
+        from platform_identity import PlatformStore,PlatformDenied
+        from platform_catalog import discover,public_song,public_profile,playable_public_audio,owned_library
+        from urllib.parse import parse_qs,urlsplit
+        store=PlatformStore(EXPORT_ROOT)
+        query=parse_qs(urlsplit(self.path).query)
+        if path in {"/api/me", "/api/me/sessions", "/api/me/profile", "/api/me/library"}:
+            try:principal=self._platform_principal()
+            except ProjectConflict:
+                self._json(403,{"status":"DENY","error":"SESSION_DENIED"});return True
+            if path=="/api/me":self._json(200,{"status":"SUCCESS","account":store.profile(principal)});return True
+            if path=="/api/me/profile":self._json(200,{"status":"SUCCESS","profile":store.profile(principal)});return True
+            if path=="/api/me/sessions":self._json(200,{"status":"SUCCESS","sessions":store.list_sessions(principal)});return True
+            self._json(200,owned_library(EXPORT_ROOT,principal));return True
+        if path.startswith('/api/previews/'):
+            from platform_feedback import FeedbackStore
+            try:
+                parts=path[len('/api/previews/'):].split('/')
+                if len(parts)!=2 or parts[1] not in {'metadata','audio'}:
+                    raise PlatformDenied('PREVIEW_ROUTE_DENIED')
+                if set(query)!={'token'} or len(query['token'])!=1:
+                    raise PlatformDenied('PREVIEW_TOKEN_DENIED')
+                result=FeedbackStore(EXPORT_ROOT).read_grant(parts[0],query['token'][0],
+                                                            audio=parts[1]=='audio')
+                if parts[1]=='metadata':
+                    self.send_response(200)
+                    data=json.dumps(result).encode('utf-8')
+                    self.send_header('Content-Type','application/json')
+                else:
+                    data=result[1]
+                    self.send_response(200)
+                    self.send_header('Content-Type','audio/wav')
+                self.send_header('Cache-Control','no-store')
+                self.send_header('Referrer-Policy','no-referrer')
+                self.send_header('Content-Length',str(len(data)))
+                self.end_headers();self.wfile.write(data)
+            except (ProjectConflict,PlatformDenied,PermissionError,ValueError,
+                    OSError,EOFError):
+                self._json(403,{'status':'DENY','error':'PREVIEW_ACCESS_DENIED'})
+            return True
+        if path=="/api/feedback/comments":
+            from platform_feedback import FeedbackStore
+            from platform_identity import PlatformDenied
+            from urllib.parse import parse_qs, urlsplit
+            try:
+                principal=self._platform_principal()
+                q=parse_qs(urlsplit(self.path).query)
+                if set(q)!={'projectId','revisionId','artifactId'} or any(len(v)!=1 for v in q.values()):
+                    raise ValueError('FEEDBACK_QUERY_FIELDS_DENIED')
+                result=FeedbackStore(EXPORT_ROOT).list_comments(principal,
+                    q['projectId'][0],q['revisionId'][0],q['artifactId'][0])
+                self._json(200,result)
+            except (ProjectConflict,PlatformDenied,PermissionError):
+                self._json(403,{'status':'DENY','error':'FEEDBACK_ACCESS_DENIED'})
+            except (ValueError,TypeError):
+                self._json(400,{'status':'ERROR','error':'INVALID_FEEDBACK_REQUEST'})
+            return True
+        if path.startswith("/api/explore/rooms"):
+            from platform_rooms import RoomStore
+            from platform_identity import PlatformDenied
+            from urllib.parse import parse_qs,urlsplit
+            try:
+                principal=self._platform_principal()
+                rooms=RoomStore(EXPORT_ROOT);rooms.rights_policy=PLATFORM_PUBLICATION_RIGHTS
+                if path=="/api/explore/rooms":
+                    q=parse_qs(urlsplit(self.path).query)
+                    result=rooms.directory(principal,q.get('category',[''])[0],q.get('q',[''])[0])
+                elif path.endswith('/messages'):
+                    result=rooms.messages(principal,path[len('/api/explore/rooms/'):-len('/messages')])
+                elif path.endswith('/proposals'):
+                    result=rooms.proposals_for_owner(principal,path[len('/api/explore/rooms/'):-len('/proposals')])
+                else:raise PlatformDenied('ROOM_READ_DENIED')
+                self._json(200,result)
+            except (PlatformDenied,ProjectConflict,PermissionError):
+                self._json(403,{'status':'DENY','error':'ROOM_ACCESS_DENIED'})
+            except ValueError:
+                self._json(400,{'status':'ERROR','error':'INVALID_ROOM_REQUEST'})
+            return True
+        if path.startswith("/api/playlists/"):
+            # A published playlist is intentionally readable without account
+            # login; private playlists still require exact current owner.
+            from platform_social import SocialStore
+            try:principal=self._platform_principal()
+            except ProjectConflict:principal=None
+            try:result=SocialStore(EXPORT_ROOT).read_playlist(path[len("/api/playlists/"):],
+                         viewer=principal,rights_policy=PLATFORM_PUBLICATION_RIGHTS)
+            except (PermissionError,ValueError):result=None
+            self._json(200 if result else 404,result or {"status":"NOT_FOUND"});return True
+        if path in {"/api/credits/balance","/api/notifications","/api/playlists","/api/workspaces"}:
+            try:principal=self._platform_principal()
+            except ProjectConflict:
+                self._json(403,{"status":"DENY","error":"SESSION_DENIED"});return True
+            from platform_social import SocialStore
+            from platform_billing import CreditLedger
+            from platform_workspaces import WorkspaceStore
+            if path=="/api/credits/balance":
+                self._json(200,CreditLedger(EXPORT_ROOT).balance(principal));return True
+            if path=="/api/notifications":
+                self._json(200,{"status":"SUCCESS","notifications":SocialStore(EXPORT_ROOT).notifications(principal)});return True
+            if path=="/api/playlists":
+                self._json(200,{"status":"SUCCESS","playlists":SocialStore(EXPORT_ROOT).my_playlists(principal)});return True
+            if path=="/api/workspaces":
+                self._json(200,{"status":"SUCCESS","workspaces":WorkspaceStore(EXPORT_ROOT).my_workspaces(principal)});return True
+        if path in {"/api/explore","/api/search"}:
+            q=query.get("q",[""])[0] if path=="/api/search" else ""
+            try:self._json(200,discover(EXPORT_ROOT,PLATFORM_PUBLICATION_RIGHTS,query=q))
+            except ValueError:self._json(400,{"status":"ERROR","error":"INVALID_SEARCH"})
+            return True
+        if path.startswith("/api/artists/"):
+            result=public_profile(EXPORT_ROOT,path[len("/api/artists/"):],PLATFORM_PUBLICATION_RIGHTS)
+            self._json(200 if result else 404,result or {"status":"NOT_FOUND"});return True
+        if path.startswith("/api/songs/"):
+            suffix=path[len("/api/songs/"):]
+            if suffix.endswith("/audio"):
+                pub_id=suffix[:-6]
+                audio=playable_public_audio(EXPORT_ROOT,pub_id,PLATFORM_PUBLICATION_RIGHTS)
+                if audio is None:self._json(404,{"status":"NOT_FOUND"});return True
+                self.send_response(200)
+                self.send_header("Content-Type","audio/wav")
+                self.send_header("Cache-Control","no-store")
+                self.send_header("Content-Length",str(len(audio)))
+                self.end_headers()
+                self.wfile.write(audio)
+                return True
+            song=public_song(EXPORT_ROOT,suffix,PLATFORM_PUBLICATION_RIGHTS)
+            self._json(200 if song else 404,song or {"status":"NOT_FOUND"});return True
+        if path.startswith("/api/"):
+            self._json(404,{"status":"NOT_FOUND"});return True
+        return False
+
+    def _platform_post(self,path,payload):
+        from platform_identity import PlatformStore, PlatformDenied, PlatformConflict
+        from platform_catalog import authorized_publish,publication_unpublish
+        store=PlatformStore(EXPORT_ROOT)
+        try:
+            if path=="/api/auth/signup":
+                if set(payload)!={"handle","password","displayName"}:
+                    raise ValueError("INVALID_SIGNUP_FIELDS")
+                account=store.register(payload["handle"],payload["password"],payload["displayName"])
+                return self._json(201,{"status":"SUCCESS",**account})
+            if path=="/api/auth/login":
+                if set(payload)!={"handle","password"}:
+                    raise ValueError("INVALID_LOGIN_FIELDS")
+                token,session=store.login(payload["handle"],payload["password"])
+                # Local loopback proof mode: on deployed HTTPS use Secure cookie.
+                # HTTPS terminating proxy/internet deployment must be qualified separately.
+                cookie="sara_session="+token+"; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800"
+                return self._json(200,{"status":"SUCCESS",**session},cookie=cookie)
+            if path=="/api/account/delete-request":
+                if set(payload)!={"handle","password","confirm"}:
+                    raise ValueError("INVALID_EXTERNAL_ERASURE_FIELDS")
+                return self._json(202,store.request_external_erasure(
+                    payload["handle"],payload["password"],payload["confirm"]))
+            if path=="/api/auth/logout":
+                principal=self._platform_principal()
+                from http.cookies import SimpleCookie
+                jar=SimpleCookie();jar.load(self.headers.get("Cookie",""))
+                token=jar["sara_session"].value
+                digest=hashlib.sha256(token.encode()).hexdigest()
+                with store._db() as db:
+                    db.execute("BEGIN IMMEDIATE")
+                    db.execute("UPDATE sessions SET revoked=1 WHERE token_digest=? AND principal=?",(digest,principal))
+                    db.commit()
+                return self._json(200,{"status":"SUCCESS"},cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
+            principal=self._platform_principal()
+            if path=="/api/release/approve":
+                from platform_release_gateway import StudioReleaseGateway
+                return self._json(201,StudioReleaseGateway(EXPORT_ROOT).approve(principal,payload))
+            if path=="/api/release/prepare":
+                from platform_release_gateway import StudioReleaseGateway
+                return self._json(201,StudioReleaseGateway(EXPORT_ROOT).prepare(
+                    principal,payload,PLATFORM_PUBLICATION_RIGHTS))
+            if path=="/api/voice-assets":
+                from platform_release_gateway import StudioReleaseGateway
+                return self._json(201,StudioReleaseGateway(EXPORT_ROOT).register_voice(principal,payload))
+            if path.startswith('/api/voice-assets/'):
+                from platform_release_gateway import StudioReleaseGateway
+                rest=path[len('/api/voice-assets/'):].split('/')
+                if len(rest)!=2:raise ValueError('VOICE_ACTION_INVALID')
+                gateway=StudioReleaseGateway(EXPORT_ROOT)
+                if rest[1]=='authorize':
+                    return self._json(200,gateway.authorize_voice(principal,rest[0],payload))
+                if rest[1]=='revoke' and not payload:
+                    return self._json(200,gateway.revoke_voice(principal,rest[0]))
+                raise ValueError('VOICE_ACTION_INVALID')
+            if path=="/api/previews/grants":
+                from platform_feedback import FeedbackStore
+                return self._json(201,FeedbackStore(EXPORT_ROOT).create_grant(principal,payload))
+            if path.startswith('/api/previews/') and path.endswith('/revoke'):
+                from platform_feedback import FeedbackStore
+                if payload:raise ValueError('PREVIEW_REVOKE_FIELDS_DENIED')
+                grant_id=path[len('/api/previews/'):-len('/revoke')]
+                return self._json(200,FeedbackStore(EXPORT_ROOT).revoke_grant(principal,grant_id))
+            if path=="/api/feedback/comments":
+                from platform_feedback import FeedbackStore
+                return self._json(201,FeedbackStore(EXPORT_ROOT).create_comment(principal,payload))
+            if path.startswith('/api/explore/rooms'):
+                from platform_rooms import RoomStore
+                rooms=RoomStore(EXPORT_ROOT);rooms.rights_policy=PLATFORM_PUBLICATION_RIGHTS
+                if path=='/api/explore/rooms':
+                    return self._json(201,rooms.create(principal,payload))
+                chunks=path[len('/api/explore/rooms/'):].split('/')
+                if len(chunks)!=2:raise PlatformDenied('ROOM_ACTION_DENIED')
+                rid,action=chunks
+                if action in {'join','leave'} and not payload:
+                    return self._json(200,rooms.join(principal,rid) if action=='join' else rooms.leave(principal,rid))
+                if action in {'invite','kick','block'} and set(payload)=={'handle'}:
+                    return self._json(200,rooms.invite(principal,rid,payload['handle']) if action=='invite'
+                      else rooms.kick(principal,rid,payload['handle'],block=action=='block'))
+                if action=='messages' and set(payload)=={'body'}:
+                    return self._json(201,rooms.post_message(principal,rid,payload['body']))
+                if action=='pin-track' and set(payload)=={'publicationId'}:
+                    return self._json(200,rooms.pin(principal,rid,payload['publicationId'],PLATFORM_PUBLICATION_RIGHTS))
+                if action=='propose-collaboration':
+                    return self._json(201,rooms.proposal(principal,rid,payload))
+                raise ValueError('ROOM_ACTION_FIELDS_INVALID')
+            if path=="/api/playlists":
+                from platform_social import SocialStore
+                if set(payload)!={"title","visibility"}:raise ValueError("INVALID_PLAYLIST_FIELDS")
+                return self._json(201,SocialStore(EXPORT_ROOT).create_playlist(principal,
+                    payload["title"],payload["visibility"]))
+            if path.startswith("/api/playlists/"):
+                from platform_social import SocialStore
+                rest=path[len("/api/playlists/"):].split("/")
+                if len(rest)!=2:raise ValueError("INVALID_PLAYLIST_ACTION")
+                playlist,action=rest
+                social=SocialStore(EXPORT_ROOT)
+                if action=="songs":
+                    if set(payload)!={"publicationId"}:raise ValueError("INVALID_PLAYLIST_SONG")
+                    return self._json(200,social.add_playlist_song(principal,playlist,
+                         payload["publicationId"],PLATFORM_PUBLICATION_RIGHTS))
+                if action=="visibility":
+                    if set(payload)!={"visibility"}:raise ValueError("INVALID_PLAYLIST_VISIBILITY")
+                    return self._json(200,social.set_playlist_visibility(principal,playlist,
+                         payload["visibility"]))
+                if action=="reorder":
+                    if set(payload)!={"publicationIds"}:raise ValueError("INVALID_REORDER")
+                    return self._json(200,social.reorder_playlist(principal,playlist,
+                         payload["publicationIds"]))
+                if action=="remove":
+                    if set(payload)!={"publicationId"}:raise ValueError("INVALID_PLAYLIST_REMOVE")
+                    return self._json(200,social.remove_playlist_song(principal,playlist,
+                         payload["publicationId"]))
+                raise ValueError("INVALID_PLAYLIST_ACTION")
+            if path=="/api/albums":
+                from platform_social import SocialStore
+                if set(payload)!={"title"}:raise ValueError("INVALID_ALBUM")
+                return self._json(201,SocialStore(EXPORT_ROOT).create_album(principal,payload["title"]))
+            if path.startswith("/api/albums/") and path.endswith("/release"):
+                from platform_social import SocialStore
+                if set(payload)!={"publicationIds","confirmDisclosure"}:raise ValueError("INVALID_ALBUM_RELEASE")
+                return self._json(200,SocialStore(EXPORT_ROOT).release_album(
+                  principal,path[len("/api/albums/"):-len("/release")],payload["publicationIds"],
+                  payload["confirmDisclosure"],PLATFORM_PUBLICATION_RIGHTS))
+            if path=="/api/social/action":
+                from platform_social import SocialStore
+                social=SocialStore(EXPORT_ROOT)
+                action=payload.get("action")
+                if action in {"follow","unfollow","block"}:
+                    if set(payload)!={"action","handle"}:raise ValueError("SOCIAL_FIELDS")
+                    profile=store.public_profile(payload["handle"])
+                    if not profile:raise PlatformDenied("ARTIST_NOT_FOUND")
+                    with store._db() as db:
+                        target=db.execute("SELECT principal FROM accounts WHERE handle=?",(profile["handle"],)).fetchone()["principal"]
+                    return self._json(200,{"status":"SUCCESS","changed":getattr(social,action)(principal,target)})
+                if action in {"like","unlike","comment"}:
+                    if action=="comment" and set(payload)=={"action","publicationId","body"}:
+                        return self._json(201,social.comment(principal,payload["publicationId"],
+                           payload["body"],PLATFORM_PUBLICATION_RIGHTS))
+                    if action in {"like","unlike"} and set(payload)=={"action","publicationId"}:
+                        result=(social.like(principal,payload["publicationId"],PLATFORM_PUBLICATION_RIGHTS)
+                           if action=="like" else social.unlike(principal,payload["publicationId"]))
+                        return self._json(200,{"status":"SUCCESS","changed":result})
+                if action=="comment-settings" and set(payload)=={"action","enabled"}:
+                    return self._json(200,social.set_comments_enabled(principal,payload["enabled"]))
+                raise ValueError("SOCIAL_ACTION_DENIED")
+            if path=="/api/workspaces":
+                from platform_workspaces import WorkspaceStore
+                if set(payload)!={"name"}:raise ValueError("WORKSPACE_FIELDS")
+                return self._json(201,WorkspaceStore(EXPORT_ROOT).create(principal,payload["name"]))
+            if path.startswith("/api/workspaces/"):
+                from platform_workspaces import WorkspaceStore
+                parts=path[len("/api/workspaces/"):].split("/")
+                if len(parts)!=2:raise ValueError("WORKSPACE_PATH_DENIED")
+                workspace,action=parts
+                ws=WorkspaceStore(EXPORT_ROOT)
+                if action=="invite" and set(payload)=={"handle","role"}:
+                    return self._json(200,ws.invite(principal,workspace,payload["handle"],payload["role"]))
+                if action=="revoke" and set(payload)=={"handle"}:
+                    return self._json(200,ws.revoke(principal,workspace,payload["handle"]))
+                if action=="bind" and set(payload)=={"projectId"}:
+                    return self._json(200,ws.bind_project(principal,workspace,payload["projectId"]))
+                if action=="project" and set(payload) in ({"projectId"},{"projectId","revisionId"}):
+                    return self._json(200,ws.read_member_project(EXPORT_ROOT,principal,workspace,
+                      payload["projectId"],payload.get("revisionId")))
+                if action=="audio" and set(payload)=={"projectId","revisionId","artifactId"}:
+                    audio=ws.read_member_audio(EXPORT_ROOT,principal,workspace,
+                       payload["projectId"],payload["artifactId"],payload["revisionId"])
+                    self.send_response(200);self.send_header("Content-Type","audio/wav")
+                    self.send_header("Cache-Control","no-store")
+                    self.send_header("Content-Length",str(len(audio)))
+                    self.end_headers();self.wfile.write(audio);return None
+                raise ValueError("WORKSPACE_ACTION_DENIED")
+            if path=="/api/billing/native-receipt":
+                if set(payload)!={"store","transactionId","productId","receipt"}:
+                    raise ValueError("INVALID_NATIVE_RECEIPT_FIELDS")
+                if PLATFORM_NATIVE_STORE_VERIFIER is None:
+                    from platform_chat_approval import PlatformServiceUnavailable
+                    raise PlatformServiceUnavailable("NATIVE_STORE_HOST_VERIFIER_NOT_CONFIGURED")
+                from platform_native_receipt import receive_verified_native_purchase
+                return self._json(200,receive_verified_native_purchase(
+                    EXPORT_ROOT,principal,payload,PLATFORM_NATIVE_STORE_VERIFIER))
+            if path=="/api/credits/quote":
+                from platform_billing import CreditLedger
+                if set(payload)!={"units"}:raise ValueError("INVALID_CREDIT_QUOTE")
+                return self._json(200,CreditLedger(EXPORT_ROOT).quote(principal,payload["units"]))
+            if path in {"/api/credits/reserve","/api/credits/finalize"}:
+                if PLATFORM_CREDIT_JOB_AUTH is None:
+                    return self._json(503,{"status":"BLOCKED","error":"HOST_JOB_AUTHORITY_MISSING"})
+                from platform_billing import CreditLedger
+                if not PLATFORM_CREDIT_JOB_AUTH(path,principal,payload):
+                    raise PlatformDenied("HOST_JOB_AUTHORITY_DENIED")
+                ledger=CreditLedger(EXPORT_ROOT)
+                if path.endswith("/reserve") and set(payload)=={"jobKey","credits"}:
+                    return self._json(200,ledger.reserve(principal,payload["jobKey"],payload["credits"]))
+                if path.endswith("/finalize") and set(payload)=={"jobKey","outcome"}:
+                    return self._json(200,ledger.finalize(principal,payload["jobKey"],payload["outcome"]))
+                raise ValueError("CREDIT_ACTION_DENIED")
+            if path in {"/api/platform/chat","/api/m045/chat"}:
+                from platform_chat import run_platform_chat
+                from platform_chat_approval import ApprovalStore
+                if set(payload) not in ({"instruction"},{"instruction","context"}):
+                    raise ValueError("INVALID_CHAT_COMMAND")
+                proposal=run_platform_chat(EXPORT_ROOT,principal,payload["instruction"],
+                    PLATFORM_PUBLICATION_RIGHTS,context=payload.get("context"))
+                return self._json(200,ApprovalStore(EXPORT_ROOT).issue(
+                    principal,proposal,payload["instruction"]))
+            if path=="/api/m045/chat/approve":
+                from platform_chat_approval import approved_operation
+                if set(payload)!={"approval_challenge_id","expected_current_revision_id"}:
+                    raise ValueError("INVALID_APPROVAL_FIELDS")
+                result=approved_operation(EXPORT_ROOT,principal,payload["approval_challenge_id"],
+                    payload["expected_current_revision_id"],PLATFORM_PUBLICATION_RIGHTS)
+                return self._json(200,result)
+            if path=="/api/me/sessions/revoke":
+                if set(payload)!={"sessionId"}:raise ValueError("INVALID_REVOKE")
+                return self._json(200,store.revoke_session(principal,payload["sessionId"]))
+            if path=="/api/publications":
+                if PLATFORM_PUBLICATION_RIGHTS is None:
+                    return self._json(503,{"status":"BLOCKED","error":"VERIFIED_RIGHTS_HOST_POLICY_MISSING"})
+                pub=authorized_publish(EXPORT_ROOT,payload,principal,PLATFORM_PUBLICATION_RIGHTS)
+                return self._json(201,{"status":"SUCCESS",**pub})
+            if path.startswith("/api/publications/") and path.endswith("/unpublish"):
+                if payload:raise ValueError("UNPUBLISH_BODY_DENIED")
+                result=publication_unpublish(EXPORT_ROOT,path[len("/api/publications/"):-len("/unpublish")],principal)
+                return self._json(200,result)
+            return self._json(404,{"status":"NOT_FOUND"})
+        except Exception as error:
+            from platform_chat_approval import PlatformServiceUnavailable
+            if isinstance(error,PlatformServiceUnavailable):
+                return self._json(503,{"status":"BLOCKED","error":str(error)})
+            if isinstance(error,PlatformConflict):
+                return self._json(409,{"status":"CONFLICT","error":str(error)})
+            if isinstance(error,(ProjectConflict,PlatformDenied,PermissionError)):
+                return self._json(403,{"status":"DENY","error":"UNAUTHORIZED_OR_UNQUALIFIED"})
+            if isinstance(error,(ValueError,KeyError,TypeError)):
+                return self._json(400,{"status":"ERROR","error":"INVALID_PLATFORM_REQUEST"})
+            raise
+
     def do_GET(self):
         if not self._host_allowed(): return self._json(403,{"status":"ERROR","error":"host denied"})
         if self.headers.get("Origin") and not authorized_origin(self.headers["Origin"], self.headers["Host"]):
@@ -1256,32 +1729,51 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         path=unquote(self.path.split("?",1)[0])
         if path.startswith("/workspace") or path.startswith("/.git"):
             return self._json(403,{"status":"ERROR","error":"private storage"})
+        if PLATFORM_MODE and path.startswith("/api/"):
+            return self._platform_get(path)
+        if PLATFORM_MODE and path=="/account/delete":
+            # Public unauthenticated account-deletion request page.
+            # It requires exact credentials before any irreversible action.
+            body=(ROOT/"account-delete.html").read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type","text/html; charset=utf-8")
+            self.send_header("Cache-Control","no-store")
+            self.send_header("Content-Security-Policy","default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+            self.send_header("X-Content-Type-Options","nosniff")
+            self.send_header("Content-Length",str(len(body)))
+            self.end_headers();self.wfile.write(body);return
         if path in {"/","/index.html"}:
-            # Fresh same-origin capability, never cached by the service worker.
-            session = issue_studio_session(LOCAL_PRINCIPAL_ID)
+            # In platform mode, anonymous view gets ONLY a same-origin
+            # capability, not a local principal or authorization token.
+            if PLATFORM_MODE:
+                bootstrap="window.__SARA_PLATFORM_MODE__=true;document.documentElement.classList.add('platform-mode');window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";"
+            else:
+                session=issue_studio_session(LOCAL_PRINCIPAL_ID)
+                bootstrap="window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";"
             body=(ROOT/"index.html").read_text().replace(
-                "<head>",
-                "<head><script>window.__STUDIO_CAPABILITY__="+json.dumps(CAPABILITY)+";window.__STUDIO_SESSION__="+json.dumps(session)+";</script>"
+                "<head>","<head><script>"+bootstrap+"</script>"
             ).encode()
-            self.send_response(200);self.send_header("Content-Type","text/html");self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
-        public={"/studio-shell.css","/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
+            self.send_response(200);self.send_header("Content-Type","text/html")
+            self.send_header("Cache-Control","no-store")
+            self.send_header("Content-Length",str(len(body)));self.end_headers();self.wfile.write(body);return
+        public={"/studio-shell.css","/platform-ui.js","/app-core.js","/scorecore.js","/app-ui.js","/app-cinema.js","/service-worker.js","/manifest.json","/icons/icon.svg","/icons/icon-192.png","/icons/icon-512.png"}
         if path not in public: return self._json(404,{"status":"ERROR","error":"not a public asset"})
         return super().do_GET()
 
     def do_OPTIONS(self):
         if not authorized_origin(self.headers.get("Origin"), self.headers.get("Host")):
             return self._json(403,{"status":"ERROR","error":"origin denied"})
-        if self.headers.get("Access-Control-Request-Method") not in {"GET","POST"}:
+        if self.headers.get("Access-Control-Request-Method") not in {"GET","POST","PUT"}:
             return self._json(403,{"status":"ERROR","error":"method denied"})
         requested={v.strip().lower() for v in self.headers.get("Access-Control-Request-Headers","").split(",") if v.strip()}
         if not requested <= {"authorization","content-type","x-studio-capability","x-studio-session"}:
             return self._json(403,{"status":"ERROR","error":"headers denied"})
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Methods","GET, POST")
+        self.send_header("Access-Control-Allow-Methods","GET, POST, PUT")
         self.send_header("Access-Control-Allow-Headers","Authorization, Content-Type, X-Studio-Capability, X-Studio-Session")
         self.end_headers()
 
-    def _json(self, code: int, obj: dict):
+    def _json(self, code: int, obj: dict, cookie=None):
         body = json.dumps(obj).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
@@ -1289,22 +1781,136 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", self.headers["Origin"])
             self.send_header("Vary", "Origin")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control","no-store")
+        if cookie:self.send_header("Set-Cookie",cookie)
         self.end_headers()
         self.wfile.write(body)
+
+    def do_DELETE(self):
+        if not PLATFORM_MODE:
+            return self._json(404,{"status":"NOT_FOUND"})
+        if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
+            return self._json(403,{"status":"DENY","error":"origin denied"})
+        if not secrets.compare_digest(self.headers.get("X-Studio-Capability",""),CAPABILITY):
+            return self._json(403,{"status":"DENY","error":"capability denied"})
+        if unquote(self.path.split("?",1)[0])!="/api/me":
+            return self._json(404,{"status":"NOT_FOUND"})
+        try:
+            principal=self._platform_principal()
+            length=int(self.headers.get("Content-Length","-1"))
+            if length<0 or length>512:
+                raise ValueError("INVALID_ERASURE_REQUEST_LENGTH")
+            payload=json.loads(self.rfile.read(length))
+            if not isinstance(payload,dict) or payload!={"confirm":"DELETE_MY_ACCOUNT"}:
+                raise ValueError("EXPLICIT_ERASURE_CONFIRMATION_REQUIRED")
+            from platform_identity import PlatformStore
+            result=PlatformStore(EXPORT_ROOT).request_account_erasure(principal,"in_app")
+            return self._json(202,result,
+                cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
+        except (ProjectConflict,PermissionError):
+            return self._json(403,{"status":"DENY","error":"UNAUTHORIZED_ERASURE"})
+        except (ValueError,TypeError,KeyError):
+            return self._json(400,{"status":"ERROR","error":"INVALID_ERASURE_REQUEST"})
+
+    def do_PUT(self):
+        if not PLATFORM_MODE:
+            return self._json(404,{"status":"NOT_FOUND"})
+        if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
+            return self._json(403,{"status":"DENY"})
+        if not secrets.compare_digest(self.headers.get("X-Studio-Capability",""),CAPABILITY):
+            return self._json(403,{"status":"DENY"})
+        if unquote(self.path.split("?",1)[0])!="/api/me/profile":
+            return self._json(404,{"status":"NOT_FOUND"})
+        try:
+            principal=self._platform_principal()
+            length=int(self.headers.get("Content-Length","-1"))
+            if length<0 or length>4096:raise ValueError("INVALID_BODY_LENGTH")
+            body=json.loads(self.rfile.read(length))
+            from platform_identity import PlatformStore
+            profile=PlatformStore(EXPORT_ROOT).update_profile(principal,body)
+            return self._json(200,{"status":"SUCCESS","profile":profile})
+        except ProjectConflict:return self._json(403,{"status":"DENY"})
+        except Exception as exc:
+            from platform_identity import PlatformConflict,PlatformDenied
+            if isinstance(exc,PlatformConflict):return self._json(409,{"status":"CONFLICT"})
+            if isinstance(exc,PlatformDenied):return self._json(403,{"status":"DENY"})
+            if isinstance(exc,(ValueError,KeyError,TypeError)):
+                return self._json(400,{"status":"ERROR","error":"INVALID_PROFILE_REQUEST"})
+            raise
+
+    def _verify_daw_zip_upload(self, principal_id):
+        """R13 disk-spooled ZIP; canonical verifier owns all source and checksums.
+
+        The small base64url X-Sara-Daw-Source header carries untrusted scope
+        metadata. No caller-supplied digest, ZIP entry or source path can grant
+        permission: verify_authorized_daw_bundle reconstructs from Studio truth.
+        """
+        import base64,binascii
+        from m045_daw_export import verify_authorized_daw_bundle,DawExportHold,DawSourceDenied
+        if self.headers.get('Transfer-Encoding'):
+            return self._json(400,{'status':'ERROR','error':'DAW_CHUNKED_TRANSFER_NOT_ADMITTED'})
+        try:
+            count=int(self.headers.get('Content-Length','-1'))
+        except (ValueError,OverflowError):count=-1
+        if count<1 or count>MAX_DAW_VERIFY_UPLOAD:
+            return self._json(413,{'status':'ERROR','error':'DAW_UPLOAD_SIZE_OUT_OF_BOUNDS'})
+        header=self.headers.get('X-Sara-Daw-Source','')
+        if not isinstance(header,str) or not 1<=len(header)<=8192:
+            return self._json(400,{'status':'ERROR','error':'DAW_SCOPE_HEADER_REQUIRED'})
+        try:
+            raw=base64.b64decode(header+'='*((-len(header))%4),altchars=b'-_',validate=True)
+            request=json.loads(raw.decode('utf-8'))
+            if not isinstance(request,dict) or set(request)!={'projectId','revisionId','artifactId','mixRecipe'}:
+                raise ValueError('DAW_SOURCE_SCOPE_INVALID')
+        except (ValueError,UnicodeError,binascii.Error,TypeError):
+            return self._json(400,{'status':'ERROR','error':'DAW_SCOPE_HEADER_INVALID'})
+        if not DAW_VERIFY_SLOT.acquire(blocking=False):
+            return self._json(503,{'status':'BLOCKED','error':'DAW_VERIFIER_BUSY'})
+        try:
+            # Untrusted data remains private and never enters Studio CAS or
+            # project state. Spool with bounded RAM, then independently verify.
+            with tempfile.TemporaryDirectory(prefix='sara-untrusted-daw-') as private:
+                archive=Path(private)/'submitted.zip'
+                with archive.open('xb') as output:
+                    remaining=count
+                    self.connection.settimeout(35)
+                    while remaining:
+                        part=self.rfile.read(min(1024*1024,remaining))
+                        if not part:raise EOFError('DAW_UPLOAD_TRUNCATED')
+                        output.write(part);remaining-=len(part)
+                    output.flush();os.fsync(output.fileno())
+                receipt=verify_authorized_daw_bundle(EXPORT_ROOT,request,principal_id,archive)
+            return self._json(200,receipt)
+        except (ProjectConflict,DawSourceDenied,PermissionError):
+            return self._json(403,{'status':'DENY','error':'DAW_SOURCE_NOT_AUTHORIZED'})
+        except DawExportHold as error:
+            return self._json(409,{'status':'HOLD','error':str(error)})
+        except (ValueError,TypeError,KeyError,OSError,EOFError,zipfile.BadZipFile):
+            return self._json(400,{'status':'ERROR','error':'DAW_BINARY_STREAM_UNQUALIFIED'})
+        finally:DAW_VERIFY_SLOT.release()
 
     def do_POST(self):
         if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
             return self._json(403,{"status":"ERROR","error":"origin denied"})
-        supplied=self.headers.get("X-Studio-Capability","")
-        if not secrets.compare_digest(supplied,CAPABILITY):
-            return self._json(403,{"status":"ERROR","error":"capability denied"})
         path = unquote(self.path.split("?",1)[0])
+        is_external_erasure=PLATFORM_MODE and path=="/api/account/delete-request"
+        # External request accessible from the hosted account-deletion web page,
+        # but never from a cross-origin form or without exact credentials.
+        if is_external_erasure and not self.headers.get("Origin"):
+            return self._json(403,{"status":"DENY","error":"origin required"})
+        supplied=self.headers.get("X-Studio-Capability","")
+        if not is_external_erasure and not secrets.compare_digest(supplied,CAPABILITY):
+            return self._json(403,{"status":"ERROR","error":"capability denied"})
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant", "/api/m045/scratch/render", "/api/m045/export-daw-bundle", "/api/m045/verify-daw-bundle", "/api/m045/gate3/request-spend", "/api/m045/gate3/redeem"}:
             try:
-                principal_id = resolve_studio_session(self.headers.get("X-Studio-Session", ""))
+                principal_id = (self._platform_principal() if PLATFORM_MODE
+                  else resolve_studio_session(self.headers.get("X-Studio-Session", "")))
             except ProjectConflict as e:
                 return self._json(403, {"status": "DENY", "error": str(e)})
+        if path == '/api/m045/verify-daw-bundle' and \
+           self.headers.get('Content-Type','').split(';',1)[0].strip().lower()=='application/zip':
+            return self._verify_daw_zip_upload(principal_id)
         try:
             if self.headers.get("Transfer-Encoding"): raise ValueError("transfer encoding unsupported")
             length=int(self.headers.get("Content-Length","-1"))
@@ -1314,6 +1920,34 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if not isinstance(payload,dict): raise ValueError("object required")
         except (ValueError,UnicodeError):
             return self._json(400,{"status":"ERROR","error":"invalid request"})
+
+        if PLATFORM_MODE and (path=="/api/account/delete-request" or
+                              path.startswith("/api/auth/") or
+                              path.startswith("/api/playlists") or path.startswith("/api/albums") or
+                              path=="/api/feedback/comments" or
+                              path=="/api/previews/grants" or
+                              path.startswith('/api/voice-assets') or
+                              path in {'/api/release/approve','/api/release/prepare'} or
+                              (path.startswith('/api/previews/') and path.endswith('/revoke')) or
+                              path.startswith("/api/explore/rooms") or
+                              path.startswith("/api/social/") or path.startswith("/api/workspaces") or
+                              path.startswith("/api/credits/") or
+                              path=="/api/billing/native-receipt" or
+                              path in {"/api/platform/chat","/api/m045/chat","/api/m045/chat/approve"} or
+                              path=="/api/me/sessions/revoke"
+                              or path=="/api/publications" or
+                              (path.startswith("/api/publications/") and path.endswith("/unpublish"))):
+            return self._platform_post(path,payload)
+
+        if PLATFORM_MODE and not (
+            path.startswith("/api/projects/") or
+            path in {"/api/m045/transcribe-midi","/api/m045/preview-synth",
+                "/api/m045/master","/api/m045/compound-plan",
+                "/api/m045/sample-preview","/api/m045/soundtrack-grant","/api/m045/scratch/render","/api/m045/export-daw-bundle","/api/m045/verify-daw-bundle","/api/m045/gate3/request-spend","/api/m045/gate3/redeem"}):
+            # The legacy local-only endpoints rely on ambient LOCAL principal,
+            # capability-only auth or unchecked paths. None are admitted to
+            # the multi-user platform until their owner contracts are repaired.
+            return self._json(403,{"status":"DENY","error":"PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED"})
 
         if path in {"/api/m045/compound-plan", "/api/m045/sample-preview"}:
             try:
@@ -1344,6 +1978,71 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
                 return self._json(400, {"status": "ERROR",
                     "error": "historical soundtrack grant source unqualified"})
+
+        if path in {"/api/m045/gate3/request-spend","/api/m045/gate3/redeem"}:
+            # Artist request is pending, not permission to spend; trusted host
+            # approval has no HTTP endpoint. Redemption is OFFLINE ONLY.
+            from m045_gate3_authorization import Gate3AuthorizationStore
+            from platform_identity import PlatformDenied,PlatformConflict
+            host_key=os.environ.get('SARA_GATE3_HOST_SIGNING_KEY','').encode()
+            if len(host_key)<32:
+                return self._json(503,{'status':'BLOCKED','error':'GATE3_HOST_SIGNER_UNCONFIGURED'})
+            try:
+                store=Gate3AuthorizationStore(EXPORT_ROOT,host_signing_key=host_key)
+                if path.endswith('/request-spend'):
+                    return self._json(202,store.request(principal_id,payload))
+                if set(payload)!={'spendToken','scope'}:
+                    return self._json(400,{'status':'ERROR','error':'GATE3_TOKEN_AND_SCOPE_REQUIRED'})
+                return self._json(200,store.redeem(principal_id,payload['spendToken'],payload['scope']))
+            except PlatformConflict as e:return self._json(409,{'status':'CONFLICT','error':str(e)})
+            except PlatformDenied as e:return self._json(403,{'status':'DENY','error':str(e)})
+            except ValueError as e:return self._json(400,{'status':'ERROR','error':str(e)})
+
+        if path == "/api/m045/verify-daw-bundle":
+            from m045_daw_export import verify_authorized_daw_bundle,DawExportHold,DawSourceDenied
+            import base64,binascii
+            try:
+                if set(payload)!={'projectId','revisionId','artifactId','mixRecipe','archiveBase64'}:
+                    raise DawExportHold('DAW_VERIFY_SOURCE_FIELDS_REQUIRED')
+                encoded=payload['archiveBase64']
+                if not isinstance(encoded,str) or len(encoded)>60*1024*1024:
+                    raise DawExportHold('DAW_VERIFY_INLINE_BUNDLE_TOO_LARGE')
+                data=base64.b64decode(encoded,validate=True)
+                reference={k:payload[k] for k in ('projectId','revisionId','artifactId','mixRecipe')}
+                return self._json(200,verify_authorized_daw_bundle(EXPORT_ROOT,reference,principal_id,data))
+            except (ProjectConflict,DawSourceDenied,PermissionError) as e:
+                return self._json(403,{'status':'DENY','error':str(e)})
+            except DawExportHold as e:return self._json(409,{'status':'HOLD','error':str(e)})
+            except (ValueError,KeyError,TypeError,binascii.Error,OSError,EOFError,zipfile.BadZipFile):
+                return self._json(400,{'status':'ERROR','error':'DAW_VERIFY_UNQUALIFIED'})
+
+        if path == "/api/m045/export-daw-bundle":
+            # DAW package is an authenticated read-only projection of a known
+            # render attempt. Stems/tempo never originate client-side truth.
+            from m045_daw_export import export_authorized_daw_bundle,DawExportHold,DawSourceDenied
+            try:
+                with tempfile.TemporaryDirectory(prefix=".sara-daw-private-") as folder:
+                    archive=Path(folder)/"bundle.zip"
+                    export_authorized_daw_bundle(EXPORT_ROOT,payload,principal_id,archive)
+                    # A long export must not outlive a revoked login session.
+                    if PLATFORM_MODE and self._platform_principal()!=principal_id:
+                        raise ProjectConflict("DAW_SESSION_REVOKED_BEFORE_DOWNLOAD")
+                    self.send_response(200)
+                    self.send_header("Content-Type","application/zip")
+                    self.send_header("Cache-Control","private, no-store")
+                    self.send_header("Content-Disposition",'attachment; filename="sara-daw-bundle.zip"')
+                    self.send_header("Content-Length",str(archive.stat().st_size))
+                    self.end_headers()
+                    with archive.open('rb') as handle:
+                        for chunk in iter(lambda:handle.read(65536),b''):
+                            self.wfile.write(chunk)
+                return
+            except (ProjectConflict,DawSourceDenied,PermissionError) as error:
+                return self._json(403,{"status":"DENY","error":str(error)})
+            except DawExportHold as error:
+                return self._json(409,{"status":"HOLD","error":str(error)})
+            except (ValueError,KeyError,TypeError,OSError,wave.Error,EOFError) as error:
+                return self._json(400,{"status":"ERROR","error":"DAW_EXPORT_SOURCE_UNQUALIFIED"})
 
         if path == "/api/m045/master":
             try:
@@ -1456,6 +2155,22 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._json(400, {"status": "ERROR", "error": str(e)})
 
         if path == "/api/m045/scratch/render":
+            if PLATFORM_MODE:
+                if not isinstance(payload,dict) or set(payload)!={"projectId","revisionId","baseArtifactId","sampleAssetDigests"}:
+                    return self._json(400,{"status":"ERROR","error":"INVALID_SCRATCH_RENDER_FIELDS"})
+                if PLATFORM_SCRATCH_RIGHTS_POLICY is None:
+                    return self._json(503,{"status":"BLOCKED","error":"HOST_SCRATCH_RIGHTS_POLICY_NOT_CONFIGURED"})
+                try:
+                    from m045_rights_bound_scratch import authorized_render_rights_bound_scratch
+                    result=authorized_render_rights_bound_scratch(EXPORT_ROOT,payload,
+                        principal_id,PLATFORM_SCRATCH_RIGHTS_POLICY)
+                    return self._json(200,result)
+                except ProjectConflict as e:
+                    return self._json(409,{"status":"CONFLICT","error":str(e)})
+                except PermissionError:
+                    return self._json(403,{"status":"DENY","error":"SCRATCH_SAMPLE_RIGHTS_DENIED"})
+                except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
+                    return self._json(400,{"status":"ERROR","error":"SCRATCH_SOURCE_OR_RIGHTS_UNQUALIFIED"})
             try:
                 return self._json(200, render_authorized_scratch_operation(
                     EXPORT_ROOT, payload, principal_id=principal_id))
@@ -1614,6 +2329,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
 def main():
     durable_mkdir(EXPORT_ROOT)
     configure_m045_from_environment(EXPORT_ROOT)
+    # Explicit host startup-only rights + grant keyring; NEVER request supplied.
+    from m045_host_authorities import configure_host_authorities_from_env
+    configure_host_authorities_from_env(EXPORT_ROOT)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("127.0.0.1", PORT), StudioHandler) as httpd:
         print("=" * 72)

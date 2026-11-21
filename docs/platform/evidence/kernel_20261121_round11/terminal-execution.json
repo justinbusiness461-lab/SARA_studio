@@ -1,0 +1,154 @@
+{
+  "artistRights": "UNVERIFIED_HELD",
+  "branch": "feat/platform-identity-and-catalog",
+  "chromium": 28,
+  "chromiumCancelled": 0,
+  "claims": [
+    "Host-issued one-time DRY_RUN_ONLY Gate3 challenge",
+    "Account-erasure revokes and purges associated tokens",
+    "Canonical DAW ZIP exact bytes verified against reconstructed owner output",
+    "True 210s DAW disk-backed export and independent master FFprobe"
+  ],
+  "date": "2026-11-21",
+  "dawUploadHttpLimit": "64MiB request; 210s 222MB archive tested via host-only path",
+  "externalProviderCalls": 0,
+  "failures": 0,
+  "gpuAllocations": 0,
+  "hostAttestation": "TEST_ONLY",
+  "humanCreativeApproved": false,
+  "logs": {
+    "chromium-full.log": {
+      "bytes": 6637,
+      "sha256": "0f24adbb143769e4b87dbec5583afb2fbb82205807ab162789d39fbaa18cf286"
+    },
+    "chromium-launch-missing-playwright.log": {
+      "bytes": 24020,
+      "sha256": "ba72cbd33d924383b0e55290fe93c082ef403639ac370b8db980e7d2e29a442d"
+    },
+    "daw-210-ffprobe.log": {
+      "bytes": 684,
+      "sha256": "f4bec45fe24a41570ef2ea77735ecf768d74f3f78ce960ca2e9bda18d6ac9def"
+    },
+    "gate3-erasure-green.log": {
+      "bytes": 1919,
+      "sha256": "bb2fd648c9f8fb897b76eb7dd44af2a132a8a12b69712d6ebbfafa441d1187c7"
+    },
+    "gate3-erasure-red.log": {
+      "bytes": 2078,
+      "sha256": "b9b5f890ceb7a60633093a8573b57bf19794c634b368e454112f64e85d02ec7e"
+    },
+    "gate3-negative-focused.log": {
+      "bytes": 424,
+      "sha256": "3c71f36309013919de775a7dd8471cf6922cb09fbe3e10ceaf27848e5f0778d9"
+    },
+    "http-security-focused.log": {
+      "bytes": 1770,
+      "sha256": "764d3ddf010f6ab2dee8da51de5c38faeec4e52df248b22acd09147438b6f67b"
+    },
+    "node-full.log": {
+      "bytes": 10341,
+      "sha256": "e59b08107acfc2c4958dc981d47cecc9b7a3e2078100cbef8fc60f47e8cb0f1a"
+    },
+    "playwright-dependency-install.log": {
+      "bytes": 283,
+      "sha256": "eec54a8411284e48d8115d467636cc2499681e83a7bf67ae8716362998b79464"
+    },
+    "python-full.log": {
+      "bytes": 137464,
+      "sha256": "c1fc8ead90daa10fce1e2834971eb75c1fa8c1cc1f9a4748b70560ed76517525"
+    },
+    "source-nine-file-readback.log": {
+      "bytes": 1053,
+      "sha256": "3bbfdde16afcb7cd0ca05cdecfe4a9c9f44a0b4a45003e4e5d70f7b591246530"
+    }
+  },
+  "node": 51,
+  "physical210": {
+    "archiveSha256": "b2f379aeade0d7e13cb28e5d53ce41099b2a0fa89010d094ed69fd0c1657e5ec",
+    "ffprobe": {
+      "channels": 2,
+      "codec_name": "pcm_s16le",
+      "duration": "210.000000",
+      "sample_rate": "44100"
+    },
+    "masterFrames": 9261000,
+    "masterSha256": "0f3ebcf0b4aa9470e96e2ba73895814647cfd5baf1e9ebeb545a8e4327d36a2d",
+    "peakRssKiB": 399208,
+    "zipBytes": 222269212
+  },
+  "pr": 37,
+  "productionQualified": false,
+  "python": 486,
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "schema": "sj3.studio.round11.terminal.v1",
+  "skips": 0,
+  "sourceBase": "e5a033887a53e78c404e7a5cf2b07382ce6efc6a",
+  "sourceCommit": "e2b834e89614673342392c2f3d8daafa8d1a0920",
+  "sourceFiles": [
+    {
+      "bytes": 7020,
+      "endsLf": true,
+      "gitBlobSha1": "090c997d77ae4ec065db3d7b30c2f4d46cd9640a",
+      "path": "tools/m045_gate3_authorization.py",
+      "sha256": "2ab8aad9ee709576693890f402441cc8e00e7fbb36cee49d9f5d7676f7729a7a"
+    },
+    {
+      "bytes": 18641,
+      "endsLf": true,
+      "gitBlobSha1": "bd81b233a52d3fe4b9032b3fb1b6752bacf672e9",
+      "path": "tools/m045_daw_export.py",
+      "sha256": "b8e752887b7b698ed3fe39050d797bfa0447c7619742fdcee43e4655f6722add"
+    },
+    {
+      "bytes": 119904,
+      "endsLf": false,
+      "gitBlobSha1": "da41a428e1a189d82a8aa3335aa326dfadca964a",
+      "path": "tools/studio_server.py",
+      "sha256": "b7e1bbc0e318faf93757c7c5aad8c6a67b3f75c7c56bd83e2d14bc9e73b84744"
+    },
+    {
+      "bytes": 31451,
+      "endsLf": false,
+      "gitBlobSha1": "2d7e43c2ae44626631724f98e39719946e012ff4",
+      "path": "tools/platform_identity.py",
+      "sha256": "6a222c87108f4362750d1a9779f408ad5c598f12d38fe8acd823ca2233205352"
+    },
+    {
+      "bytes": 7899,
+      "endsLf": true,
+      "gitBlobSha1": "248f91b0cf8135cf6058f1cfbd1299900f915acb",
+      "path": "tests/test_m045_gate3_spend_token.py",
+      "sha256": "d3bce1eeb5b28ba666f21671acc85b602c4c285ff4aefb3076b07017d0ded72a"
+    },
+    {
+      "bytes": 2217,
+      "endsLf": true,
+      "gitBlobSha1": "ceebb112fe27d5216887975eea2498f294a9b776",
+      "path": "tests/test_m045_gate3_erasure.py",
+      "sha256": "1babf8c42aa7e55619dd8984f1a2f795df5318105fe113d804b2e3e7a7b85ac5"
+    },
+    {
+      "bytes": 7048,
+      "endsLf": true,
+      "gitBlobSha1": "6b7db28b73c225922fd6716db60463f28cbd00ad",
+      "path": "tests/test_m045_daw_export.py",
+      "sha256": "ebb948eaf2f5eddebda67663ec758e923da048051604ab5dd2cd149a4ad20f71"
+    },
+    {
+      "bytes": 1868,
+      "endsLf": true,
+      "gitBlobSha1": "e092c28b28204bcce2821b8975da155329d12b0d",
+      "path": "tests/test_m045_daw_verify.py",
+      "sha256": "a4de72ab669bad9457957ec6f7d9f8ac610e97755723e31b50d053afc3a30450"
+    },
+    {
+      "bytes": 2377,
+      "endsLf": true,
+      "gitBlobSha1": "28d468aac1fc655421e876f609c41c6534d8b334",
+      "path": "tests/test_m045_daw_verify_210.py",
+      "sha256": "74533d0bfc6446c23b14539342dc1cf0f398e4965ec3fcb23425269b06ab56f6"
+    }
+  ],
+  "totalPassing": 565,
+  "trialSpendAuthorized": false
+}

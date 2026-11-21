@@ -1,0 +1,18 @@
+test_platform_wave2 (unittest.loader._FailedTest) ... ERROR
+
+======================================================================
+ERROR: test_platform_wave2 (unittest.loader._FailedTest)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_platform_wave2
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/unittest/loader.py", line 154, in loadTestsFromName
+    module = __import__(module_name)
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/test_platform_wave2.py", line 4, in <module>
+    from platform_social import SocialStore
+ModuleNotFoundError: No module named 'platform_social'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

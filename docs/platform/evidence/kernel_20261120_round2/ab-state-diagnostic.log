@@ -1,0 +1,17 @@
+TAP version 13
+# AB_STATE_DIAG {"status":"Playing verified revision · e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd","abStatus":"Selected R1 · historical","switch":{"generation":1,"operationId":"ab:1:e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd","targetRevisionId":"e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd","artifactId":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","state":"COMPLETE","fromRevisionId":"967b9089e7cd6b1a565d635bc2dd1038f3feda927828b68b7955e32b6e01efc7","fromPositionSec":8.509567,"toPositionSec":8.509567,"transportSelectedRevision":"e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd","proofRevisionId":"e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd"},"abProof":{"fromRevisionId":"967b9089e7cd6b1a565d635bc2dd1038f3feda927828b68b7955e32b6e01efc7","fromPositionSec":8.509567,"fromArtifactId":"b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87","toRevisionId":"e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd","toArtifactId":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","toPositionSec":8.509567},"playback":{"projectId":"f336e3e2fac34aa78c1bce7d95bbf3c9","revisionId":"e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd","artifactId":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","wavSha256":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","decodedWavValidity":true,"durationSec":50.5,"transportSelectedRevision":"e724b3207cc7f9d56c9815dc4ed5bded6ad6a3ff9e145af905947527b23738bd"},"started":true}
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+ok 1 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 66656.871635
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 67228.649435

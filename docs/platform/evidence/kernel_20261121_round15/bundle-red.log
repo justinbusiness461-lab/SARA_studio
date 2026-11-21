@@ -1,0 +1,15 @@
+======================================================================
+FAIL: test_human_listening_zip_is_exact_audio_and_signed_receipt_not_publication (test_m045_gate3_live_trial_harness.Gate3LoopbackTrial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r15/source/tests/test_m045_gate3_live_trial_harness.py", line 147, in test_human_listening_zip_is_exact_audio_and_signed_receipt_not_publication
+    self.assertTrue(location.is_file())
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 1 test in 1.230s
+
+FAILED (failures=1)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -

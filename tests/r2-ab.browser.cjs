@@ -8,6 +8,7 @@ const { join, resolve } = require('node:path');
 const { once } = require('node:events');
 const { createInterface } = require('node:readline');
 const { chromium } = require('playwright');
+const {installQaLongtasks,qaSnapshot}=require('./qa-longtasks.cjs');
 
 const root = resolve(__dirname, '..');
 
@@ -42,6 +43,7 @@ with socketserver.TCPServer(("127.0.0.1", 0), studio.StudioHandler) as httpd:
 
 async function pageFor(browser, url) {
   const page = await browser.newPage({ serviceWorkers: 'block' });
+  await installQaLongtasks(page);
   page.setDefaultTimeout(15000);
   await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
   await page.goto(url);
@@ -155,7 +157,12 @@ test('R1/R2 A-B selects exact revision audio and preserves musical position', { 
   await page.waitForFunction(() => window.__M044_PLAYBACK_STARTED__ === true);
   await page.waitForTimeout(250);
   await page.locator('#btnABR1').click();
-  await page.waitForFunction(r1id => window.__M044_PLAYBACK_PROOF__?.revisionId === r1id, r1.revisionId, { timeout: 15000 });
+  try {
+    await page.waitForFunction(r1id => window.__M044_PLAYBACK_PROOF__?.revisionId === r1id, r1.revisionId, { timeout: 15000 });
+  } catch(error) {
+    console.log('AB_ACTIVE_MEDIA_LONGTASKS',JSON.stringify(await qaSnapshot(page)));
+    throw error;
+  }
   const ab1 = await page.evaluate(() => window.__M044_AB_PROOF__);
   assert.equal(ab1.fromRevisionId, r2.revisionId);
   assert.equal(ab1.toRevisionId, r1.revisionId);

@@ -1,0 +1,30 @@
+test_authenticated_pending_request_and_host_admission_redeem (test_m045_gate3_spend_token.Gate3HttpSecurity) ... ok
+test_arbitrary_zip_not_accepted_as_authority (test_m045_daw_verify.DawVerifier) ... ok
+test_foreign_principal_and_tampered_bundle_rejected (test_m045_daw_verify.DawVerifier) ... ok
+test_genuine_archive_roundtrip_auth_and_receipt (test_m045_daw_verify.DawVerifier) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 3.171s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/gate3/request-spend HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/gate3/request-spend HTTP/1.1" 202 -
+[Studio-Server] "POST /api/m045/gate3/redeem HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/gate3/redeem HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/gate3/redeem HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/gate3/request-spend HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/verify-daw-bundle HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/verify-daw-bundle HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/verify-daw-bundle HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/verify-daw-bundle HTTP/1.1" 200 -

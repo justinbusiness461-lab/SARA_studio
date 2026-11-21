@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: shared-device account B never reads cached A project/attempt pointer
+ok 1 - shared-device account B never reads cached A project/attempt pointer
+  ---
+  duration_ms: 4427.253229
+  type: 'test'
+  ...
+# Subtest: platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+ok 2 - platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+  ---
+  duration_ms: 14010.549086
+  type: 'test'
+  ...
+# Subtest: local offline ScoreCore shell contains zero session or capability bearer tokens
+ok 3 - local offline ScoreCore shell contains zero session or capability bearer tokens
+  ---
+  duration_ms: 8559.405014
+  type: 'test'
+  ...
+# Subtest: authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+ok 4 - authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+  ---
+  duration_ms: 9076.87694
+  type: 'test'
+  ...
+# Subtest: Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+ok 5 - Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+  ---
+  duration_ms: 4965.965154
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 44072.860574

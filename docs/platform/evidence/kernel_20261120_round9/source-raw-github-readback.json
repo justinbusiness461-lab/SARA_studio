@@ -1,0 +1,83 @@
+{
+  "exact_product_commit": "b8e3848608ce29d9692f95787a93015c97ba9c1d",
+  "readback": [
+    {
+      "bytes": 10438,
+      "match": true,
+      "path": "tools/m045_host_authorities.py",
+      "sha256": "db3bb1cd916584b025edf2a32e0190085f4297e8d006c1d86043dd8f46aa6a8a"
+    },
+    {
+      "bytes": 7422,
+      "match": true,
+      "path": "tools/m045_bs1770_reference.py",
+      "sha256": "f55688ed921fe951d8e186b4c3c652ae41703bcd6fd35007f9ad02b03bdf1ba8"
+    },
+    {
+      "bytes": 115098,
+      "match": true,
+      "path": "tools/studio_server.py",
+      "sha256": "499c7fef9a2ac63e09c7475920f86573d1e0969d27fbd76439c190698c4723e2"
+    },
+    {
+      "bytes": 30846,
+      "match": true,
+      "path": "tools/platform_identity.py",
+      "sha256": "d0493d4a8a80839a6bc00b78bc76ed3520f8f153360aa34ae788bbb63067b3c4"
+    },
+    {
+      "bytes": 7532,
+      "match": true,
+      "path": "tools/m045_wave4_mastering_provenance.py",
+      "sha256": "17b5e7c3a6bd508a6d96a13e05f1a6eaff2fed58fc3cd347f094354b8002bdbc"
+    },
+    {
+      "bytes": 8847,
+      "match": true,
+      "path": "tools/m045_wave4_service.py",
+      "sha256": "5ee6547cf7a8366684ec9369dc76be57b4cd47fed959786ce23df625f504770e"
+    },
+    {
+      "bytes": 6721,
+      "match": true,
+      "path": "tests/test_platform_round9_host_authorities.py",
+      "sha256": "1e2a31fb86db425fe01fdb1e24a00eb7daf0da4f7764ccc5f8fd2481bd613317"
+    },
+    {
+      "bytes": 1513,
+      "match": true,
+      "path": "tests/test_platform_round9_erasure_rights.py",
+      "sha256": "2d95f56f2599f50885980bc285fc1b16ca31bfca6e5b8de5ac2f10ec3f8f40c6"
+    },
+    {
+      "bytes": 2946,
+      "match": true,
+      "path": "tests/test_m045_round9_bs1770_reference.py",
+      "sha256": "992bee6ca7990b8681a9d236dfea7b83d2684b23b2d9e04742f978bab9c3f0a8"
+    },
+    {
+      "bytes": 3612,
+      "match": true,
+      "path": "tests/test_platform_round9_master_http210.py",
+      "sha256": "6bed3e6ed8d3bbcf5ebe9b72d5148b4b1a51f29af3b2af62c7ddabe5b55510f5"
+    },
+    {
+      "bytes": 4499,
+      "match": true,
+      "path": "tests/test_m045_full_song_master_210.py",
+      "sha256": "2f9a671b8da86c2afd07fc7d5a1a6507a1e0d8d5538316d533f0b697c2c81148"
+    },
+    {
+      "bytes": 9817,
+      "match": true,
+      "path": "tools/platform_chat_approval.py",
+      "sha256": "002b69ff3c01dff0be39b83b670008272e80bfc7844006cf32cccf8c791db870"
+    },
+    {
+      "bytes": 8808,
+      "match": true,
+      "path": "tests/test_platform_approval_challenge.py",
+      "sha256": "21651c2bc2ef8b7e8674149cfeb507ba10f04166c75dd008208f9caa8c0bc818"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+FF
+======================================================================
+FAIL: test_authenticated_http_feedback_never_leaks_private_project (test_platform_revision_feedback.RevisionFeedbackHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_revision_feedback.py", line 77, in test_authenticated_http_feedback_never_leaks_private_project
+    self.assertEqual(response[0],201,response[2])
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_erasure_request_purges_private_feedback_before_completion (test_platform_revision_feedback.RevisionFeedbackHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_revision_feedback.py", line 99, in test_erasure_request_purges_private_feedback_before_completion
+    self.assertEqual(count,0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.611s
+
+FAILED (failures=2)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/feedback/comments HTTP/1.1" 403 -
+[Studio-Server] "POST /api/feedback/comments HTTP/1.1" 403 -
+[Studio-Server] "POST /api/feedback/comments HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -

@@ -51,6 +51,140 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <link rel="stylesheet" href="studio-shell.css"/>
 </head>
 <body>
+<section id="platformAuth" class="platform-auth" aria-label="S.A.R.A. Studio sign in" hidden>
+  <div class="platform-auth-card">
+    <p class="platform-eyebrow">S.A.R.A. Studio™ · Private artist account</p>
+    <h2>Welcome to your creative home</h2>
+    <p>Sign in to access your own projects, profile and library. This local pilot uses a password account; external sign-in providers are not connected yet.</p>
+    <label for="platformHandle">Artist handle</label><input id="platformHandle" autocomplete="username" minlength="3" maxlength="30" placeholder="your_artist_name"/>
+    <label for="platformPassword">Password (12+ characters)</label><input id="platformPassword" type="password" autocomplete="current-password" minlength="12"/>
+    <label for="platformDisplayName">Artist display name (for new accounts)</label><input id="platformDisplayName" placeholder="Artist name" maxlength="80"/>
+    <div class="platform-auth-actions"><button id="platformSignIn" type="button">Sign In</button><button id="platformSignUp" type="button" class="secondary">Create Account</button></div>
+    <p id="platformAuthStatus" role="status" aria-live="polite">READY · Sign in or create your account</p>
+  </div>
+</section>
+<section id="platformShell" aria-label="S.A.R.A. connected artist platform" hidden>
+  <header class="platform-top"><strong>S.A.R.A. Studio™</strong><span id="platformActiveArtist">Artist workspace</span><button type="button" id="platformLogout" class="secondary">Sign out</button></header>
+  <main class="platform-pages" id="platformPages">
+    <section id="platformHomePanel" aria-label="Home" hidden><h2>Home</h2><div id="platformHomeStatus" role="status">LOADING</div><p>Your private project workspace and public music discovery are connected through your account.</p><button type="button" id="platformStartCreating">Open Studio</button></section>
+    <section id="platformExplorePanel" aria-label="Explore" hidden><h2>Explore music</h2>
+      <label for="platformSearch">Search published music</label><input id="platformSearch" placeholder="Search songs or artists"/>
+      <button id="platformDoSearch" type="button" class="secondary">Search</button>
+      <div id="platformExploreStatus" role="status" aria-live="polite">LOADING</div>
+      <div id="platformExploreSongs" class="platform-cards"></div>
+      <div id="platformExploreTabs" class="platform-explore-tabs" role="group" aria-label="Explore sections">
+        <button id="platformExploreTabDiscover" type="button" aria-current="true">Discover</button>
+        <button id="platformExploreTabRooms" type="button">Rooms</button>
+        <button id="platformExploreTabCreators" type="button">Creators</button>
+      </div>
+      <div id="platformCreatorView" hidden><label for="platformCreatorHandle">Find an artist @handle</label>
+        <input id="platformCreatorHandle" placeholder="artist_handle"/><button type="button" id="platformFindCreator">Find artist</button>
+        <div id="platformCreatorResult" role="status"></div></div>
+      <div id="platformRoomView" hidden>
+        <p>Meet musicians, share verified tracks, and propose changes for the owner's review. Room conversations never commit a Studio revision.</p>
+        <div class="platform-rooms-layout">
+          <div class="platform-room-directory">
+            <h3>Explore Rooms</h3><label for="platformRoomSearch">Search room names</label>
+            <input id="platformRoomSearch" placeholder="Songwriters Circle"/>
+            <button type="button" id="platformRoomSearchButton">Find rooms</button>
+            <div id="platformRoomList" class="platform-cards" aria-label="Rooms directory"></div>
+            <h3>Create a room</h3><label for="platformRoomName">Room name</label>
+            <input id="platformRoomName" maxlength="80" placeholder="Your sound, your room"/>
+            <label for="platformRoomCategory">Category</label><select id="platformRoomCategory">
+              <option>Country-Hop</option><option>Beat Lab</option><option>Songwriters</option>
+              <option>DJ Scratch Lounge</option><option>Mix &amp; Master</option>
+              <option>Open Collaboration</option><option>Experimental</option></select>
+            <label for="platformRoomVisibility">Visibility</label><select id="platformRoomVisibility">
+              <option value="private">Private · invite only</option><option value="public">Public · discoverable</option></select>
+            <button type="button" id="platformCreateRoom">Create room</button>
+          </div>
+          <div id="platformRoomDetail" class="platform-room-conversation" hidden>
+            <h3 id="platformRoomHeading">Room</h3>
+            <div class="platform-room-actions"><button id="platformRoomJoin" type="button">Join</button>
+              <button id="platformRoomLeave" type="button">Leave</button><button id="platformRoomRefresh" type="button">Refresh</button></div>
+            <div id="platformRoomMessages" role="log" aria-label="Room conversation" aria-live="polite"></div>
+            <label for="platformRoomComposer">Your message</label><textarea id="platformRoomComposer" rows="2" maxlength="1200" placeholder="Write to the room"></textarea>
+            <button id="platformRoomSend" type="button">Send message</button>
+            <h4>Collaborate in Studio</h4><p>Proposals require an existing authorized workspace and exact source revision. No edit is auto-committed.</p>
+            <label for="platformRoomWorkspace">Workspace ID</label><input id="platformRoomWorkspace" placeholder="ws-…"/>
+            <label for="platformRoomProject">Project ID</label><input id="platformRoomProject" placeholder="Exact Studio project"/>
+            <label for="platformRoomRevision">Base revision ID</label><input id="platformRoomRevision" placeholder="Current revision"/>
+            <label for="platformRoomProposal">Proposed change</label><textarea id="platformRoomProposal" rows="2"></textarea>
+            <button id="platformRoomPropose" type="button">Propose collaboration</button>
+          </div>
+          <aside id="platformRoomSidebar" class="platform-room-participants" hidden>
+            <h3>Who's in the room</h3><p class="platform-room-presence-note">Recently observed presence, not a live connection guarantee.</p>
+            <div id="platformRoomPeople"></div>
+            <h4>Listening Station</h4><div id="platformRoomListening"></div>
+            <h4>Owner collaboration inbox</h4><p>Proposals remain uncommitted until separately reviewed and approved in Studio.</p>
+            <button id="platformRoomReviewRefresh" type="button">Review proposals</button>
+            <div id="platformRoomProposals" aria-label="Owner-only collaboration proposals"></div>
+            <label for="platformRoomPinId">Verified publication ID</label><input id="platformRoomPinId" placeholder="pub-…"/>
+            <button id="platformRoomPin" type="button">Pin published song</button>
+            <label for="platformRoomInviteHandle">Artist @handle</label><input id="platformRoomInviteHandle" placeholder="artist_handle"/>
+            <div class="platform-room-actions"><button id="platformRoomInvite" type="button">Invite</button>
+              <button id="platformRoomKick" type="button">Remove</button><button id="platformRoomBlock" type="button">Block</button></div>
+          </aside>
+        </div><p id="platformRoomStatus" role="status" aria-live="polite">READY · Select or create a room</p>
+      </div></section>
+    <section id="platformLibraryPanel" aria-label="Library" hidden><h2>My Library</h2>
+      <div id="platformLibraryStatus" role="status" aria-live="polite">LOADING</div><div id="platformLibraryProjects" class="platform-cards"></div></section>
+    <section id="platformProfilePanel" aria-label="Artist Profile" hidden><h2>Artist Profile</h2>
+      <label for="platformProfileHandle">Public @handle</label><input id="platformProfileHandle" autocomplete="off"/>
+      <label for="platformProfileName">Display name</label><input id="platformProfileName" maxlength="80"/>
+      <label for="platformBio">Bio</label><textarea id="platformBio" maxlength="1200"></textarea>
+      <button id="platformSaveProfile" type="button">Save profile</button><div id="platformProfileStatus" role="status" aria-live="polite">LOADING</div>
+      <div class="platform-wave2-hub">
+        <h3>Playlists</h3>
+        <label for="platformPlaylistTitle">New private playlist</label><input id="platformPlaylistTitle" maxlength="100" placeholder="My First Mix"/>
+        <button id="platformCreatePlaylist" type="button">Create playlist</button>
+        <p id="platformPlaylistStatus" role="status">READY · Private by default</p><div id="platformMyPlaylists" class="platform-cards"></div>
+        <h3>Albums</h3>
+        <label for="platformAlbumTitle">Draft album title</label><input id="platformAlbumTitle" maxlength="100" placeholder="My Album"/>
+        <button id="platformCreateAlbum" type="button">Create private album draft</button><p id="platformAlbumStatus" role="status">READY · Albums do not auto-publish music</p>
+        <h3>Collaborative workspaces</h3>
+        <label for="platformWorkspaceName">Workspace name</label><input id="platformWorkspaceName" maxlength="120" placeholder="Producer Team"/>
+        <button id="platformCreateWorkspace" type="button">Create workspace</button>
+        <label for="platformWorkspaceSelect">Choose workspace</label><select id="platformWorkspaceSelect" aria-label="Workspace to invite into"></select>
+        <label for="platformWorkspaceInviteHandle">Invite artist handle</label><input id="platformWorkspaceInviteHandle" placeholder="artist_handle"/>
+        <label for="platformWorkspaceInviteRole">Role</label><select id="platformWorkspaceInviteRole"><option value="viewer">Viewer</option><option value="editor">Editor</option></select>
+        <button id="platformWorkspaceInvite" type="button">Invite artist</button>
+        <button id="platformWorkspaceRevoke" type="button">Revoke artist access</button>
+        <p id="platformWorkspaceStatus" role="status">READY · Access remains private</p><div id="platformMyWorkspaces" class="platform-cards"></div>
+        <h3>Credits</h3>
+        <p>Local pilot: credit spending and payment grants remain blocked until a verified provider is connected.</p>
+        <button id="platformCreditsRefresh" type="button">Check credit balance</button><p id="platformCreditsStatus" role="status">LOADING</p>
+        <h3>Social</h3>
+        <label for="platformSocialHandle">Artist handle</label><input id="platformSocialHandle" placeholder="artist_handle"/>
+        <button id="platformFollow" type="button">Follow artist</button><button id="platformBlock" type="button">Block artist</button>
+        <p id="platformSocialStatus" role="status">READY</p>
+        <h3>Notifications</h3><button id="platformNotificationsRefresh" type="button">Refresh notifications</button>
+        <p id="platformNotificationsStatus" role="status">LOADING</p><div id="platformNotifications" class="platform-cards"></div>
+      </div>
+    </section>
+    <section id="platformChatPanel" aria-label="S.A.R.A. platform chat" hidden>
+      <h2>Ask S.A.R.A.</h2><p>Search public songs, create a private playlist, check credits or prepare a publication review. Create/Studio has the music editing controls.</p>
+      <label for="platformChatInstruction">Your instruction</label>
+      <textarea id="platformChatInstruction" rows="3" placeholder="Generate 96 BPM E minor Southern rock"></textarea>
+      <label for="platformChatBars">Target bars (only when editing; for example: 5,6)</label>
+      <input id="platformChatBars" type="text" inputmode="numeric" autocomplete="off" placeholder="Leave empty if not selected"/>
+      <p>When editing a saved song, S.A.R.A. uses its open revision and the track selected in Studio. Ambiguous edits require clarification; protected changes require approval.</p>
+      <button id="platformChatSend" type="button">Ask S.A.R.A.</button>
+      <button id="platformChatApprove" type="button" hidden>Review and approve exact operation</button>
+      <p id="platformChatStatus" role="status" aria-live="polite">READY · Bounded verified platform commands</p>
+      <pre id="platformChatResult" class="platform-chat-result"></pre>
+    </section>
+  </main>
+  <div id="platformMiniPlayer" class="platform-mini-player" aria-label="Persistent music player"><span id="platformNowPlaying">Not playing</span><audio id="platformAudio" controls preload="none" aria-label="Public song player"></audio></div>
+  <nav id="platformNavigation" aria-label="Platform navigation">
+    <button id="platformNavHome" data-platform-view="home" type="button">Home</button>
+    <button id="platformNavExplore" data-platform-view="explore" type="button">Explore</button>
+    <button id="platformNavStudio" data-platform-view="studio" type="button">Create</button>
+    <button id="platformNavLibrary" data-platform-view="library" type="button">Library</button>
+    <button id="platformNavProfile" data-platform-view="profile" type="button">Profile</button>
+    <button id="platformNavChat" data-platform-view="chat" type="button">Chat</button>
+  </nav>
+</section>
 <div class="app">
 <header id="studioProjectBar" class="studio-project-bar" aria-label="Studio project and revision">
 <div class="studio-project-identity">
@@ -62,7 +196,56 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
   <span class="studio-live-key">Revision <b id="studioHeaderRevision">Draft</b></span>
 </div>
 <canvas id="studioWaveformPreview" width="280" height="44" role="img" aria-label="Verified audio waveform preview; empty until lawful audio is ready"></canvas>
+<div id="studioPcmLevel" class="studio-pcm-meter" data-state="idle" role="status" aria-live="off" aria-label="Sampled PCM level; idle"><span id="studioPcmLevelText">PCM level · idle (not LUFS)</span><div class="studio-pcm-meter-track" aria-hidden="true"><div id="studioPcmLevelFill"></div></div></div>
 </header>
+<div id="platformPublishPanel" hidden>
+  <button type="button" id="platformPublishCurrent" class="secondary">Review & Publish Verified Song</button>
+  <div id="platformPublishStatus" role="status" aria-live="polite">No public release approved</div>
+  <details id="platformR14Tools" class="platform-r14-workspace">
+    <summary>Revision feedback &amp; release preparation</summary>
+    <p>Comments and preview links stay on the exact verified Studio revision. These controls do not change song authority.</p>
+    <section aria-label="Waveform annotations" class="platform-r14-section">
+      <h3>Waveform comments</h3>
+      <canvas id="platformWaveformMarkersCanvas" width="480" height="64" aria-label="Revision-bound timeline with feedback markers" role="img"></canvas>
+      <label for="platformFeedbackPosition">Sample position</label>
+      <input id="platformFeedbackPosition" type="number" min="0" step="1" inputmode="numeric" value="0"/>
+      <label for="platformFeedbackBeat">Musical position</label>
+      <input id="platformFeedbackBeat" maxlength="80" value="bar 1 beat 1"/>
+      <label for="platformFeedbackBody">Comment</label>
+      <textarea id="platformFeedbackBody" maxlength="2000" rows="2" placeholder="Change this one thing…"></textarea>
+      <div class="platform-r14-actions">
+        <button id="platformFeedbackAdd" type="button">Add marker</button>
+        <button id="platformFeedbackLoad" type="button">Refresh markers</button>
+      </div>
+      <p id="platformFeedbackStatus" role="status" aria-live="polite">Verify selected WAV before marking</p>
+      <ol id="platformWaveformMarkers" aria-label="Exact revision comments"></ol>
+    </section>
+    <section aria-label="Private preview sharing" class="platform-r14-section">
+      <h3>Private preview (revocable)</h3>
+      <div class="platform-r14-actions">
+        <button id="platformPreviewCreate" type="button">Create 30-minute link</button>
+        <button id="platformPreviewRevoke" type="button" disabled>Revoke link</button>
+      </div>
+      <label for="platformPreviewShareUrl">Private audio link (share intentionally)</label>
+      <input id="platformPreviewShareUrl" readonly autocomplete="off" aria-label="Private preview share link"/>
+      <p id="platformPreviewStatus" role="status" aria-live="polite">No preview grant issued</p>
+    </section>
+    <section aria-label="Prepare release package" class="platform-r14-section">
+      <h3>Prepare release package</h3>
+      <p>Requires verified audio, host-cleared rights, and a separate explicit artist approval. Does not distribute music or grant Content ID.</p>
+      <label for="platformReleaseTitle">Accepted song title</label>
+      <input id="platformReleaseTitle" maxlength="160" autocomplete="off"/>
+      <label for="platformReleaseGenre">Genre</label>
+      <input id="platformReleaseGenre" maxlength="100" autocomplete="off"/>
+      <label for="platformReleaseCover">Cover-art SHA-256</label>
+      <input id="platformReleaseCover" maxlength="64" autocomplete="off"/>
+      <label for="platformReleaseRights">Audio rights declaration (host proof required)</label>
+      <select id="platformReleaseRights"><option value="ARTIST_ORIGINAL">Artist original</option><option value="LICENSE_CLEARED">License cleared</option></select>
+      <button id="platformReleasePrepare" type="button">Prepare release package</button>
+      <p id="platformReleaseStatus" role="status" aria-live="polite">Not prepared · DSP publication is not authorized</p>
+    </section>
+  </details>
+</div>
 <h1>S.A.R.A. <span>Sound Forge</span></h1>
 <p class="sub">Sound™ · Shelves · Flux · OTIO-inspired · Local</p>
 <div id="status" class="status ok">Type a prompt → Compile → Play</div>
@@ -75,6 +258,8 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 </div>
 <div class="card" id="m045StudioControls" tabindex="-1">
 <h3>Generation Attempt · Preservation Proof</h3>
+<section id="studioGenerationJourney" class="studio-generation-journey" aria-label="Generation journey; not an execution authority" data-active-stage="COMPOSE"><h4>Generation journey · status, not proof</h4><p id="studioGenerationNote" class="hint" role="status">No paid provider execution authorized by this tracker. Cost quote unavailable; generated audio and approval unverified.</p><ol class="studio-generation-steps"><li data-generation-stage="COMPOSE" data-stage-status="active"><span>Compose</span><small>Draft</small></li><li data-generation-stage="GENERATE" data-stage-status="pending"><span>Generate / cost review</span><small>Not verified</small></li><li data-generation-stage="PROCESSING" data-stage-status="pending"><span>Processing / owner receipt</span><small>Not verified</small></li><li data-generation-stage="CANDIDATE" data-stage-status="pending"><span>Candidate · Take 1–4</span><small>Not verified</small></li><li data-generation-stage="PLAYABLE" data-stage-status="pending"><span>Playable / verified WAV</span><small>Not verified</small></li><li data-generation-stage="EDIT" data-stage-status="pending"><span>Edit · target and locks</span><small>Not verified</small></li><li data-generation-stage="COMPARE" data-stage-status="pending"><span>Compare · musical position</span><small>Not verified</small></li><li data-generation-stage="APPROVE" data-stage-status="pending"><span>Approve · artist decision</span><small>Not verified</small></li></ol></section>
+
 <p class="hint">Generate only from a saved revision. Full-song replacement is P3; Sonic Lock blocks it. Scoped repaint requires lawful source audio, a compatible ACE-Step endpoint, and audition. Exact outside-window PCM is verified; musical isolation is not guaranteed.</p>
 <label for="m045Provider">Provider</label>
 <select id="m045Provider"><option value="eleven">Eleven Music (requires approved key)</option><option value="ace">ACE-Step (requires qualified remote endpoint)</option></select>
@@ -265,8 +450,10 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="app-core.js"></script>
 <script src="scorecore.js"></script>
+<script src="native-bridge.js"></script>
 <script src="app-ui.js"></script>
 <script src="app-cinema.js"></script>
+<script src="platform-ui.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   if (window.pulseForgeCinemaSync) window.pulseForgeCinemaSync.init();

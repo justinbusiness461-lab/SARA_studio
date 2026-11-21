@@ -1,0 +1,10 @@
+test_full_song_dry_run_redacts_host_secret_and_never_authorizes_external_spend (test_m045_modal_trial_runner.BoundedTrial) ... ok
+test_malformed_host_request_and_unsafe_budget_rejected (test_m045_modal_trial_runner.BoundedTrial) ... ok
+test_offline_authenticated_wave_audit_has_no_publication_or_fabricated_approval (test_m045_modal_trial_runner.BoundedTrial) ... ok
+test_repaint_requires_exact_source_target_and_declared_preservation_proof (test_m045_modal_trial_runner.BoundedTrial) ... ok
+test_spend_flag_absent_disabled_does_not_qualify_trial (test_m045_modal_trial_runner.BoundedTrial) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.379s
+
+OK

@@ -1,0 +1,28 @@
+test_host_verified_receipt_creates_one_ledger_grant (test_platform_round5_native_receipt.NativeReceiptHTTP) ... ERROR
+test_unconfigured_host_returns_503_and_forged_browser_credit_fields_rejected (test_platform_round5_native_receipt.NativeReceiptHTTP) ... FAIL
+
+======================================================================
+ERROR: test_host_verified_receipt_creates_one_ledger_grant (test_platform_round5_native_receipt.NativeReceiptHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round5/tests/test_platform_round5_native_receipt.py", line 26, in test_host_verified_receipt_creates_one_ledger_grant
+    studio.configure_platform_native_store_verifier(host)
+AttributeError: module 'studio_server' has no attribute 'configure_platform_native_store_verifier'
+
+======================================================================
+FAIL: test_unconfigured_host_returns_503_and_forged_browser_credit_fields_rejected (test_platform_round5_native_receipt.NativeReceiptHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round5/tests/test_platform_round5_native_receipt.py", line 18, in test_unconfigured_host_returns_503_and_forged_browser_credit_fields_rejected
+    self.assertEqual(self.send()[0],503)
+AssertionError: 403 != 503
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.279s
+
+FAILED (failures=1, errors=1)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 403 -

@@ -1,0 +1,23 @@
+test_newest_bounded_feedback_is_visible_not_starved_by_old_comments (test_platform_revision_feedback.RevisionFeedbackHTTP) ... FAIL
+
+======================================================================
+FAIL: test_newest_bounded_feedback_is_visible_not_starved_by_old_comments (test_platform_revision_feedback.RevisionFeedbackHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_revision_feedback.py", line 116, in test_newest_bounded_feedback_is_visible_not_starved_by_old_comments
+    self.assertEqual(result['comments'][0]['body'],'comment-2')
+AssertionError: 'comment-0' != 'comment-2'
+- comment-0
+?         ^
++ comment-2
+?         ^
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.770s
+
+FAILED (failures=1)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -

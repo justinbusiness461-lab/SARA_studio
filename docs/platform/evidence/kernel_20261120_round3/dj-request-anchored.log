@@ -1,0 +1,36 @@
+TAP version 13
+# DJ_REQ 3824 POST projects/commit
+# DJ_RES 4333 200 projects/commit
+# DJ_REQ 4821 POST projects/render
+# DJ_RES 13697 200 projects/render
+# DJ_REQ 14022 POST projects/audio
+# DJ_RES 15562 200 projects/audio
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+not ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 46344.549884
+  type: 'test'
+  location: '/tmp/sara_r3/SARA_studio-d35da48c44894109468b3a1e7d56d09c7a375246/tests/m045-dj-grid.browser.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.selectOption: Timeout 12000ms exceeded.
+    Call log:
+      - waiting for locator('#djDeck')
+        - locator resolved to <select id="djDeck">…</select>
+      - attempting select option action
+        - waiting for element to be visible and enabled
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara_r3/SARA_studio-d35da48c44894109468b3a1e7d56d09c7a375246/tests/m045-dj-grid.browser.cjs:48:32)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 47023.644363

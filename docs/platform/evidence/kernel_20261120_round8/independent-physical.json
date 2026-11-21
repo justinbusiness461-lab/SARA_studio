@@ -1,0 +1,23 @@
+{
+  "channels": 2,
+  "commercial_rights": "UNVERIFIED_HELD",
+  "creative_approval": false,
+  "decoded_pcm_sha256": "aca1b59a1262dac77f0be0865bcf4cdea5d46017b089c90d877ebb7adce855cf",
+  "expected_pcm_sha256": "aca1b59a1262dac77f0be0865bcf4cdea5d46017b089c90d877ebb7adce855cf",
+  "ffmpeg_pcm_identity": true,
+  "ffprobe": {
+    "channels": 2,
+    "codec_name": "pcm_s16le",
+    "duration": "210.000000",
+    "sample_rate": "44100"
+  },
+  "frames": 9261000,
+  "release_qualified": false,
+  "sample_level_exact": true,
+  "sample_rate": 44100,
+  "schema": "sara.mix.r8.physical.v1",
+  "seconds": 210,
+  "source": "DETERMINISTIC_SYNTHETIC_F64_STEM",
+  "wav_bytes": 37044044,
+  "wav_sha256": "05aa562c828eef87d0c58382ada277751fc250dda4bacf63a4dec20566cc944a"
+}

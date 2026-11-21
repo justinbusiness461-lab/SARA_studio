@@ -1,0 +1,21 @@
+test_host_verified_receipt_creates_one_ledger_grant (test_platform_round5_native_receipt.NativeReceiptHTTP) ... ok
+test_unconfigured_host_returns_503_and_forged_browser_credit_fields_rejected (test_platform_round5_native_receipt.NativeReceiptHTTP) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.466s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 403 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 200 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 200 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 503 -
+[Studio-Server] "POST /api/billing/native-receipt HTTP/1.1" 400 -
+[Studio-Server] "GET /api/credits/balance HTTP/1.1" 200 -

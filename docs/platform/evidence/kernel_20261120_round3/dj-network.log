@@ -1,0 +1,28 @@
+TAP version 13
+# DJ_REQ 4742 POST projects/commit
+# DJ_RES 5553 200 projects/commit
+# DJ_REQ 6102 POST projects/render
+# DJ_RES 15730 200 projects/render
+# DJ_RENDER_STATE {"status":"Revision saved. Rendering audio…","revision":"Saved revision: 90fe11684996fa7a6a6157c298c8e377b212d97c60c4a757aff66b8a62700d85","mode":""}
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+not ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 19109.848422
+  type: 'test'
+  location: '/tmp/sara_r3/SARA_studio-d35da48c44894109468b3a1e7d56d09c7a375246/tests/m045-dj-grid.browser.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForResponse: Timeout 12000ms exceeded while waiting for event "response"'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara_r3/SARA_studio-d35da48c44894109468b3a1e7d56d09c7a375246/tests/m045-dj-grid.browser.cjs:38:22)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 19618.111829

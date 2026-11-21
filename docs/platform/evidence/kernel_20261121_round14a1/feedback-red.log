@@ -1,0 +1,120 @@
+test_acc01_entry_does_not_bootstrap_local_user (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc02_signup_login_cross_session_and_revoke (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc03_concurrent_handle_uniqueness_and_bio_sanitization (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc04_cross_owner_cas_and_public_deny (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc05_legacy_mutations_are_not_user_bound_and_must_be_blocked (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_profile_and_session_survive_fresh_store (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub01_no_public_listing_without_approval (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub02_unbound_cas_and_rights_always_fail_closed (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub03_explicit_publication_explore_search_stream_unpublish (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub04_historical_takes_cannot_become_public (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_exact_source_comment_survives_new_revision_without_reanchoring (test_platform_revision_feedback.RevisionFeedbackHTTP) ... ERROR
+test_foreign_principal_and_forged_artifact_fail_closed (test_platform_revision_feedback.RevisionFeedbackHTTP) ... ERROR
+test_invalid_sample_position_never_becomes_a_comment (test_platform_revision_feedback.RevisionFeedbackHTTP) ... ERROR
+
+======================================================================
+ERROR: test_exact_source_comment_survives_new_revision_without_reanchoring (test_platform_revision_feedback.RevisionFeedbackHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_revision_feedback.py", line 19, in test_exact_source_comment_survives_new_revision_without_reanchoring
+    from platform_feedback import FeedbackStore
+ModuleNotFoundError: No module named 'platform_feedback'
+
+======================================================================
+ERROR: test_foreign_principal_and_forged_artifact_fail_closed (test_platform_revision_feedback.RevisionFeedbackHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_revision_feedback.py", line 44, in test_foreign_principal_and_forged_artifact_fail_closed
+    from platform_feedback import FeedbackStore
+ModuleNotFoundError: No module named 'platform_feedback'
+
+======================================================================
+ERROR: test_invalid_sample_position_never_becomes_a_comment (test_platform_revision_feedback.RevisionFeedbackHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_revision_feedback.py", line 57, in test_invalid_sample_position_never_becomes_a_comment
+    from platform_feedback import FeedbackStore
+ModuleNotFoundError: No module named 'platform_feedback'
+
+----------------------------------------------------------------------
+Ran 13 tests in 8.887s
+
+FAILED (errors=3)
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-43cc926c458b3b53db616e1b025ab555 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-43cc926c458b3b53db616e1b025ab555/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-43cc926c458b3b53db616e1b025ab555/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-43cc926c458b3b53db616e1b025ab555/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -

@@ -1,0 +1,17 @@
+test_changed_payload_same_id_rejects (test_m044_operations.OperationTests) ... ok
+test_crash_before_history_bind_recovers_without_replay (test_m044_operations.OperationTests) ... ok
+test_interruption_before_pointer_promotion_keeps_previous_authority (test_m044_operations.OperationTests) ... ok
+test_invalid_operation_id_rejects (test_m044_operations.OperationTests) ... ok
+test_late_render_binds_historical_artifact_to_r1 (test_m044_operations.OperationTests)
+Late R1 render must not promote R2, but must remain retrievable on R1. ... ok
+test_malformed_historical_wav_rejected (test_m044_operations.OperationTests) ... ok
+test_replay_after_later_revision_does_not_reselect_old_revision (test_m044_operations.OperationTests) ... ok
+test_same_request_replay_returns_original_revision_without_advancing (test_m044_operations.OperationTests) ... ok
+test_stale_non_render_still_rejects (test_m044_operations.OperationTests) ... ok
+test_stale_render_cannot_bind_to_new_composition (test_m044_operations.OperationTests) ... ok
+test_uncertain_result_after_promotion_recovers_by_replay (test_m044_operations.OperationTests) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.577s
+
+OK
