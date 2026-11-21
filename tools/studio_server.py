@@ -1726,7 +1726,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if not is_external_erasure and not secrets.compare_digest(supplied,CAPABILITY):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant", "/api/m045/scratch/render"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant", "/api/m045/scratch/render", "/api/m045/export-daw-bundle"}:
             try:
                 principal_id = (self._platform_principal() if PLATFORM_MODE
                   else resolve_studio_session(self.headers.get("X-Studio-Session", "")))
@@ -1758,7 +1758,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             path.startswith("/api/projects/") or
             path in {"/api/m045/transcribe-midi","/api/m045/preview-synth",
                 "/api/m045/master","/api/m045/compound-plan",
-                "/api/m045/sample-preview","/api/m045/soundtrack-grant","/api/m045/scratch/render"}):
+                "/api/m045/sample-preview","/api/m045/soundtrack-grant","/api/m045/scratch/render","/api/m045/export-daw-bundle"}):
             # The legacy local-only endpoints rely on ambient LOCAL principal,
             # capability-only auth or unchecked paths. None are admitted to
             # the multi-user platform until their owner contracts are repaired.
@@ -1793,6 +1793,34 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
                 return self._json(400, {"status": "ERROR",
                     "error": "historical soundtrack grant source unqualified"})
+
+        if path == "/api/m045/export-daw-bundle":
+            # DAW package is an authenticated read-only projection of a known
+            # render attempt. Stems/tempo never originate client-side truth.
+            from m045_daw_export import export_authorized_daw_bundle,DawExportHold,DawSourceDenied
+            try:
+                with tempfile.TemporaryDirectory(prefix=".sara-daw-private-") as folder:
+                    archive=Path(folder)/"bundle.zip"
+                    export_authorized_daw_bundle(EXPORT_ROOT,payload,principal_id,archive)
+                    # A long export must not outlive a revoked login session.
+                    if PLATFORM_MODE and self._platform_principal()!=principal_id:
+                        raise ProjectConflict("DAW_SESSION_REVOKED_BEFORE_DOWNLOAD")
+                    self.send_response(200)
+                    self.send_header("Content-Type","application/zip")
+                    self.send_header("Cache-Control","private, no-store")
+                    self.send_header("Content-Disposition",'attachment; filename="sara-daw-bundle.zip"')
+                    self.send_header("Content-Length",str(archive.stat().st_size))
+                    self.end_headers()
+                    with archive.open('rb') as handle:
+                        for chunk in iter(lambda:handle.read(65536),b''):
+                            self.wfile.write(chunk)
+                return
+            except (ProjectConflict,DawSourceDenied,PermissionError) as error:
+                return self._json(403,{"status":"DENY","error":str(error)})
+            except DawExportHold as error:
+                return self._json(409,{"status":"HOLD","error":str(error)})
+            except (ValueError,KeyError,TypeError,OSError,wave.Error,EOFError) as error:
+                return self._json(400,{"status":"ERROR","error":"DAW_EXPORT_SOURCE_UNQUALIFIED"})
 
         if path == "/api/m045/master":
             try:

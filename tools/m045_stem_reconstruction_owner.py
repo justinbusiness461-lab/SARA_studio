@@ -66,19 +66,18 @@ def authorized_reconstruct_mix(root,request,principal_id):
         operation_id="mix:"+hashlib.sha256(project_json({
             "projectId":pid,"sourceRevisionId":rid,
             "recipeSha256":recipe_digest,"masterSha256":sha})).hexdigest()[:48]
-        provenance=None
-        if len(master)>MAX_ARTIFACT:
-            with wave.open(io.BytesIO(master),"rb") as wav:
-                pcm_hash=hashlib.sha256(wav.readframes(wav.getnframes())).hexdigest()
-            provenance=CanonicalProvenanceRecord(
-                artifact_sha256=sha,pcm_sha256=pcm_hash,
-                project_id=pid,revision_id=rid,origin_type="DSP_TRANSFORM",
-                preservation_tier="P3",rights_status="UNVERIFIED_HELD",
-                parent_artifact_sha256s=[parent[0]],
-                transform_chain=[{"operation":"sara.mix.recipe.v1",
-                  "recipeSha256":recipe_digest,
-                  "stemArtifactIds":ids,
-                  "sampleCount":recipe["sample_count"]}])
+        # Persist the exact recipe digest for EVERY size of canonical mix.
+        # Prior small files omitted this and could not later prove DAW source.
+        with wave.open(io.BytesIO(master),'rb') as wav:
+            pcm_hash=hashlib.sha256(wav.readframes(wav.getnframes())).hexdigest()
+        provenance=CanonicalProvenanceRecord(
+            artifact_sha256=sha,pcm_sha256=pcm_hash,
+            project_id=pid,revision_id=rid,origin_type="DSP_TRANSFORM",
+            preservation_tier="P3",rights_status="UNVERIFIED_HELD",
+            parent_artifact_sha256s=[parent[0]],
+            transform_chain=[{"operation":"sara.mix.recipe.v1",
+                "recipeSha256":recipe_digest,"stemArtifactIds":ids,
+                "sampleCount":recipe["sample_count"]}])
         result=render_publish_operation(root,{"projectId":pid,
           "sourceRevisionId":rid,"operationId":operation_id,
           "filename":"dry-stem-mix.wav","subdirectory":"reconstruction",
