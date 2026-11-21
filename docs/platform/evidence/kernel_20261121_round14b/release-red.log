@@ -1,0 +1,150 @@
+======================================================================
+ERROR: test_host_verified_voice_scoped_and_revocable (test_platform_release_gateway.ReleaseGatewayHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_release_gateway.py", line 91, in test_host_verified_voice_scoped_and_revocable
+    from platform_release_gateway import StudioReleaseGateway
+ModuleNotFoundError: No module named 'platform_release_gateway'
+
+======================================================================
+FAIL: test_erasure_invalidates_pending_release_and_voice_asset (test_platform_release_gateway.ReleaseGatewayHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_release_gateway.py", line 116, in test_erasure_invalidates_pending_release_and_voice_asset
+    code,_,approval=self.approval();self.assertEqual(code,201,approval)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_prepare_requires_exact_single_use_owner_approval_and_host_rights (test_platform_release_gateway.ReleaseGatewayHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_release_gateway.py", line 31, in test_prepare_requires_exact_single_use_owner_approval_and_host_rights
+    self.assertEqual(code,201,approval)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_registration_does_not_self_verify_voice_consent (test_platform_release_gateway.ReleaseGatewayHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_release_gateway.py", line 83, in test_registration_does_not_self_verify_voice_consent
+    self.assertEqual(code,201,asset)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_rejects_forged_audio_historical_revision_and_forged_artist (test_platform_release_gateway.ReleaseGatewayHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_release_gateway.py", line 75, in test_rejects_forged_audio_historical_revision_and_forged_artist
+    self.assertEqual(code,201,approval)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_release_rights_policy_and_mutated_metadata_are_rejected (test_platform_release_gateway.ReleaseGatewayHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_release_gateway.py", line 50, in test_release_rights_policy_and_mutated_metadata_are_rejected
+    self.assertEqual(code,201,challenge)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+----------------------------------------------------------------------
+Ran 16 tests in 11.721s
+
+FAILED (failures=5, errors=1)
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-54a565ace87cc4652a2fa53670e657f9 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-54a565ace87cc4652a2fa53670e657f9/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-54a565ace87cc4652a2fa53670e657f9/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-54a565ace87cc4652a2fa53670e657f9/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/voice-assets HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/release/approve HTTP/1.1" 403 -

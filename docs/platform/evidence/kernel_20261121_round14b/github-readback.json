@@ -1,0 +1,80 @@
+{
+  "matched": 12,
+  "results": [
+    {
+      "byteExact": true,
+      "bytes": 10299,
+      "path": "tools/platform_feedback.py",
+      "sha256": "ef7aff5068d7248213341b0be4fcac9e5037f1f1b3b48d1c9dbcdceb089ed6df"
+    },
+    {
+      "byteExact": true,
+      "bytes": 131668,
+      "path": "tools/studio_server.py",
+      "sha256": "dfcbeb92e96006481058225610aceade0b53dcf45a9a88a2107e2c8c527f1f92"
+    },
+    {
+      "byteExact": true,
+      "bytes": 34211,
+      "path": "tools/platform_identity.py",
+      "sha256": "23d87dffd0453bc55897877f3d4e32943aeb8159d3d1c8f3cd93f7bbbea92183"
+    },
+    {
+      "byteExact": true,
+      "bytes": 13829,
+      "path": "tools/platform_release_gateway.py",
+      "sha256": "2262c74c4717e651ed23ae2783dd14529fb13ce00f58a091fe3b4d741e922e94"
+    },
+    {
+      "byteExact": true,
+      "bytes": 4846,
+      "path": "tests/test_platform_private_previews.py",
+      "sha256": "eb892d95a34fea50c5c5e85ac677bd0537f6a1a991cc8680b943da5a5d046700"
+    },
+    {
+      "byteExact": true,
+      "bytes": 8288,
+      "path": "tests/test_platform_release_gateway.py",
+      "sha256": "1c7bdd99f91c771fcc6ec9ed22ad43f20a2cec64f18030fb06e26ab1b6a38cfd"
+    },
+    {
+      "byteExact": true,
+      "bytes": 37845,
+      "path": "index.html",
+      "sha256": "089a63e44fa41486bc85322c4435c66a565579b1265c7ea5b0019e1ab5ebcfe6"
+    },
+    {
+      "byteExact": true,
+      "bytes": 36005,
+      "path": "platform-ui.js",
+      "sha256": "6fae7b4d408a0b0c5e68bac9e36d7e219d7a7163d4883cbc7e920491b2da583d"
+    },
+    {
+      "byteExact": true,
+      "bytes": 18994,
+      "path": "studio-shell.css",
+      "sha256": "271579119002e38b1d24b9a9d32b0453229ab544e260002671edfb5d9c9a96c4"
+    },
+    {
+      "byteExact": true,
+      "bytes": 4326,
+      "path": "tests/m045-release-gateway.browser.cjs",
+      "sha256": "06b519fc2d9813bdb6d956e5c189e1241dd83d8ccdbaf4cb1683a9ddfe74875f"
+    },
+    {
+      "byteExact": true,
+      "bytes": 4798,
+      "path": "tests/m045-dj-grid.browser.cjs",
+      "sha256": "408cb8b69376cc18148c9c2156242fb72b6728664ea643dccb2e1698f36954b7"
+    },
+    {
+      "byteExact": true,
+      "bytes": 3719,
+      "path": "tests/m045-explore-rooms.browser.cjs",
+      "sha256": "6a48e8758aacebce7b512d5c348147dc6f2a9509594dd7ae0c50ef75159cb0a2"
+    }
+  ],
+  "sourceCommit": "cb8e832694fab0412591a41e7ffe958b7405cd4c",
+  "total": 12,
+  "verification": "RAW_GITHUB_HTTP_READBACK"
+}

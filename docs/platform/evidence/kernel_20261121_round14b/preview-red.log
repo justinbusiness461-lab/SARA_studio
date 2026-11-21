@@ -1,0 +1,135 @@
+======================================================================
+FAIL: test_account_erasure_blocks_audio_even_before_worker_purge (test_platform_private_previews.PrivatePreviewHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_private_previews.py", line 61, in test_account_erasure_blocks_audio_even_before_worker_purge
+    self.assertEqual(status,201,grant)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_expiration_fails_closed (test_platform_private_previews.PrivatePreviewHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_private_previews.py", line 52, in test_expiration_fails_closed
+    self.assertEqual(status,201,grant)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_historical_grant_never_tracks_new_current_revision (test_platform_private_previews.PrivatePreviewHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_private_previews.py", line 73, in test_historical_grant_never_tracks_new_current_revision
+    self.assertEqual(status,201,grant)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_link_playback_and_metadata_revoked_immediately (test_platform_private_previews.PrivatePreviewHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_private_previews.py", line 23, in test_link_playback_and_metadata_revoked_immediately
+    self.assertEqual(status,201,grant)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+======================================================================
+FAIL: test_token_is_required_and_not_forged_by_id_or_cas (test_platform_private_previews.PrivatePreviewHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r14/source/tests/test_platform_private_previews.py", line 40, in test_token_is_required_and_not_forged_by_id_or_cas
+    self.assertEqual(status,201,grant)
+AssertionError: 403 != 201 : {'status': 'DENY', 'error': 'PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED'}
+
+----------------------------------------------------------------------
+Ran 15 tests in 11.078s
+
+FAILED (failures=5)
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-453fae8a0c4d98423b5d356cc07af572 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-453fae8a0c4d98423b5d356cc07af572/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-453fae8a0c4d98423b5d356cc07af572/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-453fae8a0c4d98423b5d356cc07af572/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/previews/grants HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/previews/grants HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/previews/grants HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/previews/grants HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/previews/grants HTTP/1.1" 403 -
