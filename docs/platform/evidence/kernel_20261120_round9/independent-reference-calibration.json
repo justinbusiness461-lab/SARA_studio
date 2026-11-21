@@ -1,0 +1,50 @@
+{
+  "allPass": true,
+  "comparison": "FFMPEG_EBUR128_PEAK_TRUE",
+  "independentCalibrationCertificate": false,
+  "schema": "sara.m045.bs1770.reference.compare.v1",
+  "scope": "SYNTHETIC_ONLY",
+  "sourceProductCommit": "b8e3848608ce29d9692f95787a93015c97ba9c1d",
+  "vectors": [
+    {
+      "deltaDB": 0.017,
+      "deltaLU": 0.0652,
+      "id": "997_stereo_44k1",
+      "independentFfmpegIntegratedLufs": -6.0,
+      "independentFfmpegTruePeakDbtp": -6.0,
+      "referenceIntegratedLufs": -6.0652,
+      "referenceTruePeakDbtp": -6.017,
+      "waveSha256": "009986bc5aeab23c040520d9a41c60a26aa8f1ff05f893e3e042a4fcaf9d2b20"
+    },
+    {
+      "deltaDB": 0.0205,
+      "deltaLU": 0.0208,
+      "id": "997_stereo_48k",
+      "independentFfmpegIntegratedLufs": -6.0,
+      "independentFfmpegTruePeakDbtp": -6.0,
+      "referenceIntegratedLufs": -6.0208,
+      "referenceTruePeakDbtp": -6.0205,
+      "waveSha256": "36f090c6eca564da2cb0f9eeebe25dcfbc1e81a6cc22684bfb32fb6c8c9e4964"
+    },
+    {
+      "deltaDB": 0.0205,
+      "deltaLU": 0.0405,
+      "id": "997_plus_silence",
+      "independentFfmpegIntegratedLufs": -6.4,
+      "independentFfmpegTruePeakDbtp": -6.0,
+      "referenceIntegratedLufs": -6.3595,
+      "referenceTruePeakDbtp": -6.0205,
+      "waveSha256": "5fdada4e96c4af218bb6072d658bd37130ffd5c1ba5ff00e2f0564a83ef55b5e"
+    },
+    {
+      "deltaDB": 0.0791,
+      "deltaLU": 0.0242,
+      "id": "fs4_intersample",
+      "independentFfmpegIntegratedLufs": 3.2,
+      "independentFfmpegTruePeakDbtp": 0.4,
+      "referenceIntegratedLufs": 3.1758,
+      "referenceTruePeakDbtp": 0.4791,
+      "waveSha256": "29a0230d2e7fbf8b2aaa8f1345b68649228ce0a4fa4303660df4806abdcd13eb"
+    }
+  ]
+}

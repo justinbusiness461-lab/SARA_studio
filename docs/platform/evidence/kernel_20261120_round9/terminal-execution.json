@@ -1,0 +1,96 @@
+{
+  "R9A": {
+    "accountErasureHostRightsPrincipal": "HOLD",
+    "policyLedger": "HOST_PRIVATE_SQLITE",
+    "revokedKeys": "DENY",
+    "rightsPolicyVerifiedLegalLicense": false,
+    "unauthorizedDefault": "DENY"
+  },
+  "R9B": {
+    "audioFrames": 9261000,
+    "independentReferenceVectors": 4,
+    "maxDbtpDifference": 0.0791,
+    "maxLuDifference": 0.0652,
+    "realMusicApproved": false,
+    "referenceMeter": "BS1770_TWO_STAGE_BIQUAD_NON_ACCREDITED",
+    "testSampleRateHz": 44100,
+    "truePeakOversampleFactor": 4
+  },
+  "R9C": {
+    "pr36AheadOfPr37": 0,
+    "pr36AlreadyAncestor": true,
+    "pr36Head": "862a7ed11f12835b92c4f0b5673241ae4362b8c2"
+  },
+  "branch": "feat/platform-identity-and-catalog",
+  "chromiumCancellations": 0,
+  "cinemaRepoModified": false,
+  "commands": {
+    "chromium": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+    "node": "node --test tests/*.test.cjs",
+    "python": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -v"
+  },
+  "evidenceFileDigests": {
+    "chromium-full-final.log": {
+      "bytes": 6641,
+      "sha256": "6123873c4bd169e0e4f42b97946941d4e1098e45723e8b0f1a4317259f14df3c"
+    },
+    "independent-reference-calibration-reproducer.py": {
+      "bytes": 2103,
+      "sha256": "0255740157ce3172a70d27580925f1f72aca19d0e46daba174f625af6fc69a08"
+    },
+    "independent-reference-calibration.json": {
+      "bytes": 1696,
+      "sha256": "1090bbb136941a1819476fd6a27d810afa44a5c0bd33b56b648fb0fb679c3d3c"
+    },
+    "independent-reference-calibration.log": {
+      "bytes": 49,
+      "sha256": "f7e71f92a078de80c0d76afe456a23573f50f7ec7c351410a2578a046203877b"
+    },
+    "node-full-final.log": {
+      "bytes": 10348,
+      "sha256": "2887f40d0dd4e9ba0b78446b3a761e8c07e2f0042692ba53184c2b510dbab3a7"
+    },
+    "python-full-final.log": {
+      "bytes": 114921,
+      "sha256": "96a165f99f6c9221765a28e70a3ea469082dbe7e3ada5cf1d47cfd654cd0bb89"
+    },
+    "source-raw-github-readback.json": {
+      "bytes": 2587,
+      "sha256": "8c996bf4671baf18dbe59e3367fcffb262c74729ce57f5fcdf184353700ed98a"
+    }
+  },
+  "execution": "isolated KERNEL Linux CPU Chromium; freshly hydrated from exact immutable commit",
+  "failures": 0,
+  "gates": {
+    "creativeApproval": "NOT_EARNED",
+    "gate1": "CONDITIONAL_PENDING_INDEPENDENT_GOVERNANCE",
+    "gate2": "CONDITIONAL_ONLY_PREVIOUS_STUDIO_R8_CINEMA_R8_JOINT1",
+    "gate3": "HOLD_PAID_GPU_NOT_AUTHORIZED",
+    "nativeRelease": "HOLD"
+  },
+  "historicalFailure": "Original R9 prior source Chromium failed due unrecognized independent-reference truepeak approval status (and two contention-related navigation timeouts). Corrected approval status with added 409/403 regression; original fail log lost with expired executor, not misrepresented as retained.",
+  "hostSigningKeys": "TEST_ONLY_NOT_PRODUCTION",
+  "paidGPU": false,
+  "pr": 37,
+  "productMainModified": false,
+  "proofScope": "synthetic licensed attestation fixtures and 210s WAV actual decoding; not production artist rights",
+  "rawGitHubReadbacks": {
+    "passed": 13,
+    "total": 13
+  },
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "schema": "sara.platform.r9.engineer1.final.v1",
+  "skips": 0,
+  "sourceProductCommit": "b8e3848608ce29d9692f95787a93015c97ba9c1d",
+  "suiteCounts": {
+    "chromium": 28,
+    "node": 51,
+    "python": 424,
+    "total": 503
+  },
+  "suiteExitStatus": {
+    "chromium": "0",
+    "node": "0",
+    "python": "0"
+  }
+}
