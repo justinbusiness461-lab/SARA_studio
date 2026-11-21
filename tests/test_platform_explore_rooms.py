@@ -74,6 +74,50 @@ class RoomsHTTP(unittest.TestCase):
 
 
 
+    def test_empty_room_owner_review_does_not_require_preexisting_workspace_schema(self):
+        room=self.create('private')
+        code,_,body=self.api(self.route(room,'proposals'),cookie=self.ca)
+        self.assertEqual(code,200,body)
+        self.assertEqual(body['proposals'],[])
+
+    def test_project_owner_inbox_does_not_publish_proposals_to_other_room_members(self):
+        room=self.create('private')
+        self.api(self.route(room,'invite'),{'handle':'artist_b'},cookie=self.ca)
+        self.api(self.route(room,'invite'),{'handle':'artist_c'},cookie=self.ca)
+        self.api(self.route(room,'join'),{},cookie=self.cb)
+        self.api(self.route(room,'join'),{},cookie=self.cc)
+        src=self.f.project(self.a['principalId'])
+        workspace=self.api('/api/workspaces',{'name':'Owner Inbox'},cookie=self.ca)[2]['workspaceId']
+        self.assertEqual(self.api('/api/workspaces/'+workspace+'/bind',{'projectId':src['projectId']},cookie=self.ca)[0],200)
+        self.assertEqual(self.api('/api/workspaces/'+workspace+'/invite',{'handle':'artist_b','role':'viewer'},cookie=self.ca)[0],200)
+        post=self.api(self.route(room,'propose-collaboration'),{
+           'workspaceId':workspace,'projectId':src['projectId'],
+           'baseRevisionId':src['revisionId'],'instruction':'Consider an extra guitar harmony'},cookie=self.cb)
+        self.assertEqual(post[0],201,post[2])
+        code,_,owner=self.api(self.route(room,'proposals'),cookie=self.ca)
+        self.assertEqual(code,200,owner)
+        self.assertEqual(len(owner['proposals']),1)
+        self.assertEqual(owner['proposals'][0]['proposalId'],post[2]['proposalId'])
+        self.assertEqual(owner['proposals'][0]['state'],'AWAITING_OWNER_REVIEW')
+        self.assertFalse(owner['proposals'][0]['revisionCommitted'])
+        self.assertEqual(self.api(self.route(room,'proposals'),cookie=self.cb)[2]['proposals'],[])
+        self.assertEqual(self.api(self.route(room,'proposals'),cookie=self.cc)[2]['proposals'],[])
+        self.assertEqual(self.api(self.route(room,'proposals'))[0],403)
+
+    def test_room_conversation_returns_latest_300_in_sequence_order(self):
+        room=self.create('public')
+        from platform_rooms import RoomStore
+        store=RoomStore(self.f.root)
+        with store.identity._db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            db.executemany('INSERT INTO music_room_messages(room,author,body,created,is_bot) VALUES(?,?,?,?,0)',
+               [(room,self.a['principalId'],'msg-'+str(i),i) for i in range(310)])
+            db.commit()
+        data=self.api(self.route(room,'messages'),cookie=self.ca)[2]
+        self.assertEqual(len(data['messages']),300)
+        self.assertEqual(data['messages'][0]['body'],'msg-10')
+        self.assertEqual(data['messages'][-1]['body'],'msg-309')
+
     def test_anonymous_room_directory_and_message_access_are_denied(self):
         room=self.create('public')
         self.assertEqual(self.api('/api/explore/rooms')[0],403)

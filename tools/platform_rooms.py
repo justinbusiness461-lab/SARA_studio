@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS music_room_blocks(
         with self.identity._db() as db:
             self._admit(db,actor,rid)
             msgs=db.execute('''SELECT m.sequence,m.body,m.created,m.is_bot,a.handle FROM music_room_messages m
-               JOIN accounts a ON a.principal=m.author WHERE m.room=? ORDER BY m.sequence ASC LIMIT 300''',(rid,)).fetchall()
+               JOIN accounts a ON a.principal=m.author WHERE m.room=? ORDER BY m.sequence DESC LIMIT 300''',(rid,)).fetchall()
             participants=db.execute('''SELECT a.handle,m.role,m.seen_at FROM music_room_members m JOIN accounts a ON a.principal=m.principal
                WHERE m.room=? AND m.active=1 AND a.status='active' ORDER BY a.handle LIMIT 30''',(rid,)).fetchall()
             pubs=[x[0] for x in db.execute('SELECT publication FROM music_room_pins WHERE room=? ORDER BY created DESC LIMIT 20',(rid,))]
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS music_room_blocks(
         # Late room revocation must prevent publication of already-read text.
         with self.identity._db() as db:self._admit(db,actor,rid)
         now=int(time.time())
-        return {'status':'SUCCESS','messages':[{'sequence':m['sequence'],'body':m['body'],'createdAt':m['created'],'handle':m['handle'],'isBot':bool(m['is_bot'])} for m in msgs],
+        return {'status':'SUCCESS','messages':[{'sequence':m['sequence'],'body':m['body'],'createdAt':m['created'],'handle':m['handle'],'isBot':bool(m['is_bot'])} for m in reversed(msgs)],
            'participants':[{'handle':p['handle'],'role':p['role'],'observedRecently':bool(p['seen_at']>=now-60)} for p in participants],
            'listeningStation':listening}
     rights_policy=None
@@ -188,6 +188,44 @@ CREATE TABLE IF NOT EXISTS music_room_blocks(
             db.execute('INSERT OR IGNORE INTO music_room_pins VALUES(?,?,?)',(rid,publication,int(time.time())))
             db.commit()
         return {'status':'PINNED','publicationId':publication,'audioUrl':'/api/songs/'+publication+'/audio'}
+    def proposals_for_owner(self,actor,rid):
+        """Only the original workspace/project owner reviews social proposals.
+
+        The Room host role cannot mint Studio project grants. Do not expose
+        creative intent to other members or invent a delegated edit grant.
+        """
+        ws=WorkspaceStore(self.root)  # Materialize the rightful owner schema for empty/new rooms.
+        with self.identity._db() as db:
+            self._admit(db,actor,rid)
+            rows=db.execute('''SELECT p.*,a.handle FROM music_room_proposals p
+                JOIN accounts a ON a.principal=p.author
+                JOIN platform_workspaces w ON w.id=p.workspace AND w.owner=?
+                JOIN platform_workspace_projects wp ON wp.workspace=w.id
+                    AND wp.project=p.project AND wp.owner=?
+                WHERE p.room=? ORDER BY p.created DESC,p.id DESC LIMIT 100''',
+                (actor,actor,rid)).fetchall()
+        from studio_server import project_operation
+        result=[]
+        for proposal in rows:
+            try:
+                with self.identity._db() as db:
+                    self._admit(db,actor,rid)
+                    ws._grant(db,actor,proposal['workspace'],proposal['project'])
+                project=project_operation(self.root,{'projectId':proposal['project']},principal_id=actor)
+                # Historical source is read-only; a stale proposal cannot
+                # silently become an instruction for a newer revision.
+                state=(proposal['state'] if project['manifest']['currentRevisionId']==proposal['base_revision']
+                    else 'STALE_SOURCE_REVISION')
+                with self.identity._db() as db:
+                    self._admit(db,actor,rid)
+                    ws._grant(db,actor,proposal['workspace'],proposal['project'])
+                result.append({'proposalId':proposal['id'],'authorHandle':proposal['handle'],
+                   'workspaceId':proposal['workspace'],'projectId':proposal['project'],
+                   'baseRevisionId':proposal['base_revision'],'instruction':proposal['instruction'],
+                   'state':state,'revisionCommitted':False,'audioRendered':False})
+            except (PermissionError,ValueError,OSError):continue
+        return {'status':'SUCCESS','proposals':result}
+
     def proposal(self,actor,rid,payload):
         if set(payload)!={'workspaceId','projectId','baseRevisionId','instruction'}:
             raise ValueError('ROOM_PROPOSAL_FIELDS')

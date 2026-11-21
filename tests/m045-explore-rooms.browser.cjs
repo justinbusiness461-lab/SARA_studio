@@ -23,6 +23,7 @@ test('Explore Rooms 360px private artist chat survives reload, never overflows m
  await page.locator('#platformNavExplore').click();await page.locator('#platformExploreTabRooms').click();
  await page.locator('#platformRoomName').fill('Songwriters Circle');await page.locator('#platformCreateRoom').click();
  await page.waitForFunction(()=>document.getElementById('platformRoomStatus').textContent.includes('READY'));
+ await page.locator('#platformRoomReviewRefresh').waitFor({state:'visible',timeout:10000});
  await page.locator('#platformRoomComposer').fill('Verse one, take two');await page.locator('#platformRoomSend').click();
  await page.waitForFunction(()=>document.getElementById('platformRoomMessages').textContent.includes('Verse one, take two'));
  const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,

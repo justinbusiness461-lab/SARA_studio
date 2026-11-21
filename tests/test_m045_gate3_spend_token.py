@@ -34,7 +34,9 @@ class Gate3SpendTokenTests(unittest.TestCase):
  def test_reject_tampering_foreign_user_and_stale_revision(self):
   _,token=self.admit()
   with self.assertRaises(PlatformDenied):self.store.redeem('foreign',token,self.scope)
-  with self.assertRaises(PlatformDenied):self.store.redeem(self.user['principalId'],token[:-1]+'0',self.scope)
+  tampered=token[:-1]+('0' if token[-1]!='0' else '1')
+  self.assertNotEqual(tampered,token)  # Tamper must differ even if token originally ends in 0.
+  with self.assertRaises(PlatformDenied):self.store.redeem(self.user['principalId'],tampered,self.scope)
   with self.assertRaises(PlatformConflict):self.store.redeem(self.user['principalId'],token,{**self.scope,'maxUsdCents':99})
   self.store.redeem(self.user['principalId'],token,self.scope)
  def test_budget_model_ttl_and_duration_rejections(self):

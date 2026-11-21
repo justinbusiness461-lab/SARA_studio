@@ -163,10 +163,33 @@
           }catch(e){player.pause();player.removeAttribute('src');text('platformRoomStatus','PLAYBACK DENIED · '+e.message);}
         });listening.append(item);
       }
+      await loadRoomProposals();
       text('platformRoomStatus','READY · '+data.messages.length+' room messages · '+data.participants.length+' members');
     }catch(e){
-      $("platformRoomMessages").replaceChildren();$("platformRoomPeople").replaceChildren();$("platformRoomListening").replaceChildren();
+      $("platformRoomMessages").replaceChildren();$("platformRoomPeople").replaceChildren();$("platformRoomListening").replaceChildren();$("platformRoomProposals").replaceChildren();
       text('platformRoomStatus','JOIN REQUIRED OR DENIED · '+e.message);
+    }
+  }
+  async function loadRoomProposals(){
+    if(!activeRoomId)return;
+    const roomId=activeRoomId,holder=$("platformRoomProposals");
+    const result=await request('/api/explore/rooms/'+roomId+'/proposals');
+    if(roomId!==activeRoomId)return; // A late response cannot replace another room's inbox.
+    holder.replaceChildren();
+    for(const item of result.proposals){
+      const card=document.createElement('article');card.className='platform-project-card';
+      const brief=document.createElement('p');
+      brief.textContent='@'+item.authorHandle+' · '+item.state+' · '+item.instruction;
+      const open=document.createElement('button');open.type='button';
+      open.textContent='Open source project in Studio (review only)';
+      open.disabled=item.state!=='AWAITING_OWNER_REVIEW';
+      open.addEventListener('click',()=>{
+        if(!currentArtist||!window.confirm('Open the Studio project for separate review? This does NOT approve or commit the proposal.'))return;
+        const input=$("projectId"),button=$("btnOpenProject");
+        if(!input||!button){text('platformRoomStatus','ERROR · Studio owner UI unavailable');return;}
+        input.value=item.projectId;changeView('studio');button.click();
+      });
+      card.append(brief,open);holder.append(card);
     }
   }
   async function createRoom(){
@@ -473,6 +496,7 @@
   $("platformCreateRoom").addEventListener('click',createRoom);
   $("platformRoomSearchButton").addEventListener('click',()=>loadRoomList().catch(e=>text('platformRoomStatus','ERROR · '+e.message)));
   $("platformRoomRefresh").addEventListener('click',refreshRoom);
+  $("platformRoomReviewRefresh").addEventListener('click',()=>loadRoomProposals().catch(e=>text('platformRoomStatus','REVIEW DENIED · '+e.message)));
   $("platformRoomJoin").addEventListener('click',()=>roomAction('join'));
   $("platformRoomLeave").addEventListener('click',()=>roomAction('leave'));
   $("platformRoomSend").addEventListener('click',()=>roomAction('messages',{body:$("platformRoomComposer").value}));

@@ -1376,6 +1376,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     result=rooms.directory(principal,q.get('category',[''])[0],q.get('q',[''])[0])
                 elif path.endswith('/messages'):
                     result=rooms.messages(principal,path[len('/api/explore/rooms/'):-len('/messages')])
+                elif path.endswith('/proposals'):
+                    result=rooms.proposals_for_owner(principal,path[len('/api/explore/rooms/'):-len('/proposals')])
                 else:raise PlatformDenied('ROOM_READ_DENIED')
                 self._json(200,result)
             except (PlatformDenied,ProjectConflict,PermissionError):
