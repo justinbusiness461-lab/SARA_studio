@@ -141,6 +141,7 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
   <span class="studio-live-key">Revision <b id="studioHeaderRevision">Draft</b></span>
 </div>
 <canvas id="studioWaveformPreview" width="280" height="44" role="img" aria-label="Verified audio waveform preview; empty until lawful audio is ready"></canvas>
+<div id="studioPcmLevel" class="studio-pcm-meter" data-state="idle" role="status" aria-live="off" aria-label="Sampled PCM level; idle"><span id="studioPcmLevelText">PCM level · idle (not LUFS)</span><div class="studio-pcm-meter-track" aria-hidden="true"><div id="studioPcmLevelFill"></div></div></div>
 </header>
 <div id="platformPublishPanel" hidden><button type="button" id="platformPublishCurrent" class="secondary">Review & Publish Verified Song</button><div id="platformPublishStatus" role="status" aria-live="polite">No public release approved</div></div>
 <h1>S.A.R.A. <span>Sound Forge</span></h1>
@@ -155,6 +156,8 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 </div>
 <div class="card" id="m045StudioControls" tabindex="-1">
 <h3>Generation Attempt · Preservation Proof</h3>
+<section id="studioGenerationJourney" class="studio-generation-journey" aria-label="Generation journey; not an execution authority" data-active-stage="COMPOSE"><h4>Generation journey · status, not proof</h4><p id="studioGenerationNote" class="hint" role="status">No paid provider execution authorized by this tracker. Cost quote unavailable; generated audio and approval unverified.</p><ol class="studio-generation-steps"><li data-generation-stage="COMPOSE" data-stage-status="active"><span>Compose</span><small>Draft</small></li><li data-generation-stage="GENERATE" data-stage-status="pending"><span>Generate / cost review</span><small>Not verified</small></li><li data-generation-stage="PROCESSING" data-stage-status="pending"><span>Processing / owner receipt</span><small>Not verified</small></li><li data-generation-stage="CANDIDATE" data-stage-status="pending"><span>Candidate · Take 1–4</span><small>Not verified</small></li><li data-generation-stage="PLAYABLE" data-stage-status="pending"><span>Playable / verified WAV</span><small>Not verified</small></li><li data-generation-stage="EDIT" data-stage-status="pending"><span>Edit · target and locks</span><small>Not verified</small></li><li data-generation-stage="COMPARE" data-stage-status="pending"><span>Compare · musical position</span><small>Not verified</small></li><li data-generation-stage="APPROVE" data-stage-status="pending"><span>Approve · artist decision</span><small>Not verified</small></li></ol></section>
+
 <p class="hint">Generate only from a saved revision. Full-song replacement is P3; Sonic Lock blocks it. Scoped repaint requires lawful source audio, a compatible ACE-Step endpoint, and audition. Exact outside-window PCM is verified; musical isolation is not guaranteed.</p>
 <label for="m045Provider">Provider</label>
 <select id="m045Provider"><option value="eleven">Eleven Music (requires approved key)</option><option value="ace">ACE-Step (requires qualified remote endpoint)</option></select>

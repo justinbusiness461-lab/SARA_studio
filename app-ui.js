@@ -475,6 +475,54 @@ function exportMEG() {
 
 let verifiedPlayback = null;
 let verifiedPlaybackSource = null;
+// Presentation state only: never infer remote execution, credits or creative approval.
+const studioJourneyStages = ['COMPOSE','GENERATE','PROCESSING','CANDIDATE','PLAYABLE','EDIT','COMPARE','APPROVE'];
+let studioJourneyState = {stage:'COMPOSE',description:'Draft; not submitted'};
+function setStudioJourney(stage, description) {
+  if (!studioJourneyStages.includes(stage)) return;
+  studioJourneyState = {stage,description:String(description||'')};
+  const panel=$('studioGenerationJourney'), note=$('studioGenerationNote');
+  if (!panel || !note) return;
+  panel.dataset.activeStage=stage;
+  note.textContent=description+' · Cost quote unavailable · No paid provider execution authorized by this tracker · Artist approval NOT RECORDED';
+  for (const item of panel.querySelectorAll('[data-generation-stage]')) {
+    const active=item.dataset.generationStage===stage;
+    item.dataset.stageStatus=active?'active':'pending';
+    const detail=item.querySelector('small');
+    if (detail) detail.textContent=active?description:'Not verified';
+  }
+}
+let sampledPcmFrame=0;
+function resetSampledPcmMeter() {
+  if (sampledPcmFrame) cancelAnimationFrame(sampledPcmFrame);
+  sampledPcmFrame=0;
+  const node=$('studioPcmLevel'),fill=$('studioPcmLevelFill'),text=$('studioPcmLevelText');
+  if (node) {node.dataset.state='idle';node.removeAttribute('data-artifact-id');node.setAttribute('aria-label','Sampled PCM level; idle');}
+  if (fill) fill.style.width='0%';
+  if (text) text.textContent='PCM level · idle (not LUFS)';
+}
+function animateSampledPcmMeter(playback) {
+  if (sampledPcmFrame) cancelAnimationFrame(sampledPcmFrame);
+  sampledPcmFrame=0;
+  const tick=()=>{
+    if (verifiedPlayback!==playback || !playback.media || playback.media.paused || playback.media.ended ||
+        !Array.isArray(playback.waveformPeaks) || !playback.waveformPeaks.length) {
+      resetSampledPcmMeter();return;
+    }
+    // Existing sparse PCM16 envelope; an approximate displayed sample level,
+    // NEVER an ITU-R true peak, RMS or LUFS measurement.
+    const index=Math.min(playback.waveformPeaks.length-1,Math.max(0,
+      Math.floor(playback.media.currentTime / playback.media.duration * playback.waveformPeaks.length)));
+    const level=Math.round(Math.min(1,Math.max(0,playback.waveformPeaks[index]||0))*100);
+    const node=$('studioPcmLevel'), fill=$('studioPcmLevelFill'), text=$('studioPcmLevelText');
+    if (node){node.dataset.state='playing';node.dataset.artifactId=playback.artifactId;node.setAttribute('aria-label','Sampled PCM envelope while playing');}
+    if (fill) fill.style.width=level+'%';
+    if (text) text.textContent='Sampled PCM envelope · '+level+'% (not LUFS)';
+    sampledPcmFrame=requestAnimationFrame(tick);
+  };
+  tick();
+}
+
 
 function studioProjectHeaders() {
   return {
@@ -507,6 +555,7 @@ function clearVerifiedPlayback() {
   verifiedPlayback = null;
   if (typeof m045Wave4Clear === "function") m045Wave4Clear();
   window.__M044_PLAYBACK_PROOF__ = null;
+  resetSampledPcmMeter();
   paintVerifiedWaveform();
   window.__M044_PLAYBACK_STARTED__ = false;
   const play = $('btnPlay');
@@ -579,6 +628,8 @@ async function verifyPlayableRevision(result, publishGuard = null, publishPresen
     return null;
   }
   const playback = { projectId, revisionId, artifactId, wavSha256, media, objectUrl, waveformPeaks: authorizedWaveformPeaks(bytes) };
+  media.addEventListener('pause',()=>{if(verifiedPlayback===playback)resetSampledPcmMeter();});
+  media.addEventListener('error',()=>{if(verifiedPlayback===playback)resetSampledPcmMeter();});
   if (publishPresentation) {
     verifiedPlayback = playback;
     publishVerifiedPlaybackPresentation(playback);
@@ -652,6 +703,8 @@ function paintVerifiedWaveform(playback = null) {
 function publishVerifiedPlaybackPresentation(playback) {
   window.__M044_PLAYBACK_PROOF__ = verifiedPlaybackProof(playback);
   paintVerifiedWaveform(playback);
+  resetSampledPcmMeter();
+  setStudioJourney('PLAYABLE','Exact revision WAV verified and decoded; not artist approved');
   const play = $('btnPlay');
   if (play) play.disabled = false;
   setStatus('Audio verified. Ready to hear.', 'ok');
@@ -691,11 +744,13 @@ async function playVerifiedRevision() {
     return false;
   }
   playing = true;
+  animateSampledPcmMeter(verifiedPlayback);
   window.__M044_PLAYBACK_STARTED__ = true;
   const play = $('btnPlay');
   if (play) play.textContent = 'Stop';
   setStatus('Playing verified revision · ' + verifiedPlayback.revisionId, 'ok');
   verifiedPlayback.media.onended = () => {
+    resetSampledPcmMeter();
     playing = false;
     if (play) play.textContent = 'Play';
   };
@@ -820,6 +875,7 @@ async function applyVerse2BassOctave() {
     abRevisions.r2 = revisionRef(rendered);
     setABControls();
     if ($('abStatus')) $('abStatus').textContent = 'Selected R2 · current';
+    setStudioJourney('EDIT','Verse 2 bass edit committed and new WAV verified; A/B comparison required');
     window.__M044_R2_PROOF__ = {
       projectId: rendered.manifest.projectId,
       revisionId: rendered.revision.revisionId,
@@ -900,6 +956,9 @@ async function selectABRevision(label) {
     publishABSwitchState(requestGeneration, target, 'COMPLETE', {
       ...scope, toPositionSec: restoredPosition, transportSelectedRevision: proof.revisionId, proofRevisionId: proof.revisionId,
     });
+    setStudioJourney('COMPARE','A/B revision and musical position independently read back; artist decision pending');
+    if (playing && !playback.media.paused) animateSampledPcmMeter(playback);
+    else resetSampledPcmMeter();
     $('btnPlay').disabled = false;
     $('btnPlay').textContent = playing ? 'Stop' : 'Play';
     setStatus(playing ? 'Playing verified revision · ' + playback.revisionId : 'Audio verified. Ready to hear.', 'ok');
@@ -953,6 +1012,7 @@ function m045PublishTakes(attempt, pointer) {
   const buttons = $("m045TakeButtons");
   if (!panel || !buttons) return;
   panel.hidden = false;
+  setStudioJourney('CANDIDATE','Server returned multiple candidate takes; selection required');
   const context = {projectId:pointer.projectId, idempotencyKey:pointer.idempotencyKey};
   m045TakeContext = context;
   attempt.takes.forEach((take, i) => {
@@ -1095,6 +1155,7 @@ async function submitM045Attempt() {
   const generation = ++m045RequestToken;
   const abToken = abRequestGeneration;
   m045PublishProof("DECLARED");
+  setStudioJourney('GENERATE','Source revision selected; submitting bounded owner request');
   const body = {
     project_id: active.projectId, base_revision_id: active.revisionId,
     expected_current_revision_id: active.revisionId,
@@ -1104,6 +1165,7 @@ async function submitM045Attempt() {
     batch_count:batchCount
   };
   if (!body.prompt) throw new Error("Prompt required");
+  setStudioJourney('PROCESSING','HTTP request in flight; GPU status unknown');
   const response = await fetch("/api/m045/attempts", {
     method:"POST", headers: {...studioProjectHeaders(), Authorization:"Bearer " + (window.__STUDIO_SESSION__ || "")},
     body: JSON.stringify(body)
@@ -1114,9 +1176,12 @@ async function submitM045Attempt() {
       durableProjectRef.revisionId !== active.revisionId || abToken !== abRequestGeneration) return;
   if (!response.ok) {
     m045PublishProof("DECLARED");
+    setStudioJourney('COMPOSE','Request rejected; no new playable audio verified');
     throw new Error(result.error || "Generation attempt rejected");
   }
   m045PublishProof(result.state, result.attempt);
+  if (['COMMITTED','ASSOCIATED_HISTORICAL'].includes(result.state))
+    setStudioJourney('CANDIDATE','Revision association reported; reopen and verify WAV before playback');
   if (result.state === "AWAITING_TAKE_SELECTION") {
     const pointer = {projectId:active.projectId,idempotencyKey:body.idempotency_key};
     if (!window.__SARA_PLATFORM_MODE__) try { localStorage.setItem("m045_attempt_pointer", JSON.stringify(pointer)); } catch (_) {}
@@ -1311,6 +1376,7 @@ $("btnPlay").onclick = () => {
 };
 $("btnStop").onclick = () => {
   if (verifiedPlayback && verifiedPlayback.media) verifiedPlayback.media.pause();
+  resetSampledPcmMeter();
   playing = false;
   stopAll();
   if (window.pulseForgeCinemaSync) window.pulseForgeCinemaSync.stopLoop();
@@ -1886,6 +1952,7 @@ if ($('btnNewProject')) $('btnNewProject').onclick = () => {
   m045ClearTakes();
   m045LocksDirty = false;
   m045PublishProof("DECLARED");
+  setStudioJourney('COMPOSE','New project draft; no audio, provider run or approval');
   durableProjectRef = null; durableSourceAssets = [];
   abRevisions = { r1: null, r2: null };
   abRequestGeneration++;
