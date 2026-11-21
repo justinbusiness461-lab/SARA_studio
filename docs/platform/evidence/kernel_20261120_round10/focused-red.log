@@ -1,0 +1,167 @@
+test_full_song_dry_run_redacts_host_secret_and_never_authorizes_external_spend (test_m045_modal_trial_runner.BoundedTrial) ... ERROR
+test_malformed_host_request_and_unsafe_budget_rejected (test_m045_modal_trial_runner.BoundedTrial) ... ERROR
+test_offline_authenticated_wave_audit_has_no_publication_or_fabricated_approval (test_m045_modal_trial_runner.BoundedTrial) ... ERROR
+test_repaint_requires_exact_source_target_and_declared_preservation_proof (test_m045_modal_trial_runner.BoundedTrial) ... ERROR
+test_spend_flag_absent_disabled_does_not_qualify_trial (test_m045_modal_trial_runner.BoundedTrial) ... ERROR
+test_bogus_artifact_is_not_authorized_by_cas_presence (test_m045_daw_export.DawHttp) ... ok
+test_bundle_revision_stems_midi_musicxml_and_checksum_identity (test_m045_daw_export.DawHttp) ... FAIL
+test_tampered_recipe_and_foreign_principal_are_denied (test_m045_daw_export.DawHttp) ... FAIL
+test_unauthorized_and_master_without_dry_source_fail_closed (test_m045_daw_export.DawHttp) ... FAIL
+test_acc01_entry_does_not_bootstrap_local_user (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc02_signup_login_cross_session_and_revoke (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc03_concurrent_handle_uniqueness_and_bio_sanitization (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc04_cross_owner_cas_and_public_deny (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc05_legacy_mutations_are_not_user_bound_and_must_be_blocked (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_profile_and_session_survive_fresh_store (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub01_no_public_listing_without_approval (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub02_unbound_cas_and_rights_always_fail_closed (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub03_explicit_publication_explore_search_stream_unpublish (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub04_historical_takes_cannot_become_public (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+
+======================================================================
+ERROR: test_full_song_dry_run_redacts_host_secret_and_never_authorizes_external_spend (test_m045_modal_trial_runner.BoundedTrial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_modal_trial_runner.py", line 17, in test_full_song_dry_run_redacts_host_secret_and_never_authorizes_external_spend
+    from m045_modal_trial_runner import prepare_gate3_trial
+ModuleNotFoundError: No module named 'm045_modal_trial_runner'
+
+======================================================================
+ERROR: test_malformed_host_request_and_unsafe_budget_rejected (test_m045_modal_trial_runner.BoundedTrial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_modal_trial_runner.py", line 39, in test_malformed_host_request_and_unsafe_budget_rejected
+    from m045_modal_trial_runner import prepare_gate3_trial
+ModuleNotFoundError: No module named 'm045_modal_trial_runner'
+
+======================================================================
+ERROR: test_offline_authenticated_wave_audit_has_no_publication_or_fabricated_approval (test_m045_modal_trial_runner.BoundedTrial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_modal_trial_runner.py", line 55, in test_offline_authenticated_wave_audit_has_no_publication_or_fabricated_approval
+    from m045_modal_trial_runner import audit_existing_audio
+ModuleNotFoundError: No module named 'm045_modal_trial_runner'
+
+======================================================================
+ERROR: test_repaint_requires_exact_source_target_and_declared_preservation_proof (test_m045_modal_trial_runner.BoundedTrial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_modal_trial_runner.py", line 52, in test_repaint_requires_exact_source_target_and_declared_preservation_proof
+    from m045_modal_trial_runner import prepare_gate3_trial
+ModuleNotFoundError: No module named 'm045_modal_trial_runner'
+
+======================================================================
+ERROR: test_spend_flag_absent_disabled_does_not_qualify_trial (test_m045_modal_trial_runner.BoundedTrial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_modal_trial_runner.py", line 32, in test_spend_flag_absent_disabled_does_not_qualify_trial
+    from m045_modal_trial_runner import prepare_gate3_trial
+ModuleNotFoundError: No module named 'm045_modal_trial_runner'
+
+======================================================================
+FAIL: test_bundle_revision_stems_midi_musicxml_and_checksum_identity (test_m045_daw_export.DawHttp)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_daw_export.py", line 45, in test_bundle_revision_stems_midi_musicxml_and_checksum_identity
+    self.assertEqual(status,200,data[:200]);self.assertEqual(headers.get('Content-Type'),'application/zip')
+AssertionError: 403 != 200 : b'{"status": "DENY", "error": "PLATFORM_OWNER_ADAPTER_NOT_QUALIFIED"}'
+
+======================================================================
+FAIL: test_tampered_recipe_and_foreign_principal_are_denied (test_m045_daw_export.DawHttp)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_daw_export.py", line 71, in test_tampered_recipe_and_foreign_principal_are_denied
+    self.assertEqual(self.request_bundle(bad)[0],409)
+AssertionError: 403 != 409
+
+======================================================================
+FAIL: test_unauthorized_and_master_without_dry_source_fail_closed (test_m045_daw_export.DawHttp)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r10/tests/test_m045_daw_export.py", line 41, in test_unauthorized_and_master_without_dry_source_fail_closed
+    self.assertEqual(self.request_bundle()[0],409)
+AssertionError: 403 != 409
+
+----------------------------------------------------------------------
+Ran 19 tests in 9.960s
+
+FAILED (failures=3, errors=5)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/export-daw-bundle HTTP/1.1" 403 -
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-bae8b6edbf1e5aa9606b43bcfccb11f4 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-bae8b6edbf1e5aa9606b43bcfccb11f4/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-bae8b6edbf1e5aa9606b43bcfccb11f4/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-bae8b6edbf1e5aa9606b43bcfccb11f4/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -

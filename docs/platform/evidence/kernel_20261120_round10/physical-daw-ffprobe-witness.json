@@ -1,0 +1,37 @@
+{
+  "creativeApproved": false,
+  "independentDecodedStreams": [
+    {
+      "channels": 2,
+      "codec": "pcm_s16le",
+      "path": "master_44k1_16b.wav",
+      "sampleRate": 44100,
+      "seconds": "0.136054",
+      "sha256": "41cca556bb8c084362ea6dd25a4d6d5b25c3ff3eb43a63e819a9a45484746c3c"
+    },
+    {
+      "channels": 2,
+      "codec": "pcm_s16le",
+      "path": "stems/creative_01.wav",
+      "sampleRate": 44100,
+      "seconds": "0.136054",
+      "sha256": "70622c4e31b2eaed46167650ce40d72eb8be86768db8d4c1a2f06d1c8d6cebed"
+    }
+  ],
+  "masterSha256": "41cca556bb8c084362ea6dd25a4d6d5b25c3ff3eb43a63e819a9a45484746c3c",
+  "newProjectRevisionCreatedByExport": false,
+  "productSha": "8fadf6d02b2ab347ba3c25b97301295bb6ec2cd7",
+  "productionQualified": false,
+  "rawStemSha256": [
+    "ff9204aca324fe4dc9af9bb68f9586eb4de51c2908f9aa2d2c73aaad90d2a387"
+  ],
+  "reconstructedProjectRevisionId": "d2d0175da0b763d8c20022176233e353544ccfd56a56731d5f9f3ffa777055c1",
+  "releaseCleared": false,
+  "rightsStatus": "UNVERIFIED_HELD",
+  "schema": "sara.r10.daw.ffprobe.witness.v1",
+  "sourceProjectRevisionId": "6bcb5988345dd72fc03cc9f26637407cbf778f8a05eddebc283bf088b64e395d",
+  "testFixture": "SYNTHETIC_ONLY",
+  "verifiedZipEntries": 9,
+  "zipBytes": 149202,
+  "zipSha256": "816461c6a0cac9bce640c9405ed4ede72efe83fdbd3d65ab737fab973d95d346"
+}
