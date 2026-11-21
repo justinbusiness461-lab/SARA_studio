@@ -30,6 +30,7 @@ test('Scratch Surgeon grid saves exact DJ event and restores via canonical revis
  const page=await browser.newPage({serviceWorkers:'block'});
  await installQaLongtasks(page);
  page.setDefaultTimeout(12000);
+ await page.route('https://cdn.jsdelivr.net/**',r=>r.abort());
  await page.goto('http://127.0.0.1:'+port);
  await page.locator('#prompt').fill('94 BPM F# minor southern drum scratch');
  const commit=page.waitForResponse(r=>r.url().endsWith('/api/projects/commit'));

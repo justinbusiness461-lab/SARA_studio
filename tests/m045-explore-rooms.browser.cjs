@@ -16,6 +16,7 @@ test('Explore Rooms 360px private artist chat survives reload, never overflows m
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});t.after(()=>browser.close());
  const page=await browser.newPage({viewport:{width:360,height:800},serviceWorkers:'block'});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.route('https://cdn.jsdelivr.net/**',r=>r.abort());
  await page.goto('http://127.0.0.1:'+port+'/');
  await page.locator('#platformHandle').fill('roomartist');await page.locator('#platformPassword').fill('strong password 2026!');
  await page.locator('#platformDisplayName').fill('Room Artist');await page.locator('#platformSignUp').click();
