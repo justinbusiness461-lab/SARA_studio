@@ -1,0 +1,9 @@
+# GPT #3 — read-only Round11/10 cross-repo governance intake
+
+Run READ_ONLY nine-dimensional audit: SHA/provenance, rightful authority, source, regression, security/rights, preservation tier, independent decoded media, recovery, and promotion. No merge/deploy/spending.
+
+Studio draft PR #37: **tested source** `e2b834e89614673342392c2f3d8daafa8d1a0920`, evidence is a subsequent docs-only descendant; original full configured Python 486, Node 51, Chromium 28 = 565 reported executed passes. Byte readback 9 changed files and evidence manifest required; full 210s DAW 222MB ZIP, receipt above. R11 Gate3 token is host-only admitted, cryptographically bound and ONE-TIME but still DRY_RUN_ONLY. R11 DAW verifier reconstructs canonical selected revision; no new authority, no signed third-party DAW edits or large HTTP upload. Red account-erasure gap fixed.
+
+Cinema draft PR #91: Round10 source `d9cf76aaa73f1276e9fdf3e522b09579fc15fc99`; receipt `docs/integration/PF_HVC003_ROUND10_STUDIO10_DAW_TO_CINEMA_20261121.md` reports 82 Python + 14 Vitest + 120 Node = 216/216 passes and synthetic live HTTP Studio R10 master + lawful DAW mix + host-test rights grant + 48-frame H264/AAC 7-engine V1 MP4; synthetic 7114-frame separate 18-scene stress. It pins **Studio R10 8fadf6d...**, NOT new Round11. Do not infer current-tip cross-repo test qualification. Retained cinema legacy suite remains HOLD; original 1920x1080 blue EQ inventory remains UNVERIFIED.
+
+Gate1 scoped engineering candidate PASS subject to independent replay; Gate1 global conditional; Gate2 synthetic conditioned to exact older Studio pin; Gate3 paid GPU HOLD (real checkpoint/rights/pricing/mandatory provider spend termination/owner auth), Gate4 original film HOLD; Gate5 native hardware/store HOLD. Report exact first failed boundary, owner and wake condition. Never convert test-only host keys and `SARA_GATE3_SPEND_AUTHORIZED=1` into real financial authorization.

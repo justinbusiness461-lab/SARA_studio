@@ -1,0 +1,9 @@
+test_210_second_bundle_streaming_source_and_master_identity (test_m045_daw_verify_210.LongDawRoundtrip) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 88.856s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+DAW_R11_210_PHYSICAL {"archiveSha256": "b2f379aeade0d7e13cb28e5d53ce41099b2a0fa89010d094ed69fd0c1657e5ec", "ffprobe": {"channels": 2, "codec_name": "pcm_s16le", "duration": "210.000000", "sample_rate": "44100"}, "masterFrames": 9261000, "masterSha256": "0f3ebcf0b4aa9470e96e2ba73895814647cfd5baf1e9ebeb545a8e4327d36a2d", "peakRssKiB": 399208, "zipBytes": 222269212}

@@ -1,0 +1,29 @@
+test_pending_and_admitted_tokens_are_revoked_during_account_purge (test_m045_gate3_erasure.Gate3ErasureBoundary) ... FAIL
+test_reviewed_empty_approval_table_does_not_hold_unrelated_account_erasure (test_m045_gate3_erasure.Gate3ErasureBoundary) ... FAIL
+
+======================================================================
+FAIL: test_pending_and_admitted_tokens_are_revoked_during_account_purge (test_m045_gate3_erasure.Gate3ErasureBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r11/tests/test_m045_gate3_erasure.py", line 29, in test_pending_and_admitted_tokens_are_revoked_during_account_purge
+    self.assertEqual(db.execute('SELECT COUNT(*) FROM gate3_spend_requests WHERE principal=?',(self.principal,)).fetchone()[0],0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_reviewed_empty_approval_table_does_not_hold_unrelated_account_erasure (test_m045_gate3_erasure.Gate3ErasureBoundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/studio-r11/tests/test_m045_gate3_erasure.py", line 17, in test_reviewed_empty_approval_table_does_not_hold_unrelated_account_erasure
+    self.assertEqual(result['completed'],1,result)
+AssertionError: 0 != 1 : {'state': 'ERASURE_WORKER_RECONCILED', 'mutableProcessed': 1, 'completed': 0, 'held': 1, 'receipts': [], 'holds': [{'principalDigest': 'd9ceff1bf0b8845cab8da0b4770b1f30ffeff602846f712d4a2f884de71d339e', 'reason': 'ERASURE_SCHEMA_UNREVIEWED'}], 'workerScheduler': 'NOT_CONFIGURED'}
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.404s
+
+FAILED (failures=2)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
