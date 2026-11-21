@@ -265,6 +265,7 @@ class PlatformStore:
                 run("platform_workspace_members","DELETE FROM platform_workspace_members WHERE principal=?")
                 run("platform_workspace_projects","DELETE FROM platform_workspace_projects WHERE owner=?")
                 # Unexecuted command proposals can include personal creative prose.
+                run("revision_timeline_comments","DELETE FROM revision_timeline_comments WHERE author=?")
                 run("chat_approvals","DELETE FROM chat_approvals WHERE principal=?")
                 run("gate3_spend_requests","DELETE FROM gate3_spend_requests WHERE principal=?")
                 run("sessions","DELETE FROM sessions WHERE principal=?")
@@ -378,7 +379,7 @@ class PlatformStore:
               "platform_workspace_projects","chat_approvals","gate3_spend_requests",
               "music_rooms","music_room_members","music_room_invites",
               "music_room_messages","music_room_pins","music_room_proposals",
-              "music_room_blocks"}
+              "music_room_blocks","revision_timeline_comments"}
             unknown=names-reviewed-{"sqlite_sequence"}
             if unknown:
                 raise PlatformDenied("ERASURE_SCHEMA_UNREVIEWED")
@@ -389,7 +390,8 @@ class PlatformStore:
                   "social_notifications":("target","actor"),"chat_approvals":("principal",),"gate3_spend_requests":("principal",),
                   "music_rooms":("host",),"music_room_members":("principal",),
                   "music_room_invites":("principal",),"music_room_messages":("author",),
-                  "music_room_proposals":("author",),"music_room_blocks":("principal",)}
+                  "music_room_proposals":("author",),"music_room_blocks":("principal",),
+                  "revision_timeline_comments":("author",)}
             for table,keys in refs.items():
                 if table not in names:continue
                 columns={x["name"] for x in db.execute(f"PRAGMA table_info({table})")}

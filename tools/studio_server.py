@@ -1364,6 +1364,23 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if path=="/api/me/profile":self._json(200,{"status":"SUCCESS","profile":store.profile(principal)});return True
             if path=="/api/me/sessions":self._json(200,{"status":"SUCCESS","sessions":store.list_sessions(principal)});return True
             self._json(200,owned_library(EXPORT_ROOT,principal));return True
+        if path=="/api/feedback/comments":
+            from platform_feedback import FeedbackStore
+            from platform_identity import PlatformDenied
+            from urllib.parse import parse_qs, urlsplit
+            try:
+                principal=self._platform_principal()
+                q=parse_qs(urlsplit(self.path).query)
+                if set(q)!={'projectId','revisionId','artifactId'} or any(len(v)!=1 for v in q.values()):
+                    raise ValueError('FEEDBACK_QUERY_FIELDS_DENIED')
+                result=FeedbackStore(EXPORT_ROOT).list_comments(principal,
+                    q['projectId'][0],q['revisionId'][0],q['artifactId'][0])
+                self._json(200,result)
+            except (ProjectConflict,PlatformDenied,PermissionError):
+                self._json(403,{'status':'DENY','error':'FEEDBACK_ACCESS_DENIED'})
+            except (ValueError,TypeError):
+                self._json(400,{'status':'ERROR','error':'INVALID_FEEDBACK_REQUEST'})
+            return True
         if path.startswith("/api/explore/rooms"):
             from platform_rooms import RoomStore
             from platform_identity import PlatformDenied
@@ -1472,6 +1489,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     db.commit()
                 return self._json(200,{"status":"SUCCESS"},cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
             principal=self._platform_principal()
+            if path=="/api/feedback/comments":
+                from platform_feedback import FeedbackStore
+                return self._json(201,FeedbackStore(EXPORT_ROOT).create_comment(principal,payload))
             if path.startswith('/api/explore/rooms'):
                 from platform_rooms import RoomStore
                 rooms=RoomStore(EXPORT_ROOT);rooms.rights_policy=PLATFORM_PUBLICATION_RIGHTS
@@ -1847,6 +1867,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if PLATFORM_MODE and (path=="/api/account/delete-request" or
                               path.startswith("/api/auth/") or
                               path.startswith("/api/playlists") or path.startswith("/api/albums") or
+                              path=="/api/feedback/comments" or
                               path.startswith("/api/explore/rooms") or
                               path.startswith("/api/social/") or path.startswith("/api/workspaces") or
                               path.startswith("/api/credits/") or
