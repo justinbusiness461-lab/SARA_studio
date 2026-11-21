@@ -218,3 +218,28 @@ html.platform-mode #platformChatApprove[hidden]{display:none!important}
  html.platform-mode .platform-pages:has(#platformExplorePanel:not([hidden])){max-width:1180px}
  .platform-rooms-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr)}
 }
+
+
+/* R14: exact-revision controls share the existing responsive Studio shell. */
+html.platform-mode #platformR14Tools{display:block;margin-top:12px}
+html.platform-mode #platformR14Tools summary{min-height:48px;display:flex;align-items:center;
+  padding:10px 12px;cursor:pointer;font-weight:700;border:1px solid #3c556d;border-radius:10px}
+html.platform-mode #platformR14Tools .platform-r14-section{display:grid;gap:8px;
+  padding:12px 0;margin-top:12px;border-top:1px solid #40506a;min-width:0}
+html.platform-mode #platformR14Tools h3{font-size:1rem;color:#83e7ec}
+html.platform-mode #platformR14Tools p{font-size:.82rem;overflow-wrap:anywhere}
+html.platform-mode #platformR14Tools label{font-size:.8rem;font-weight:650}
+html.platform-mode #platformR14Tools input,
+html.platform-mode #platformR14Tools select,
+html.platform-mode #platformR14Tools textarea{
+  width:100%;min-width:0;max-width:100%;min-height:48px;font:inherit;
+  border-radius:8px;padding:8px;box-sizing:border-box
+}
+html.platform-mode #platformR14Tools button{min-height:48px;min-width:48px}
+html.platform-mode #platformR14Tools .platform-r14-actions{display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+html.platform-mode #platformWaveformMarkersCanvas{display:block;max-width:100%;width:100%;
+  height:64px;background:#0c1d2c;border-radius:9px;border:1px solid #43607b;
+  touch-action:manipulation}
+html.platform-mode #platformWaveformMarkers{padding:0 0 0 22px;
+  max-height:160px;overflow-y:auto;overflow-wrap:anywhere}

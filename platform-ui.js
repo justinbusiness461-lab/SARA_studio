@@ -487,6 +487,116 @@
       text("platformPublishStatus","READY · Published ID "+output.publicationId);
     }catch(error){text("platformPublishStatus","NOT PUBLISHED · "+error.message);}
   }
+  // Revision identity comes only from the existing Studio proof/selection.
+  // The server independently authenticates every media read and write.
+  function r14Source(){
+    const c=sourceBoundChatContext();
+    if(!c.projectId||!c.revisionId||!c.artifactId)
+      throw new Error('Open and verify exact Studio revision audio first');
+    return {projectId:c.projectId,revisionId:c.revisionId,artifactId:c.artifactId};
+  }
+  let activePreviewGrant=null,markerFrameCount=0;
+  function renderWaveformMarkers(result){
+    const list=$('platformWaveformMarkers'),canvas=$('platformWaveformMarkersCanvas');
+    list.replaceChildren();
+    const max=Math.max(1,Number(result.totalSamples)||1),ctx=canvas.getContext('2d');
+    markerFrameCount=max;
+    if(ctx){
+      const w=canvas.width,h=canvas.height;
+      ctx.clearRect(0,0,w,h);ctx.strokeStyle='#3d97bd';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(5,h/2);ctx.lineTo(w-5,h/2);ctx.stroke();
+      for(const marker of result.comments||[]){
+        const x=5+(w-10)*Math.min(1,Number(marker.samplePosition)/max);
+        ctx.strokeStyle='#87f0ec';ctx.lineWidth=3;ctx.beginPath();
+        ctx.moveTo(x,8);ctx.lineTo(x,h-8);ctx.stroke();
+      }
+    }
+    for(const marker of result.comments||[]){
+      const item=document.createElement('li');
+      item.textContent='sample '+marker.samplePosition+' · '+marker.barBeatLabel+' · '+marker.body;
+      list.append(item);
+    }
+    text('platformFeedbackStatus','READY · '+(result.comments||[]).length+
+      ' marker(s) · exact revision '+result.revisionId.slice(0,12));
+  }
+  async function refreshR14Feedback(){
+    try{
+      const src=r14Source();
+      const q=new URLSearchParams(src);
+      const result=await request('/api/feedback/comments?'+q.toString());
+      if(JSON.stringify(src)!==JSON.stringify(r14Source()))return;
+      renderWaveformMarkers(result);
+    }catch(e){text('platformFeedbackStatus','NOT VERIFIED · '+e.message);}
+  }
+  async function addR14Feedback(){
+    try{
+      const src=r14Source(),position=Number($('platformFeedbackPosition').value);
+      if(!Number.isSafeInteger(position)||position<0)throw new Error('Invalid sample position');
+      const payload={...src,samplePosition:position,
+        barBeatLabel:$('platformFeedbackBeat').value.trim(),
+        body:$('platformFeedbackBody').value.trim()};
+      await request('/api/feedback/comments','POST',payload);
+      $('platformFeedbackBody').value='';
+      await refreshR14Feedback();
+    }catch(e){text('platformFeedbackStatus','NOT COMMITTED · '+e.message);}
+  }
+  async function createR14Preview(){
+    try{
+      const grant=await request('/api/previews/grants','POST',
+        {...r14Source(),expiresInSeconds:1800});
+      activePreviewGrant=grant.grantId;
+      $('platformPreviewShareUrl').value=new URL(grant.audioUrl,location.origin).href;
+      $('platformPreviewRevoke').disabled=false;
+      text('platformPreviewStatus','PRIVATE LINK READY · expires in 30 minutes · revocable');
+    }catch(e){text('platformPreviewStatus','NOT SHARED · '+e.message);}
+  }
+  async function revokeR14Preview(){
+    if(!activePreviewGrant)return;
+    try{
+      await request('/api/previews/'+encodeURIComponent(activePreviewGrant)+'/revoke','POST',{});
+      activePreviewGrant=null;
+      $('platformPreviewRevoke').disabled=true;
+      $('platformPreviewShareUrl').value='';
+      text('platformPreviewStatus','REVOKED · further audio and metadata reads denied');
+    }catch(e){text('platformPreviewStatus','REVOKE NOT VERIFIED · '+e.message);}
+  }
+  async function prepareR14Release(){
+    let payload;
+    try{
+      payload={...r14Source(),title:$('platformReleaseTitle').value.trim(),
+        artistHandle:currentArtist?.handle||'',
+        genre:$('platformReleaseGenre').value.trim(),
+        coverArtSha256:$('platformReleaseCover').value.trim(),
+        rightsStatus:$('platformReleaseRights').value};
+    }catch(e){text('platformReleaseStatus','NOT PREPARED · '+e.message);return;}
+    if(!window.confirm('Approve exact revision and release metadata for PREPARATION only? No DSP publication or Content ID is authorized.')){
+      text('platformReleaseStatus','DECLINED · no release operation');return;
+    }
+    text('platformReleaseStatus','CHECKING · preparing exact revision package');
+    try{
+      const approval=await request('/api/release/approve','POST',
+        {...payload,confirmRelease:true});
+      // Single-use token stays in memory. No blind retry after an ambiguous effect.
+      const result=await request('/api/release/prepare','POST',
+        {...payload,approvalToken:approval.approvalToken});
+      text('platformReleaseStatus',result.publicationState+' · '+result.packageId+
+        ' · not published · Content ID NOT entitled');
+    }catch(e){
+      text('platformReleaseStatus','NOT VERIFIED · '+e.message+
+        ' · inspect package authority before attempting again');
+    }
+  }
+  $('platformFeedbackLoad').addEventListener('click',refreshR14Feedback);
+  $('platformFeedbackAdd').addEventListener('click',addR14Feedback);
+  $('platformPreviewCreate').addEventListener('click',createR14Preview);
+  $('platformPreviewRevoke').addEventListener('click',revokeR14Preview);
+  $('platformReleasePrepare').addEventListener('click',prepareR14Release);
+  $('platformWaveformMarkersCanvas').addEventListener('pointerup',event=>{
+    if(!markerFrameCount)return;
+    const bounds=event.currentTarget.getBoundingClientRect();
+    $('platformFeedbackPosition').value=String(Math.max(0,Math.min(markerFrameCount-1,
+      Math.floor((event.clientX-bounds.left)/bounds.width*markerFrameCount))));
+  });
   for(const el of $("platformNavigation").querySelectorAll("button"))
     el.addEventListener("click",()=>changeView(el.dataset.platformView));
   $("platformStartCreating").addEventListener("click",()=>changeView("studio"));

@@ -198,7 +198,54 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
 <canvas id="studioWaveformPreview" width="280" height="44" role="img" aria-label="Verified audio waveform preview; empty until lawful audio is ready"></canvas>
 <div id="studioPcmLevel" class="studio-pcm-meter" data-state="idle" role="status" aria-live="off" aria-label="Sampled PCM level; idle"><span id="studioPcmLevelText">PCM level · idle (not LUFS)</span><div class="studio-pcm-meter-track" aria-hidden="true"><div id="studioPcmLevelFill"></div></div></div>
 </header>
-<div id="platformPublishPanel" hidden><button type="button" id="platformPublishCurrent" class="secondary">Review & Publish Verified Song</button><div id="platformPublishStatus" role="status" aria-live="polite">No public release approved</div></div>
+<div id="platformPublishPanel" hidden>
+  <button type="button" id="platformPublishCurrent" class="secondary">Review & Publish Verified Song</button>
+  <div id="platformPublishStatus" role="status" aria-live="polite">No public release approved</div>
+  <details id="platformR14Tools" class="platform-r14-workspace">
+    <summary>Revision feedback &amp; release preparation</summary>
+    <p>Comments and preview links stay on the exact verified Studio revision. These controls do not change song authority.</p>
+    <section aria-label="Waveform annotations" class="platform-r14-section">
+      <h3>Waveform comments</h3>
+      <canvas id="platformWaveformMarkersCanvas" width="480" height="64" aria-label="Revision-bound timeline with feedback markers" role="img"></canvas>
+      <label for="platformFeedbackPosition">Sample position</label>
+      <input id="platformFeedbackPosition" type="number" min="0" step="1" inputmode="numeric" value="0"/>
+      <label for="platformFeedbackBeat">Musical position</label>
+      <input id="platformFeedbackBeat" maxlength="80" value="bar 1 beat 1"/>
+      <label for="platformFeedbackBody">Comment</label>
+      <textarea id="platformFeedbackBody" maxlength="2000" rows="2" placeholder="Change this one thing…"></textarea>
+      <div class="platform-r14-actions">
+        <button id="platformFeedbackAdd" type="button">Add marker</button>
+        <button id="platformFeedbackLoad" type="button">Refresh markers</button>
+      </div>
+      <p id="platformFeedbackStatus" role="status" aria-live="polite">Verify selected WAV before marking</p>
+      <ol id="platformWaveformMarkers" aria-label="Exact revision comments"></ol>
+    </section>
+    <section aria-label="Private preview sharing" class="platform-r14-section">
+      <h3>Private preview (revocable)</h3>
+      <div class="platform-r14-actions">
+        <button id="platformPreviewCreate" type="button">Create 30-minute link</button>
+        <button id="platformPreviewRevoke" type="button" disabled>Revoke link</button>
+      </div>
+      <label for="platformPreviewShareUrl">Private audio link (share intentionally)</label>
+      <input id="platformPreviewShareUrl" readonly autocomplete="off" aria-label="Private preview share link"/>
+      <p id="platformPreviewStatus" role="status" aria-live="polite">No preview grant issued</p>
+    </section>
+    <section aria-label="Prepare release package" class="platform-r14-section">
+      <h3>Prepare release package</h3>
+      <p>Requires verified audio, host-cleared rights, and a separate explicit artist approval. Does not distribute music or grant Content ID.</p>
+      <label for="platformReleaseTitle">Accepted song title</label>
+      <input id="platformReleaseTitle" maxlength="160" autocomplete="off"/>
+      <label for="platformReleaseGenre">Genre</label>
+      <input id="platformReleaseGenre" maxlength="100" autocomplete="off"/>
+      <label for="platformReleaseCover">Cover-art SHA-256</label>
+      <input id="platformReleaseCover" maxlength="64" autocomplete="off"/>
+      <label for="platformReleaseRights">Audio rights declaration (host proof required)</label>
+      <select id="platformReleaseRights"><option value="ARTIST_ORIGINAL">Artist original</option><option value="LICENSE_CLEARED">License cleared</option></select>
+      <button id="platformReleasePrepare" type="button">Prepare release package</button>
+      <p id="platformReleaseStatus" role="status" aria-live="polite">Not prepared · DSP publication is not authorized</p>
+    </section>
+  </details>
+</div>
 <h1>S.A.R.A. <span>Sound Forge</span></h1>
 <p class="sub">Sound™ · Shelves · Flux · OTIO-inspired · Local</p>
 <div id="status" class="status ok">Type a prompt → Compile → Play</div>

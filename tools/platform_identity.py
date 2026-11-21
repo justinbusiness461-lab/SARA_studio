@@ -266,6 +266,10 @@ class PlatformStore:
                 run("platform_workspace_projects","DELETE FROM platform_workspace_projects WHERE owner=?")
                 # Unexecuted command proposals can include personal creative prose.
                 run("revision_timeline_comments","DELETE FROM revision_timeline_comments WHERE author=?")
+                run("private_preview_grants","DELETE FROM private_preview_grants WHERE creator=?")
+                run("voice_assets","DELETE FROM voice_assets WHERE principal=?")
+                run("release_approvals","DELETE FROM release_approvals WHERE principal=?")
+                run("release_readiness_packages","DELETE FROM release_readiness_packages WHERE principal=?")
                 run("chat_approvals","DELETE FROM chat_approvals WHERE principal=?")
                 run("gate3_spend_requests","DELETE FROM gate3_spend_requests WHERE principal=?")
                 run("sessions","DELETE FROM sessions WHERE principal=?")
@@ -379,7 +383,8 @@ class PlatformStore:
               "platform_workspace_projects","chat_approvals","gate3_spend_requests",
               "music_rooms","music_room_members","music_room_invites",
               "music_room_messages","music_room_pins","music_room_proposals",
-              "music_room_blocks","revision_timeline_comments"}
+              "music_room_blocks", "revision_timeline_comments","private_preview_grants",
+              "voice_assets","release_approvals","release_readiness_packages"}
             unknown=names-reviewed-{"sqlite_sequence"}
             if unknown:
                 raise PlatformDenied("ERASURE_SCHEMA_UNREVIEWED")
@@ -391,7 +396,11 @@ class PlatformStore:
                   "music_rooms":("host",),"music_room_members":("principal",),
                   "music_room_invites":("principal",),"music_room_messages":("author",),
                   "music_room_proposals":("author",),"music_room_blocks":("principal",),
-                  "revision_timeline_comments":("author",)}
+                  "revision_timeline_comments":("author",),
+                  "private_preview_grants":("creator",),
+                  "voice_assets":("principal",),
+                  "release_approvals":("principal",),
+                  "release_readiness_packages":("principal",)}
             for table,keys in refs.items():
                 if table not in names:continue
                 columns={x["name"] for x in db.execute(f"PRAGMA table_info({table})")}

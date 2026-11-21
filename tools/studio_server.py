@@ -1327,6 +1327,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
     def log_message(self, fmt, *args):
+        # Bearer preview URLs must not enter access logs or console telemetry.
+        if args and isinstance(args[0],str) and '/api/previews/' in args[0]:
+            args=('[redacted private preview request]',*args[1:])
         print(f"[Studio-Server] {fmt % args}")
 
     def end_headers(self):
@@ -1364,6 +1367,32 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if path=="/api/me/profile":self._json(200,{"status":"SUCCESS","profile":store.profile(principal)});return True
             if path=="/api/me/sessions":self._json(200,{"status":"SUCCESS","sessions":store.list_sessions(principal)});return True
             self._json(200,owned_library(EXPORT_ROOT,principal));return True
+        if path.startswith('/api/previews/'):
+            from platform_feedback import FeedbackStore
+            try:
+                parts=path[len('/api/previews/'):].split('/')
+                if len(parts)!=2 or parts[1] not in {'metadata','audio'}:
+                    raise PlatformDenied('PREVIEW_ROUTE_DENIED')
+                if set(query)!={'token'} or len(query['token'])!=1:
+                    raise PlatformDenied('PREVIEW_TOKEN_DENIED')
+                result=FeedbackStore(EXPORT_ROOT).read_grant(parts[0],query['token'][0],
+                                                            audio=parts[1]=='audio')
+                if parts[1]=='metadata':
+                    self.send_response(200)
+                    data=json.dumps(result).encode('utf-8')
+                    self.send_header('Content-Type','application/json')
+                else:
+                    data=result[1]
+                    self.send_response(200)
+                    self.send_header('Content-Type','audio/wav')
+                self.send_header('Cache-Control','no-store')
+                self.send_header('Referrer-Policy','no-referrer')
+                self.send_header('Content-Length',str(len(data)))
+                self.end_headers();self.wfile.write(data)
+            except (ProjectConflict,PlatformDenied,PermissionError,ValueError,
+                    OSError,EOFError):
+                self._json(403,{'status':'DENY','error':'PREVIEW_ACCESS_DENIED'})
+            return True
         if path=="/api/feedback/comments":
             from platform_feedback import FeedbackStore
             from platform_identity import PlatformDenied
@@ -1489,6 +1518,34 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     db.commit()
                 return self._json(200,{"status":"SUCCESS"},cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
             principal=self._platform_principal()
+            if path=="/api/release/approve":
+                from platform_release_gateway import StudioReleaseGateway
+                return self._json(201,StudioReleaseGateway(EXPORT_ROOT).approve(principal,payload))
+            if path=="/api/release/prepare":
+                from platform_release_gateway import StudioReleaseGateway
+                return self._json(201,StudioReleaseGateway(EXPORT_ROOT).prepare(
+                    principal,payload,PLATFORM_PUBLICATION_RIGHTS))
+            if path=="/api/voice-assets":
+                from platform_release_gateway import StudioReleaseGateway
+                return self._json(201,StudioReleaseGateway(EXPORT_ROOT).register_voice(principal,payload))
+            if path.startswith('/api/voice-assets/'):
+                from platform_release_gateway import StudioReleaseGateway
+                rest=path[len('/api/voice-assets/'):].split('/')
+                if len(rest)!=2:raise ValueError('VOICE_ACTION_INVALID')
+                gateway=StudioReleaseGateway(EXPORT_ROOT)
+                if rest[1]=='authorize':
+                    return self._json(200,gateway.authorize_voice(principal,rest[0],payload))
+                if rest[1]=='revoke' and not payload:
+                    return self._json(200,gateway.revoke_voice(principal,rest[0]))
+                raise ValueError('VOICE_ACTION_INVALID')
+            if path=="/api/previews/grants":
+                from platform_feedback import FeedbackStore
+                return self._json(201,FeedbackStore(EXPORT_ROOT).create_grant(principal,payload))
+            if path.startswith('/api/previews/') and path.endswith('/revoke'):
+                from platform_feedback import FeedbackStore
+                if payload:raise ValueError('PREVIEW_REVOKE_FIELDS_DENIED')
+                grant_id=path[len('/api/previews/'):-len('/revoke')]
+                return self._json(200,FeedbackStore(EXPORT_ROOT).revoke_grant(principal,grant_id))
             if path=="/api/feedback/comments":
                 from platform_feedback import FeedbackStore
                 return self._json(201,FeedbackStore(EXPORT_ROOT).create_comment(principal,payload))
@@ -1868,6 +1925,10 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                               path.startswith("/api/auth/") or
                               path.startswith("/api/playlists") or path.startswith("/api/albums") or
                               path=="/api/feedback/comments" or
+                              path=="/api/previews/grants" or
+                              path.startswith('/api/voice-assets') or
+                              path in {'/api/release/approve','/api/release/prepare'} or
+                              (path.startswith('/api/previews/') and path.endswith('/revoke')) or
                               path.startswith("/api/explore/rooms") or
                               path.startswith("/api/social/") or path.startswith("/api/workspaces") or
                               path.startswith("/api/credits/") or

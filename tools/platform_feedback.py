@@ -5,6 +5,8 @@ media access, publish an artifact, or change a music event.
 """
 from __future__ import annotations
 import io
+import hashlib
+import hmac
 import re
 import secrets
 import time
@@ -35,6 +37,15 @@ class FeedbackStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_timeline_comments_anchor
                     ON revision_timeline_comments(project,revision,artifact,sample_position,id);
+                CREATE TABLE IF NOT EXISTS private_preview_grants(
+                    id TEXT PRIMARY KEY, token_digest TEXT NOT NULL UNIQUE,
+                    project TEXT NOT NULL, revision TEXT NOT NULL,
+                    artifact TEXT NOT NULL, creator TEXT NOT NULL,
+                    created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL,
+                    revoked_at INTEGER
+                );
+                CREATE INDEX IF NOT EXISTS idx_private_preview_creator
+                    ON private_preview_grants(creator,expires_at);
             """)
 
     def _source(self, principal, pid, rid, aid):
@@ -91,7 +102,7 @@ class FeedbackStore:
                 'barBeatLabel':label.strip(),'body':body.strip()}
 
     def list_comments(self, principal, pid, rid, aid):
-        self._source(principal,pid,rid,aid)
+        frame_count,source_rate=self._source(principal,pid,rid,aid)
         with self.identity._db() as db:
             recent=db.execute('''SELECT sequence,id,sample_position,sample_rate,bar_beat_label,body,created_at
                 FROM revision_timeline_comments WHERE project=? AND revision=? AND artifact=?
@@ -101,6 +112,70 @@ class FeedbackStore:
             if actor is None or actor['status']!='active':
                 raise PlatformDenied('FEEDBACK_ACCOUNT_DENIED')
         return {'status':'SUCCESS','projectId':pid,'revisionId':rid,'artifactId':aid,
+                'totalSamples':frame_count,'sampleRate':source_rate,
                 'comments':[{'commentId':r['id'],'samplePosition':r['sample_position'],
                  'sampleRate':r['sample_rate'],'barBeatLabel':r['bar_beat_label'],
                  'body':r['body'],'createdAt':r['created_at']} for r in rows]}
+
+
+    def create_grant(self, principal, payload):
+        if not isinstance(payload,dict) or set(payload)!={'projectId','revisionId','artifactId','expiresInSeconds'}:
+            raise ValueError('PREVIEW_FIELDS_DENIED')
+        ttl=payload['expiresInSeconds']
+        if type(ttl) is not int or not 1 <= ttl <= 604800:
+            raise ValueError('PREVIEW_TTL_DENIED')
+        pid,rid,aid=payload['projectId'],payload['revisionId'],payload['artifactId']
+        self._source(principal,pid,rid,aid)
+        grant_id='pg-'+secrets.token_hex(16)
+        token=secrets.token_urlsafe(32)
+        digest=hashlib.sha256(token.encode('ascii')).hexdigest()
+        now=int(time.time())
+        with self.identity._db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            active=db.execute("SELECT status FROM accounts WHERE principal=?",(principal,)).fetchone()
+            if not active or active['status']!='active':
+                raise PlatformDenied('PREVIEW_OWNER_INACTIVE')
+            db.execute("""INSERT INTO private_preview_grants
+                (id,token_digest,project,revision,artifact,creator,created_at,expires_at)
+                VALUES(?,?,?,?,?,?,?,?)""",(grant_id,digest,pid,rid,aid,principal,now,now+ttl))
+            db.commit()
+        base='/api/previews/'+grant_id
+        return {'status':'CREATED','grantId':grant_id,'projectId':pid,
+                'revisionId':rid,'artifactId':aid,'expiresAt':now+ttl,
+                'metadataUrl':base+'/metadata?token='+token,
+                'audioUrl':base+'/audio?token='+token}
+
+    def revoke_grant(self, principal, grant_id):
+        if not isinstance(grant_id,str) or not re.fullmatch(r'pg-[0-9a-f]{32}',grant_id):
+            raise PlatformDenied('PREVIEW_REVOKE_DENIED')
+        with self.identity._db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute("""SELECT g.creator,a.status FROM private_preview_grants g
+                JOIN accounts a ON a.principal=g.creator WHERE g.id=?""",(grant_id,)).fetchone()
+            if row is None or row['creator']!=principal or row['status']!='active':
+                raise PlatformDenied('PREVIEW_REVOKE_DENIED')
+            db.execute('UPDATE private_preview_grants SET revoked_at=COALESCE(revoked_at,?) WHERE id=?',
+                       (int(time.time()),grant_id))
+            db.commit()
+        return {'status':'REVOKED','grantId':grant_id}
+
+    def read_grant(self, grant_id, token, *, audio=False):
+        if (not isinstance(grant_id,str) or not re.fullmatch(r'pg-[0-9a-f]{32}',grant_id)
+            or not isinstance(token,str) or not re.fullmatch(r'[A-Za-z0-9_-]{32,128}',token)):
+            raise PlatformDenied('PREVIEW_GRANT_DENIED')
+        token_digest=hashlib.sha256(token.encode('ascii')).hexdigest()
+        with self.identity._db() as db:
+            row=db.execute("""SELECT g.*,a.status FROM private_preview_grants g
+                JOIN accounts a ON a.principal=g.creator WHERE g.id=?""",(grant_id,)).fetchone()
+        if (row is None or row['status']!='active' or row['revoked_at'] is not None
+             or row['expires_at']<=int(time.time())
+             or not hmac.compare_digest(row['token_digest'],token_digest)):
+            raise PlatformDenied('PREVIEW_GRANT_DENIED')
+        principal,pid,rid,aid=(row[k] for k in ('creator','project','revision','artifact'))
+        self._source(principal,pid,rid,aid)
+        info={'status':'SUCCESS','grantId':grant_id,'projectId':pid,
+              'revisionId':rid,'artifactId':aid,'expiresAt':row['expires_at']}
+        if not audio:return info
+        from studio_server import project_audio_bytes
+        return info,project_audio_bytes(self.root,
+            {'projectId':pid,'revisionId':rid,'artifactId':aid},principal_id=principal)
