@@ -299,6 +299,20 @@ class PlatformStore:
             raise PlatformDenied("ERASURE_STUDIO_ROOT_MISMATCH")
         existing=self.account_erasure_completion_receipt(principal)
         if existing is not None:return existing
+        # R9 new host-private licensing ledger is a separate principal-bearing
+        # store. Its lawful retention must be resolved by the rights owner;
+        # never complete eligible erasure while a plaintext principal remains.
+        rights_store=base/'.host-rights'/'rights.sqlite3'
+        if rights_store.exists() or rights_store.is_symlink():
+            if rights_store.is_symlink():
+                raise PlatformDenied('ERASURE_HOST_RIGHTS_INVENTORY_UNVERIFIED')
+            try:
+                from m045_host_authorities import HostRightsRegistry
+                has_rights=HostRightsRegistry(base).has_retained_principal(principal)
+            except (OSError,ValueError) as error:
+                raise PlatformDenied('ERASURE_HOST_RIGHTS_INVENTORY_UNVERIFIED') from error
+            if has_rights:
+                raise PlatformDenied('ERASURE_HOST_RIGHTS_PERSONAL_IDENTITY_HELD')
         projects=base/"projects"
         if projects.exists():
             for folder in projects.iterdir():

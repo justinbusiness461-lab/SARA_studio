@@ -2079,6 +2079,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
 def main():
     durable_mkdir(EXPORT_ROOT)
     configure_m045_from_environment(EXPORT_ROOT)
+    # Explicit host startup-only rights + grant keyring; NEVER request supplied.
+    from m045_host_authorities import configure_host_authorities_from_env
+    configure_host_authorities_from_env(EXPORT_ROOT)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("127.0.0.1", PORT), StudioHandler) as httpd:
         print("=" * 72)

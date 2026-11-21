@@ -53,6 +53,14 @@ class FullSongMasterOwner(unittest.TestCase):
       {"projectId":pid,"revisionId":rid,"artifactId":digest},
       principal_id=principal)).hexdigest(),digest)
    telemetry=result["telemetry"]
+   self.assertEqual(telemetry["reference_meter"]["samples_per_channel"],210*44100)
+   self.assertEqual(telemetry["reference_meter"]["sample_rate"],44100)
+   self.assertEqual(telemetry["reference_meter"]["oversample_factor"],4)
+   self.assertEqual(telemetry["reference_meter"]["gating_block_ms"],400)
+   self.assertEqual(telemetry["reference_meter"]["hop_ms"],100)
+   self.assertLess(abs(telemetry["reference_meter"]["integrated_lufs"]-telemetry["measured_output_lufs"]),0.3)
+   self.assertLess(abs(telemetry["reference_meter"]["true_peak_dbtp"]-telemetry["measured_output_true_peak_dbtp"]),0.4)
+   self.assertEqual(telemetry["reference_meter"]["input_wav_sha256"],result["artifactId"])
    self.assertLessEqual(telemetry["measured_output_true_peak_dbtp"],-0.95)
    self.assertEqual(telemetry["meterConformance"],"NOT_INDEPENDENTLY_CERTIFIED")
    self.assertEqual(telemetry["mastered_wav_sha256"],result["artifactId"])
@@ -68,4 +76,3 @@ print(hashlib.sha256(data).hexdigest())'''
    self.assertEqual(fresh.stdout.strip(),result["artifactId"])
 
 if __name__=="__main__":unittest.main()
-

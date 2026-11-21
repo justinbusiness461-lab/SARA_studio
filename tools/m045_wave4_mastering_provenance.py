@@ -125,6 +125,16 @@ def master_wav_to_lufs_target(*,wav_bytes:bytes,target_lufs=-14.0,true_peak_ceil
   independent=_run(["ffmpeg","-nostdin","-hide_banner","-loglevel","info","-threads","1",
    "-i",str(dst),"-af",af,"-f","null","-"],90)
   measured=_filter_metrics(independent.stderr)
+  # Independent implementation: explicit stereo K-shelf + RLB, two-stage
+  # BS.1770 gating and bounded FFmpeg 4x polyphase intersample measurement.
+  # Reference vectors are checked; accredited calibration is NOT claimed.
+  from m045_bs1770_reference import measure_reference_pcm16
+  reference=measure_reference_pcm16(output)
+  if (abs(reference["integrated_lufs"]-measured["input_i"])>0.3 or
+      abs(reference["true_peak_dbtp"]-measured["input_tp"])>0.4):
+   raise ValueError("MASTER_REFERENCE_METER_DISAGREEMENT")
+  if reference["true_peak_dbtp"]>true_peak_ceiling_dbtp+0.1:
+   raise ValueError("MASTER_REFERENCE_TRUE_PEAK_CEILING_FAILED")
   if measured["input_tp"]>true_peak_ceiling_dbtp+0.05:
    raise ValueError("INDEPENDENT_TRUE_PEAK_CEILING_FAILED")
   status="TARGET_REACHED" if abs(measured["input_i"]-target_lufs)<=0.5 else "TARGET_UNREACHED_LIMITED"
@@ -135,6 +145,7 @@ def master_wav_to_lufs_target(*,wav_bytes:bytes,target_lufs=-14.0,true_peak_ceil
    "measured_output_lufs":round(measured["input_i"],2),
    "measured_output_true_peak_dbtp":round(measured["input_tp"],2),
    "true_peak_verified":True,"targetStatus":status,
+   "reference_meter":reference,
    "mastered_wav_sha256":hashlib.sha256(output).hexdigest()
   }
   return output,telemetry
