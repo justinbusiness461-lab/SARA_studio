@@ -66,6 +66,36 @@
     listenAudioSession(callback) {
       if(typeof callback!=='function') throw new Error('AUDIO_SESSION_LISTENER_REQUIRED');
       return nativePlugin('SaraAudioSession').addListener('stateChange', callback);
+    },
+    listenAudioRouteGuard(pause) {
+      if (typeof pause!=='function') throw new Error('AUDIO_PAUSE_CALLBACK_REQUIRED');
+      // Pause is an immediate native audio route safety action, not a
+      // browser/cache-owned ProjectRevision or transport truth.
+      const disconnects=new Set([
+        'headphonesDisconnected','routeDisconnected','audioFocusLost','interruptionBegan'
+      ]);
+      return nativePlugin('SaraAudioSession').addListener('stateChange',event=>{
+        if (event && typeof event==='object' && disconnects.has(event.type)) {
+          pause(event.type);
+        }
+        // Never auto-resume on reconnect: only a new user command may play.
+      });
+    },
+    nativeReceiptForHost(proof) {
+      // Client-side syntax is never billing verification. Only the Studio
+      // server's independently configured Apple/Google verifier may grant.
+      if (!proof || typeof proof!=='object' ||
+          Object.keys(proof).sort().join(',')!=='productId,receipt,store,transactionId') {
+        throw new Error('INVALID_NATIVE_STORE_EVIDENCE_FIELDS');
+      }
+      const {store,productId,transactionId,receipt}=proof;
+      if (!['apple','google'].includes(store) ||
+          typeof productId!=='string' || !/^[A-Za-z0-9._-]{1,120}$/.test(productId) ||
+          typeof transactionId!=='string' || !/^[A-Za-z0-9._:-]{1,160}$/.test(transactionId) ||
+          typeof receipt!=='string' || receipt.length<8 || receipt.length>65536) {
+        throw new Error('INVALID_NATIVE_STORE_EVIDENCE_FIELDS');
+      }
+      return Object.freeze({store,transactionId,productId,receipt});
     }
   });
   scope.SaraNativeBridge=api;

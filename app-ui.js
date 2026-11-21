@@ -1318,6 +1318,31 @@ $("btnStop").onclick = () => {
   setStatus("Stopped");
   logToNative("TRANSPORT", "stopped");
 };
+// NS-007: Route loss is not a project state transition. Native host events
+// call the existing verified Studio Stop control; there is no automatic resume.
+(function bindNativeAudioRouteLoss(){
+  const bridge=window.SaraNativeBridge;
+  if (!bridge || typeof bridge.isNative!=='function' || !bridge.isNative()) return;
+  try {
+    const guard=bridge.listenAudioRouteGuard(reason=>{
+      $("btnStop").click();
+      for (const player of document.querySelectorAll('audio,video')) {
+        try { player.pause(); } catch (_) {}
+      }
+      setStatus('Paused · Native audio route lost: '+reason,'warn');
+    });
+    // Capacitor addListener may return a Promise. Host permission or
+    // registration rejection must disable playback, not silently fail.
+    Promise.resolve(guard).catch(()=>{
+      if ($("btnPlay")) $("btnPlay").disabled=true;
+      setStatus('NATIVE_AUDIO_SESSION_UNAVAILABLE · Playback disabled','warn');
+    });
+  } catch (error) {
+    // Native audio sessions without interruption delivery fail closed.
+    if ($("btnPlay")) $("btnPlay").disabled=true;
+    setStatus('NATIVE_AUDIO_SESSION_UNAVAILABLE · Playback disabled','warn');
+  }
+})();
 $("btnWav").onclick = exportWav;
 $("btnMEG").onclick = exportMEG;
 $("btnSave").onclick = () => saveJSON().catch(e => setStatus("Save failed: " + e.message, "warn"));

@@ -432,6 +432,36 @@ def project_owner_directory(root, pid, principal_id, allow_create=False):
         os.close(fd)
 
 
+def artifact_digest_verified(root,digest):
+    """Stream-check CAS source integrity without loading 210s f64 stems.
+
+    This only validates CAS identity; project ownership and revision
+    membership are separately enforced by project_operation before reads.
+    """
+    if not isinstance(digest,str) or not re.fullmatch(r"[a-f0-9]{64}",digest):
+        raise ValueError("invalid artifact digest")
+    path=Path(root)/"objects"/digest[:2]/digest
+    try:
+        fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
+    except OSError as error:
+        # Preserve the old Studio API's explicit invalid/unavailable media
+        # ValueError contract while using O_NOFOLLOW and streamed hashing.
+        raise ValueError("referenced artifact unavailable") from error
+    try:
+        import stat
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise ValueError("artifact object is not regular")
+        h=hashlib.sha256()
+        with os.fdopen(fd,"rb") as stream:
+            fd=-1
+            for part in iter(lambda:stream.read(1024*1024),b""):h.update(part)
+        if h.hexdigest()!=digest:
+            raise ValueError("referenced artifact corruption")
+        return True
+    finally:
+        if fd>=0:os.close(fd)
+
+
 def artifact_bytes(root, digest):
     if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
         raise ValueError("invalid artifact digest")
@@ -516,7 +546,7 @@ def project_revision(root, directory, pid, rid):
     if timeline["songSpecDigest"] != revision["songSpecDigest"]:
         raise ValueError("timeline source mismatch")
     for aid in revision["sourceAssetDigests"] + revision["outputArtifactIds"]:
-        artifact_bytes(root, aid)
+        artifact_digest_verified(root, aid)
     if revision.get("lyricTimelineDigest"):
         doc, _ = lyric_read(root, revision["lyricTimelineDigest"])
         if doc["sourceArtifactId"] not in revision["sourceAssetDigests"]:
@@ -1221,7 +1251,7 @@ def project_operation(root, request, commit=False, lyric=False, principal_id=LOC
             if doc['sourceArtifactId'] not in sources: raise ValueError('cannot drop lyric audio source')
         if not isinstance(sources, list) or not isinstance(outputs, list) or len(sources) + len(outputs) > 128:
             raise ValueError("invalid artifact bindings")
-        for aid in sources + outputs: artifact_bytes(root, aid)
+        for aid in sources + outputs: artifact_digest_verified(root, aid)
         spec_bytes = project_json(spec)
         song_digest = persist_export(root, "SongSpec.json", "project-metadata", spec_bytes)["sha256"]
         timeline = {"formatVersion": 1, "songSpecDigest": song_digest, "timebase": spec["timebase"], "sections": spec["structure"]["sections"], "tracks": spec["tracks"]}

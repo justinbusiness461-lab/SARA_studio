@@ -1,5 +1,14 @@
 {
   "appId": "com.sj3.sarastudio",
   "appName": "S.A.R.A. Studio",
-  "webDir": "www"
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
 }

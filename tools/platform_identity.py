@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import html
 import os
+import json
 import re
 import secrets
 import sqlite3
@@ -69,6 +70,12 @@ class PlatformStore:
      requested_at INTEGER NOT NULL,
      state TEXT NOT NULL,
      entrypoint TEXT NOT NULL,
+     FOREIGN KEY(principal) REFERENCES accounts(principal));
+    CREATE TABLE IF NOT EXISTS account_erasure_completion_receipts(
+     principal TEXT PRIMARY KEY,
+     receipt_json TEXT NOT NULL,
+     receipt_sha256 TEXT NOT NULL,
+     completed_at INTEGER NOT NULL,
      FOREIGN KEY(principal) REFERENCES accounts(principal));
 
                 """)
@@ -255,6 +262,163 @@ class PlatformStore:
                 "processed":processed,"erasureComplete":False,
                 "retainedDataClasses":list(retained),
                 "requiresOwnerRetentionReview":True}
+
+    def account_erasure_completion_receipt(self,principal):
+        """Verify a durable completion receipt; not authorization for retained media."""
+        if not isinstance(principal,str) or not _PRINCIPAL.fullmatch(principal):
+            raise PlatformDenied("ERASURE_RECEIPT_PRINCIPAL_INVALID")
+        with self._db() as db:
+            row=db.execute("""SELECT c.receipt_json,c.receipt_sha256,r.state,a.status
+                FROM account_erasure_completion_receipts c
+                JOIN account_erasure_requests r ON r.principal=c.principal
+                JOIN accounts a ON a.principal=c.principal
+                WHERE c.principal=?""",(principal,)).fetchone()
+        if row is None:return None
+        receipt=json.loads(row["receipt_json"])
+        unsigned=dict(receipt)
+        declared=unsigned.pop("receiptSha256",None)
+        encoded=json.dumps(unsigned,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode("utf-8")
+        if (hashlib.sha256(encoded).hexdigest()!=row["receipt_sha256"]
+                or declared!=row["receipt_sha256"]
+                or row["state"]!="COMPLETED" or row["status"]!="erasure_completed"):
+            raise PlatformDenied("ERASURE_RECEIPT_INTEGRITY_INVALID")
+        return receipt
+
+    def complete_account_erasure(self,principal,*,studio_root):
+        """Finish *eligible* account-data erasure only with no retained project.
+
+        NEVER marks an account with immutable music or undecidable ownership
+        as fully erased. Financial/rights tombstones remain explicitly retained.
+        Designed for a host-owned worker; never directly exposed as a public
+        HTTP mutation. Atomic state and receipt; reread proof on completion.
+        """
+        if not isinstance(principal,str) or not _PRINCIPAL.fullmatch(principal):
+            raise PlatformDenied("ERASURE_PRINCIPAL_INVALID")
+        base=Path(studio_root).resolve()
+        if base != self.path.parent.parent.resolve():
+            raise PlatformDenied("ERASURE_STUDIO_ROOT_MISMATCH")
+        existing=self.account_erasure_completion_receipt(principal)
+        if existing is not None:return existing
+        projects=base/"projects"
+        if projects.exists():
+            for folder in projects.iterdir():
+                if folder.name.startswith("."):continue
+                if not folder.is_dir() or folder.is_symlink():
+                    raise PlatformDenied("ERASURE_PROJECT_OWNER_INVENTORY_UNVERIFIED")
+                owner_path=folder/"ProjectOwner.json"
+                if not owner_path.is_file() or owner_path.is_symlink():
+                    raise PlatformDenied("ERASURE_PROJECT_OWNER_INVENTORY_UNVERIFIED")
+                try:
+                    owner=json.loads(owner_path.read_text(encoding="utf-8"))
+                except (OSError,UnicodeError,json.JSONDecodeError) as error:
+                    raise PlatformDenied("ERASURE_PROJECT_OWNER_INVENTORY_UNVERIFIED") from error
+                if owner.get("principalId")==principal:
+                    raise PlatformDenied("ERASURE_HELD_IMMUTABLE_PROJECT_DATA")
+        # Only checked account data qualifies: other external stores and
+        # remotes remain unverified, never silently declared physically wiped.
+        retained=["legal_financial_ledger_tombstones",
+                  "rights_publication_audit_tombstones"]
+        with self._db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row=db.execute("""SELECT a.status,r.state,r.requested_at,r.entrypoint
+               FROM accounts a JOIN account_erasure_requests r
+                 ON a.principal=r.principal WHERE a.principal=?""",(principal,)).fetchone()
+            if row is None or row["status"]!="erased_partial" or row["state"]!="PURGED_MUTABLE":
+                raise PlatformDenied("ERASURE_MUTABLE_PURGE_NOT_PROVEN")
+            names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            # An unreviewed future table can hold personal data in *any*
+            # schema shape. Never certify completion if storage evolved
+            # without a corresponding erasure-policy owner decision.
+            reviewed={
+              "accounts","sessions","publications",
+              "account_erasure_requests","account_erasure_completion_receipts",
+              "platform_credit_grants","platform_credit_jobs",
+              "social_playlists","social_playlist_items",
+              "social_albums","social_album_items","social_follows",
+              "social_blocks","social_likes","social_comments_enabled",
+              "social_comments","social_notifications",
+              "platform_workspaces","platform_workspace_members",
+              "platform_workspace_projects"}
+            unknown=names-reviewed-{"sqlite_sequence"}
+            if unknown:
+                raise PlatformDenied("ERASURE_SCHEMA_UNREVIEWED")
+            refs={"sessions":("principal",),"social_playlists":("principal",),
+                  "social_albums":("principal",),"social_comments":("author",),
+                  "platform_workspaces":("owner",),"platform_workspace_members":("principal",),
+                  "social_likes":("principal",),"social_follows":("follower","followed"),
+                  "social_notifications":("target","actor"),"chat_approvals":("principal",)}
+            for table,keys in refs.items():
+                if table not in names:continue
+                columns={x["name"] for x in db.execute(f"PRAGMA table_info({table})")}
+                for key in keys:
+                    if key in columns and db.execute(
+                            f"SELECT 1 FROM {table} WHERE {key}=? LIMIT 1",
+                            (principal,)).fetchone():
+                        raise PlatformDenied("ERASURE_MUTABLE_RESIDUAL_"+table)
+            if "publications" in names:
+                if db.execute("""SELECT 1 FROM publications
+                  WHERE principal=? AND (active!=0 OR title!='Deleted account publication')
+                  LIMIT 1""",(principal,)).fetchone():
+                    raise PlatformDenied("ERASURE_PUBLICATION_TOMBSTONE_INVALID")
+            # Financial/rights auditing remains pseudonymous; do not claim
+            # all account-related bytes in every external system are erased.
+            now=int(time.time())
+            unsigned={
+              "schemaVersion":"sara.account.erasure.completion.v1",
+              "state":"ERASURE_COMPLETED",
+              "principalDigest":hashlib.sha256(principal.encode()).hexdigest(),
+              "requestedAt":row["requested_at"],
+              "completedAt":now,
+              "entrypoint":row["entrypoint"],
+              "eligibleDataErasureComplete":True,
+              "allHistoricalRecordsDestroyed":False,
+              "retainedDataClasses":retained,
+              "projectOwnerInventory":"NO_OWNED_PROJECTS",
+              "externalProviderErasure":"NOT_VERIFIED",
+              "method":"TRANSACTIONAL_SQL_PURGE_WITH_OWNER_INVENTORY"}
+            canonical=json.dumps(unsigned,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode("utf-8")
+            digest=hashlib.sha256(canonical).hexdigest()
+            receipt={**unsigned,"receiptSha256":digest}
+            encoded=json.dumps(receipt,sort_keys=True,separators=(",",":"),ensure_ascii=False)
+            db.execute("INSERT INTO account_erasure_completion_receipts VALUES(?,?,?,?)",
+                       (principal,encoded,digest,now))
+            db.execute("UPDATE accounts SET status='erasure_completed' WHERE principal=? AND status='erased_partial'",(principal,))
+            db.execute("UPDATE account_erasure_requests SET state='COMPLETED' WHERE principal=? AND state='PURGED_MUTABLE'",(principal,))
+            db.commit()
+        readback=self.account_erasure_completion_receipt(principal)
+        if readback!=receipt:
+            raise PlatformDenied("ERASURE_COMPLETION_DURABLE_READBACK_FAILED")
+        return readback
+
+    def process_account_erasure_lifecycle(self, *, studio_root, limit=50):
+        """Host worker: advance mutable purge, then independently certify scope.
+
+        No timer/queue/cron is implied. Reentrant: each durable transition is
+        atomic and already-committed completion receipts remain unchanged.
+        """
+        mutable=self.process_pending_account_erasures(limit=limit)
+        if Path(studio_root).resolve()!=self.path.parent.parent.resolve():
+            raise PlatformDenied("ERASURE_STUDIO_ROOT_MISMATCH")
+        with self._db() as db:
+            rows=db.execute("""SELECT principal FROM account_erasure_requests
+                WHERE state='PURGED_MUTABLE' ORDER BY requested_at,principal LIMIT ?""",
+                (limit,)).fetchall()
+        receipts=[];holds=[]
+        for row in rows:
+            principal=row["principal"]
+            try:
+                receipt=self.complete_account_erasure(principal,studio_root=studio_root)
+                receipts.append(receipt)
+            except PlatformDenied as error:
+                # Do not retry/force an ambiguous owner state; retain the
+                # PURGED_MUTABLE staging for review and deterministic wake.
+                holds.append({"principalDigest":hashlib.sha256(principal.encode()).hexdigest(),
+                              "reason":str(error)})
+        return {"state":"ERASURE_WORKER_RECONCILED",
+                "mutableProcessed":mutable["processed"],
+                "completed":len(receipts),"held":len(holds),
+                "receipts":receipts,"holds":holds,
+                "workerScheduler":"NOT_CONFIGURED"}
 
     def request_external_erasure(self,handle,password,confirmation):
         if confirmation!="DELETE_MY_ACCOUNT":
