@@ -238,6 +238,23 @@ class PlatformStore:
                 run("social_comments_enabled","DELETE FROM social_comments_enabled WHERE principal=?")
                 run("social_comments","DELETE FROM social_comments WHERE author=?")
                 run("social_notifications","DELETE FROM social_notifications WHERE target=? OR actor=?",principal)
+                # Rooms are Studio-owned mutable social testimony, never
+                # immutable music. Owner deletion closes the whole room;
+                # collaborator deletion scrubs their posts, roles and invites.
+                room_tables=("music_room_members","music_room_invites",
+                  "music_room_messages","music_room_pins","music_room_proposals","music_room_blocks")
+                if "music_rooms" in tables:
+                    for table in room_tables:
+                        if table in tables:
+                            db.execute(f"DELETE FROM {table} WHERE room IN (SELECT id FROM music_rooms WHERE host=?)",(principal,))
+                    db.execute("DELETE FROM music_rooms WHERE host=?",(principal,))
+                run("music_room_members","DELETE FROM music_room_members WHERE principal=?")
+                run("music_room_invites","DELETE FROM music_room_invites WHERE principal=?")
+                run("music_room_messages","DELETE FROM music_room_messages WHERE author=?")
+                run("music_room_proposals","DELETE FROM music_room_proposals WHERE author=?")
+                run("music_room_blocks","DELETE FROM music_room_blocks WHERE principal=?")
+                if "music_room_pins" in tables:
+                    db.execute("DELETE FROM music_room_pins WHERE publication IN (SELECT publication_id FROM publications WHERE principal=?)",(principal,))
                 # Workspace grants and privately named collaboration drafts.
                 if "platform_workspaces" in tables:
                     for table in ("platform_workspace_projects","platform_workspace_members"):
@@ -358,7 +375,10 @@ class PlatformStore:
               "social_blocks","social_likes","social_comments_enabled",
               "social_comments","social_notifications",
               "platform_workspaces","platform_workspace_members",
-              "platform_workspace_projects","chat_approvals","gate3_spend_requests"}
+              "platform_workspace_projects","chat_approvals","gate3_spend_requests",
+              "music_rooms","music_room_members","music_room_invites",
+              "music_room_messages","music_room_pins","music_room_proposals",
+              "music_room_blocks"}
             unknown=names-reviewed-{"sqlite_sequence"}
             if unknown:
                 raise PlatformDenied("ERASURE_SCHEMA_UNREVIEWED")
@@ -366,7 +386,10 @@ class PlatformStore:
                   "social_albums":("principal",),"social_comments":("author",),
                   "platform_workspaces":("owner",),"platform_workspace_members":("principal",),
                   "social_likes":("principal",),"social_follows":("follower","followed"),
-                  "social_notifications":("target","actor"),"chat_approvals":("principal",),"gate3_spend_requests":("principal",)}
+                  "social_notifications":("target","actor"),"chat_approvals":("principal",),"gate3_spend_requests":("principal",),
+                  "music_rooms":("host",),"music_room_members":("principal",),
+                  "music_room_invites":("principal",),"music_room_messages":("author",),
+                  "music_room_proposals":("author",),"music_room_blocks":("principal",)}
             for table,keys in refs.items():
                 if table not in names:continue
                 columns={x["name"] for x in db.execute(f"PRAGMA table_info({table})")}

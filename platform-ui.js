@@ -8,6 +8,8 @@
   let currentArtist = null;
   let pendingChatApproval = null;
   let currentView = "home";
+  let currentExploreTab="discover", activeRoomId=null;
+
   function clearChatApproval() {
     pendingChatApproval=null;
     const button=$("platformChatApprove");
@@ -26,7 +28,7 @@
       if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");
     }
     if(view==="chat") $("platformChatInstruction")?.focus();
-    if(view==="explore") loadExplore().catch(error=>text("platformExploreStatus","ERROR · "+error.message));
+    if(view==="explore") showExploreTab(currentExploreTab);
     if(view==="library") loadLibrary().catch(error=>text("platformLibraryStatus","ERROR · "+error.message));
     if(view==="profile") {
       loadProfile().catch(error=>text("platformProfileStatus","ERROR · "+error.message));
@@ -99,6 +101,102 @@
     if(!result.songs?.length){text("platformExploreStatus","EMPTY · No published songs match yet");return;}
     for(const song of result.songs)addSong($("platformExploreSongs"),song);
     text("platformExploreStatus","READY · "+result.songs.length+" published song(s)");
+  }
+  function showExploreTab(tab){
+    currentExploreTab=tab;
+    $("platformSearch").hidden=tab!=="discover";
+    $("platformDoSearch").hidden=tab!=="discover";
+    $("platformExploreSongs").hidden=tab!=="discover";
+    $("platformExploreStatus").hidden=tab!=="discover";
+    $("platformRoomView").hidden=tab!=="rooms";
+    $("platformCreatorView").hidden=tab!=="creators";
+    for(const [id,name] of [["platformExploreTabDiscover","discover"],["platformExploreTabRooms","rooms"],["platformExploreTabCreators","creators"]]){
+      if(tab===name)$(id).setAttribute("aria-current","true");else $(id).removeAttribute("aria-current");
+    }
+    if(tab==="discover")loadExplore().catch(e=>text("platformExploreStatus","ERROR · "+e.message));
+    if(tab==="rooms")loadRoomList().catch(e=>text("platformRoomStatus","ERROR · "+e.message));
+  }
+  async function findCreator(){
+    const handle=$("platformCreatorHandle").value.trim().replace(/^@/,"");
+    try{const result=await request('/api/artists/'+encodeURIComponent(handle));
+      text('platformCreatorResult',"@"+result.profile.handle+" · "+result.profile.displayName+" · "+result.songs.length+" public songs");
+    }catch(e){text('platformCreatorResult',"NOT FOUND · "+e.message);}
+  }
+  async function loadRoomList(){
+    const query=$("platformRoomSearch").value.trim();
+    const result=await request('/api/explore/rooms?q='+encodeURIComponent(query));
+    const list=$("platformRoomList");list.replaceChildren();
+    for(const room of result.rooms){
+      const button=document.createElement('button');button.type='button';
+      button.textContent=room.name+' · '+room.category+' · '+room.visibility+' · '+room.memberCount+' members';
+      button.addEventListener('click',()=>openRoom(room.roomId,room.name));list.append(button);
+    }
+    text('platformRoomStatus','READY · '+result.rooms.length+' available room(s)');
+  }
+  async function openRoom(id,name='Room'){
+    activeRoomId=id;
+    $("platformRoomDetail").hidden=false;$("platformRoomSidebar").hidden=false;
+    text('platformRoomHeading',name);
+    await refreshRoom();
+  }
+  async function refreshRoom(){
+    if(!activeRoomId)return;
+    try{
+      const data=await request('/api/explore/rooms/'+activeRoomId+'/messages');
+      const messages=$("platformRoomMessages"),people=$("platformRoomPeople"),listening=$("platformRoomListening");
+      messages.replaceChildren();people.replaceChildren();listening.replaceChildren();
+      for(const m of data.messages){
+        const line=document.createElement('p');line.textContent='@'+m.handle+': '+m.body;messages.append(line);
+      }
+      for(const p of data.participants){
+        const line=document.createElement('p');line.textContent='@'+p.handle+' · '+p.role+(p.observedRecently?' · recently active':'');people.append(line);
+      }
+      const player=$("platformAudio");
+      for(const song of data.listeningStation){
+        const item=document.createElement('button');item.type='button';item.textContent='Play '+song.title+' · @'+song.artist.handle;
+        item.addEventListener('click',async()=>{
+          try{
+            // Revalidate on every play; published pointer never authorizes historical CAS.
+            const proof=await request('/api/songs/'+encodeURIComponent(song.publicationId));
+            player.src=proof.song.audioUrl;text('platformNowPlaying',proof.song.title);
+            await player.play();
+          }catch(e){player.pause();player.removeAttribute('src');text('platformRoomStatus','PLAYBACK DENIED · '+e.message);}
+        });listening.append(item);
+      }
+      text('platformRoomStatus','READY · '+data.messages.length+' room messages · '+data.participants.length+' members');
+    }catch(e){
+      $("platformRoomMessages").replaceChildren();$("platformRoomPeople").replaceChildren();$("platformRoomListening").replaceChildren();
+      text('platformRoomStatus','JOIN REQUIRED OR DENIED · '+e.message);
+    }
+  }
+  async function createRoom(){
+    try{
+      const name=$("platformRoomName").value.trim();
+      const room=await request('/api/explore/rooms','POST',{name,category:$("platformRoomCategory").value,
+        visibility:$("platformRoomVisibility").value,maxOccupancy:16});
+      await loadRoomList();await openRoom(room.roomId,name);
+      $("platformRoomName").value='';
+    }catch(e){text('platformRoomStatus','ERROR · '+e.message);}
+  }
+  async function roomAction(action,payload={}){
+    if(!activeRoomId)return text('platformRoomStatus','ERROR · Select a room');
+    try{
+      const outcome=await request('/api/explore/rooms/'+activeRoomId+'/'+action,'POST',payload);
+      if(action==='messages')$("platformRoomComposer").value='';
+      text('platformRoomStatus',outcome.state||outcome.status||'READY');
+      await refreshRoom();
+    }catch(e){text('platformRoomStatus','NOT COMMITTED · '+e.message);}
+  }
+  async function roomProposal(){
+    if(!activeRoomId)return;
+    try{
+      const result=await request('/api/explore/rooms/'+activeRoomId+'/propose-collaboration','POST',{
+        workspaceId:$("platformRoomWorkspace").value.trim(),
+        projectId:$("platformRoomProject").value.trim(),
+        baseRevisionId:$("platformRoomRevision").value.trim(),
+        instruction:$("platformRoomProposal").value.trim()});
+      text('platformRoomStatus',result.state+' · Not committed · '+result.proposalId);
+    }catch(e){text('platformRoomStatus','PROPOSAL DENIED · '+e.message);}
   }
   async function loadLibrary() {
     text("platformLibraryStatus","LOADING · Reading authorized project library");
@@ -369,6 +467,19 @@
   for(const el of $("platformNavigation").querySelectorAll("button"))
     el.addEventListener("click",()=>changeView(el.dataset.platformView));
   $("platformStartCreating").addEventListener("click",()=>changeView("studio"));
+  for(const [id,tab] of [["platformExploreTabDiscover","discover"],["platformExploreTabRooms","rooms"],["platformExploreTabCreators","creators"]])
+    $(id).addEventListener('click',()=>showExploreTab(tab));
+  $("platformFindCreator").addEventListener('click',findCreator);
+  $("platformCreateRoom").addEventListener('click',createRoom);
+  $("platformRoomSearchButton").addEventListener('click',()=>loadRoomList().catch(e=>text('platformRoomStatus','ERROR · '+e.message)));
+  $("platformRoomRefresh").addEventListener('click',refreshRoom);
+  $("platformRoomJoin").addEventListener('click',()=>roomAction('join'));
+  $("platformRoomLeave").addEventListener('click',()=>roomAction('leave'));
+  $("platformRoomSend").addEventListener('click',()=>roomAction('messages',{body:$("platformRoomComposer").value}));
+  $("platformRoomPin").addEventListener('click',()=>roomAction('pin-track',{publicationId:$("platformRoomPinId").value.trim()}));
+  for(const action of ['invite','kick','block'])
+    $("platformRoom"+action[0].toUpperCase()+action.slice(1)).addEventListener('click',()=>roomAction(action,{handle:$("platformRoomInviteHandle").value.trim()}));
+  $("platformRoomPropose").addEventListener('click',roomProposal);
   $("platformDoSearch").addEventListener("click",()=>loadExplore(true).catch(e=>text("platformExploreStatus","ERROR · "+e.message)));
   $("platformSearch").addEventListener("keydown",e=>{if(e.key==="Enter")$("platformDoSearch").click();});
   $("platformSignIn").addEventListener("click",()=>authenticate("signin"));

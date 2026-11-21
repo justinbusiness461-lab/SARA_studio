@@ -79,6 +79,12 @@ M045_SYNTHESIZE_TO_STAGE = None
 M045_GRANT_SIGNING_RING = None
 M045_GRANT_RIGHTS_POLICY = None
 MAX_REQUEST = 64 * 1024 * 1024
+# R13: DAW verification has its own bounded *streaming* binary path, not the
+# JSON memory cap. Maximum accepted on-wire ZIP 256 MiB; no imported authority.
+MAX_DAW_VERIFY_UPLOAD = 256 * 1024 * 1024
+import threading
+DAW_VERIFY_SLOT = threading.BoundedSemaphore(1)
+
 MAX_ARTIFACT = 16 * 1024 * 1024
 # Host-generated, provenance-checked full-length masters only; all raw
 # exports and unproven caller-supplied artifacts keep the 16 MiB ceiling.
@@ -1358,6 +1364,25 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             if path=="/api/me/profile":self._json(200,{"status":"SUCCESS","profile":store.profile(principal)});return True
             if path=="/api/me/sessions":self._json(200,{"status":"SUCCESS","sessions":store.list_sessions(principal)});return True
             self._json(200,owned_library(EXPORT_ROOT,principal));return True
+        if path.startswith("/api/explore/rooms"):
+            from platform_rooms import RoomStore
+            from platform_identity import PlatformDenied
+            from urllib.parse import parse_qs,urlsplit
+            try:
+                principal=self._platform_principal()
+                rooms=RoomStore(EXPORT_ROOT);rooms.rights_policy=PLATFORM_PUBLICATION_RIGHTS
+                if path=="/api/explore/rooms":
+                    q=parse_qs(urlsplit(self.path).query)
+                    result=rooms.directory(principal,q.get('category',[''])[0],q.get('q',[''])[0])
+                elif path.endswith('/messages'):
+                    result=rooms.messages(principal,path[len('/api/explore/rooms/'):-len('/messages')])
+                else:raise PlatformDenied('ROOM_READ_DENIED')
+                self._json(200,result)
+            except (PlatformDenied,ProjectConflict,PermissionError):
+                self._json(403,{'status':'DENY','error':'ROOM_ACCESS_DENIED'})
+            except ValueError:
+                self._json(400,{'status':'ERROR','error':'INVALID_ROOM_REQUEST'})
+            return True
         if path.startswith("/api/playlists/"):
             # A published playlist is intentionally readable without account
             # login; private playlists still require exact current owner.
@@ -1445,6 +1470,26 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                     db.commit()
                 return self._json(200,{"status":"SUCCESS"},cookie="sara_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0")
             principal=self._platform_principal()
+            if path.startswith('/api/explore/rooms'):
+                from platform_rooms import RoomStore
+                rooms=RoomStore(EXPORT_ROOT);rooms.rights_policy=PLATFORM_PUBLICATION_RIGHTS
+                if path=='/api/explore/rooms':
+                    return self._json(201,rooms.create(principal,payload))
+                chunks=path[len('/api/explore/rooms/'):].split('/')
+                if len(chunks)!=2:raise PlatformDenied('ROOM_ACTION_DENIED')
+                rid,action=chunks
+                if action in {'join','leave'} and not payload:
+                    return self._json(200,rooms.join(principal,rid) if action=='join' else rooms.leave(principal,rid))
+                if action in {'invite','kick','block'} and set(payload)=={'handle'}:
+                    return self._json(200,rooms.invite(principal,rid,payload['handle']) if action=='invite'
+                      else rooms.kick(principal,rid,payload['handle'],block=action=='block'))
+                if action=='messages' and set(payload)=={'body'}:
+                    return self._json(201,rooms.post_message(principal,rid,payload['body']))
+                if action=='pin-track' and set(payload)=={'publicationId'}:
+                    return self._json(200,rooms.pin(principal,rid,payload['publicationId'],PLATFORM_PUBLICATION_RIGHTS))
+                if action=='propose-collaboration':
+                    return self._json(201,rooms.proposal(principal,rid,payload))
+                raise ValueError('ROOM_ACTION_FIELDS_INVALID')
             if path=="/api/playlists":
                 from platform_social import SocialStore
                 if set(payload)!={"title","visibility"}:raise ValueError("INVALID_PLAYLIST_FIELDS")
@@ -1714,6 +1759,57 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._json(400,{"status":"ERROR","error":"INVALID_PROFILE_REQUEST"})
             raise
 
+    def _verify_daw_zip_upload(self, principal_id):
+        """R13 disk-spooled ZIP; canonical verifier owns all source and checksums.
+
+        The small base64url X-Sara-Daw-Source header carries untrusted scope
+        metadata. No caller-supplied digest, ZIP entry or source path can grant
+        permission: verify_authorized_daw_bundle reconstructs from Studio truth.
+        """
+        import base64,binascii
+        from m045_daw_export import verify_authorized_daw_bundle,DawExportHold,DawSourceDenied
+        if self.headers.get('Transfer-Encoding'):
+            return self._json(400,{'status':'ERROR','error':'DAW_CHUNKED_TRANSFER_NOT_ADMITTED'})
+        try:
+            count=int(self.headers.get('Content-Length','-1'))
+        except (ValueError,OverflowError):count=-1
+        if count<1 or count>MAX_DAW_VERIFY_UPLOAD:
+            return self._json(413,{'status':'ERROR','error':'DAW_UPLOAD_SIZE_OUT_OF_BOUNDS'})
+        header=self.headers.get('X-Sara-Daw-Source','')
+        if not isinstance(header,str) or not 1<=len(header)<=8192:
+            return self._json(400,{'status':'ERROR','error':'DAW_SCOPE_HEADER_REQUIRED'})
+        try:
+            raw=base64.b64decode(header+'='*((-len(header))%4),altchars=b'-_',validate=True)
+            request=json.loads(raw.decode('utf-8'))
+            if not isinstance(request,dict) or set(request)!={'projectId','revisionId','artifactId','mixRecipe'}:
+                raise ValueError('DAW_SOURCE_SCOPE_INVALID')
+        except (ValueError,UnicodeError,binascii.Error,TypeError):
+            return self._json(400,{'status':'ERROR','error':'DAW_SCOPE_HEADER_INVALID'})
+        if not DAW_VERIFY_SLOT.acquire(blocking=False):
+            return self._json(503,{'status':'BLOCKED','error':'DAW_VERIFIER_BUSY'})
+        try:
+            # Untrusted data remains private and never enters Studio CAS or
+            # project state. Spool with bounded RAM, then independently verify.
+            with tempfile.TemporaryDirectory(prefix='sara-untrusted-daw-') as private:
+                archive=Path(private)/'submitted.zip'
+                with archive.open('xb') as output:
+                    remaining=count
+                    self.connection.settimeout(35)
+                    while remaining:
+                        part=self.rfile.read(min(1024*1024,remaining))
+                        if not part:raise EOFError('DAW_UPLOAD_TRUNCATED')
+                        output.write(part);remaining-=len(part)
+                    output.flush();os.fsync(output.fileno())
+                receipt=verify_authorized_daw_bundle(EXPORT_ROOT,request,principal_id,archive)
+            return self._json(200,receipt)
+        except (ProjectConflict,DawSourceDenied,PermissionError):
+            return self._json(403,{'status':'DENY','error':'DAW_SOURCE_NOT_AUTHORIZED'})
+        except DawExportHold as error:
+            return self._json(409,{'status':'HOLD','error':str(error)})
+        except (ValueError,TypeError,KeyError,OSError,EOFError,zipfile.BadZipFile):
+            return self._json(400,{'status':'ERROR','error':'DAW_BINARY_STREAM_UNQUALIFIED'})
+        finally:DAW_VERIFY_SLOT.release()
+
     def do_POST(self):
         if not authorized_origin(self.headers.get("Origin"),self.headers.get("Host")):
             return self._json(403,{"status":"ERROR","error":"origin denied"})
@@ -1733,6 +1829,9 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                   else resolve_studio_session(self.headers.get("X-Studio-Session", "")))
             except ProjectConflict as e:
                 return self._json(403, {"status": "DENY", "error": str(e)})
+        if path == '/api/m045/verify-daw-bundle' and \
+           self.headers.get('Content-Type','').split(';',1)[0].strip().lower()=='application/zip':
+            return self._verify_daw_zip_upload(principal_id)
         try:
             if self.headers.get("Transfer-Encoding"): raise ValueError("transfer encoding unsupported")
             length=int(self.headers.get("Content-Length","-1"))
@@ -1746,6 +1845,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if PLATFORM_MODE and (path=="/api/account/delete-request" or
                               path.startswith("/api/auth/") or
                               path.startswith("/api/playlists") or path.startswith("/api/albums") or
+                              path.startswith("/api/explore/rooms") or
                               path.startswith("/api/social/") or path.startswith("/api/workspaces") or
                               path.startswith("/api/credits/") or
                               path=="/api/billing/native-receipt" or

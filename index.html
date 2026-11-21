@@ -71,7 +71,59 @@ button.sm{min-height:36px;font-size:.75rem;padding:0 10px}
       <label for="platformSearch">Search published music</label><input id="platformSearch" placeholder="Search songs or artists"/>
       <button id="platformDoSearch" type="button" class="secondary">Search</button>
       <div id="platformExploreStatus" role="status" aria-live="polite">LOADING</div>
-      <div id="platformExploreSongs" class="platform-cards"></div></section>
+      <div id="platformExploreSongs" class="platform-cards"></div>
+      <div id="platformExploreTabs" class="platform-explore-tabs" role="group" aria-label="Explore sections">
+        <button id="platformExploreTabDiscover" type="button" aria-current="true">Discover</button>
+        <button id="platformExploreTabRooms" type="button">Rooms</button>
+        <button id="platformExploreTabCreators" type="button">Creators</button>
+      </div>
+      <div id="platformCreatorView" hidden><label for="platformCreatorHandle">Find an artist @handle</label>
+        <input id="platformCreatorHandle" placeholder="artist_handle"/><button type="button" id="platformFindCreator">Find artist</button>
+        <div id="platformCreatorResult" role="status"></div></div>
+      <div id="platformRoomView" hidden>
+        <p>Meet musicians, share verified tracks, and propose changes for the owner's review. Room conversations never commit a Studio revision.</p>
+        <div class="platform-rooms-layout">
+          <div class="platform-room-directory">
+            <h3>Explore Rooms</h3><label for="platformRoomSearch">Search room names</label>
+            <input id="platformRoomSearch" placeholder="Songwriters Circle"/>
+            <button type="button" id="platformRoomSearchButton">Find rooms</button>
+            <div id="platformRoomList" class="platform-cards" aria-label="Rooms directory"></div>
+            <h3>Create a room</h3><label for="platformRoomName">Room name</label>
+            <input id="platformRoomName" maxlength="80" placeholder="Your sound, your room"/>
+            <label for="platformRoomCategory">Category</label><select id="platformRoomCategory">
+              <option>Country-Hop</option><option>Beat Lab</option><option>Songwriters</option>
+              <option>DJ Scratch Lounge</option><option>Mix &amp; Master</option>
+              <option>Open Collaboration</option><option>Experimental</option></select>
+            <label for="platformRoomVisibility">Visibility</label><select id="platformRoomVisibility">
+              <option value="private">Private · invite only</option><option value="public">Public · discoverable</option></select>
+            <button type="button" id="platformCreateRoom">Create room</button>
+          </div>
+          <div id="platformRoomDetail" class="platform-room-conversation" hidden>
+            <h3 id="platformRoomHeading">Room</h3>
+            <div class="platform-room-actions"><button id="platformRoomJoin" type="button">Join</button>
+              <button id="platformRoomLeave" type="button">Leave</button><button id="platformRoomRefresh" type="button">Refresh</button></div>
+            <div id="platformRoomMessages" role="log" aria-label="Room conversation" aria-live="polite"></div>
+            <label for="platformRoomComposer">Your message</label><textarea id="platformRoomComposer" rows="2" maxlength="1200" placeholder="Write to the room"></textarea>
+            <button id="platformRoomSend" type="button">Send message</button>
+            <h4>Collaborate in Studio</h4><p>Proposals require an existing authorized workspace and exact source revision. No edit is auto-committed.</p>
+            <label for="platformRoomWorkspace">Workspace ID</label><input id="platformRoomWorkspace" placeholder="ws-…"/>
+            <label for="platformRoomProject">Project ID</label><input id="platformRoomProject" placeholder="Exact Studio project"/>
+            <label for="platformRoomRevision">Base revision ID</label><input id="platformRoomRevision" placeholder="Current revision"/>
+            <label for="platformRoomProposal">Proposed change</label><textarea id="platformRoomProposal" rows="2"></textarea>
+            <button id="platformRoomPropose" type="button">Propose collaboration</button>
+          </div>
+          <aside id="platformRoomSidebar" class="platform-room-participants" hidden>
+            <h3>Who's in the room</h3><p class="platform-room-presence-note">Recently observed presence, not a live connection guarantee.</p>
+            <div id="platformRoomPeople"></div>
+            <h4>Listening Station</h4><div id="platformRoomListening"></div>
+            <label for="platformRoomPinId">Verified publication ID</label><input id="platformRoomPinId" placeholder="pub-…"/>
+            <button id="platformRoomPin" type="button">Pin published song</button>
+            <label for="platformRoomInviteHandle">Artist @handle</label><input id="platformRoomInviteHandle" placeholder="artist_handle"/>
+            <div class="platform-room-actions"><button id="platformRoomInvite" type="button">Invite</button>
+              <button id="platformRoomKick" type="button">Remove</button><button id="platformRoomBlock" type="button">Block</button></div>
+          </aside>
+        </div><p id="platformRoomStatus" role="status" aria-live="polite">READY · Select or create a room</p>
+      </div></section>
     <section id="platformLibraryPanel" aria-label="Library" hidden><h2>My Library</h2>
       <div id="platformLibraryStatus" role="status" aria-live="polite">LOADING</div><div id="platformLibraryProjects" class="platform-cards"></div></section>
     <section id="platformProfilePanel" aria-label="Artist Profile" hidden><h2>Artist Profile</h2>

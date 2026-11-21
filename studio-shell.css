@@ -199,3 +199,22 @@ html.platform-mode #platformChatApprove[hidden]{display:none!important}
 .studio-generation-steps li[data-stage-status="verified"]{border-color:#73c9a3}
 .studio-generation-steps small{color:#b6c7dc;line-height:1.4;overflow-wrap:anywhere}
 @media(max-width:430px){.studio-generation-steps{grid-template-columns:minmax(0,1fr)}}
+
+/* Round 13: one Explore tab state, mobile single-column Rooms without demotion. */
+.platform-explore-tabs,.platform-room-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.platform-explore-tabs button,.platform-room-actions button{flex:1 1 82px}
+.platform-explore-tabs button[aria-current=true]{background:#136b73;border:2px solid #74ebe8}
+.platform-rooms-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:10px}
+.platform-rooms-layout>*{min-width:0;padding:10px;border:1px solid #38516b;border-radius:12px;background:#101f30}
+.platform-rooms-layout input,.platform-rooms-layout select,.platform-rooms-layout textarea,.platform-rooms-layout button{width:100%;min-width:0;max-width:100%;box-sizing:border-box;min-height:48px}
+.platform-rooms-layout label{display:block;margin:9px 0 3px}
+.platform-rooms-layout h3,.platform-rooms-layout h4{margin:8px 0}
+.platform-rooms-layout .platform-room-actions button{min-width:48px}
+#platformRoomMessages{min-height:112px;max-height:300px;overflow-y:auto;overflow-wrap:anywhere;border:1px solid #47617e;padding:8px;border-radius:8px;background:#0d1a29}
+#platformRoomMessages p{margin:7px 0;border-bottom:1px solid #29435c;padding-bottom:6px}
+#platformRoomList button{display:block;white-space:normal;overflow-wrap:anywhere;text-align:left}
+#platformRoomStatus,.platform-room-presence-note{overflow-wrap:anywhere;color:#b6d7e8;font-size:.83rem}
+@media(min-width:1050px){
+ html.platform-mode .platform-pages:has(#platformExplorePanel:not([hidden])){max-width:1180px}
+ .platform-rooms-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr)}
+}
