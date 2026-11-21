@@ -1,5 +1,11 @@
 """Opt-in ACE-Step 1.5 Modal GPU server; DOES NOT deploy on import.
 
+The 120-second Function input timeout and 30-second idle window are safety
+limits, NOT a hard account-spend cap. Startup may fail if it exceeds 95s.
+Web-server HTTP timeout alone cannot identify a cancellable FunctionCall;
+only a separately host-bound Modal spawn ID can be safely cancelled.
+
+
 Deployment requires operator approval, Modal credentials, and a named secret.
 Do not advertise readiness until a real inference and Studio playback pass.
 """
@@ -65,12 +71,15 @@ def _manifest_sha256(entries: dict[str, str]) -> str:
     gpu="L40S",
     volumes={MODEL_VOLUME_PATH: weights_volume},
     secrets=[modal.Secret.from_name(MODEL_SECRET_NAME)],
-    timeout=600,
-    scaledown_window=60,
+    timeout=120,
+    startup_timeout=110,
+    scaledown_window=30,
+    min_containers=0,
+    retries=0,
     max_containers=1,
 )
 @modal.concurrent(max_inputs=1)
-@modal.web_server(port=8001, startup_timeout=600)
+@modal.web_server(port=8001, startup_timeout=100)
 def serve_acestep_api():
     api_key = os.environ.get("ACESTEP_API_KEY", "")
     if len(api_key) < 32 or api_key.strip() != api_key:
@@ -91,7 +100,7 @@ def serve_acestep_api():
         cwd="/opt/ACE-Step-1.5",
         env=env,
     )
-    deadline = time.monotonic() + 570
+    deadline = time.monotonic() + 95
     while time.monotonic() < deadline:
         if proc.poll() is not None:
             raise RuntimeError(f"ACE-Step terminated during startup: {proc.returncode}")

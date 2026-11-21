@@ -45,7 +45,9 @@ class ModalAceStepHttpProvider:
     endpoint_url: str
     environment: dict
     loopback_test_mode: bool = False
-    http_timeout_sec: float = 180.0
+    http_timeout_sec: float = 120.0
+    host_call_supervisor_factory: object = None
+    host_call_supervisor: object = None
 
     def _preflight(self,scope,request=None):
         validate_scope(scope)
@@ -58,7 +60,7 @@ class ModalAceStepHttpProvider:
             raise ModalTransportUnavailable('GATE3_PROVIDER_BEARER_NOT_CONFIGURED')
         if (type(self.http_timeout_sec) not in (int,float)
             or not math.isfinite(self.http_timeout_sec)
-            or not 0<self.http_timeout_sec<=180
+            or not 0<self.http_timeout_sec<=120
             or self.http_timeout_sec>scope['maxContainerRuntimeSec']):
             raise ValueError('GATE3_HARD_TIMEOUT_OUT_OF_SCOPE')
         if not isinstance(self.endpoint_url,str) or len(self.endpoint_url)>512:
@@ -115,6 +117,22 @@ class ModalAceStepHttpProvider:
             if len(source)<44 or len(source)>12*1024*1024:
                 raise ValueError('GATE3_MODAL_REPAINT_SOURCE_INVALID')
 
+    def _request_remote_cancel_if_bound(self,reason):
+        supervisor=self.host_call_supervisor
+        if supervisor is None:
+            return None
+        # A consumer cannot install an arbitrary remote-call ID: the trusted
+        # host creates a supervisor inside the exact GenerationAttempt stage.
+        if type(supervisor) is not ModalFunctionCallSupervisor:
+            raise ModalTransportUnavailable('GATE3_UNTRUSTED_FUNCTION_CALL_SUPERVISOR')
+        try:
+            return supervisor.cancel_on_uncertain(reason)
+        except (Exception,):
+            # Cancellation might have reached the provider; the supervisor
+            # records durable CANCEL_INTENT_DURABLE before dispatch.
+            # Never turn the provider outage into a retry.
+            return None
+
     def fetch_approved_loopback(self,*,principal_id,spend_token,scope,spend_store,request):
         # Preflight before token redemption, then REDEEM before opening any socket.
         key=self._preflight(scope,request)
@@ -147,7 +165,9 @@ class ModalAceStepHttpProvider:
                     raise ValueError('GATE3_PROVIDER_AUDIO_SIZE_INVALID')
         except urllib.error.HTTPError as exc:
             # Even HTTP-500 can be a chargeable submission: preserve ambiguity.
-            if exc.code>=500:raise RemoteSubmissionUncertain('GATE3_PROVIDER_HTTP_OUTCOME_UNKNOWN') from exc
+            if exc.code>=500:
+                self._request_remote_cancel_if_bound('HTTP_5XX')
+                raise RemoteSubmissionUncertain('GATE3_PROVIDER_HTTP_OUTCOME_UNKNOWN') from exc
             raise ModalTransportUnavailable('GATE3_PROVIDER_HTTP_DENIED') from exc
         except PlatformDenied:
             # PlatformDenied inherits PermissionError/OSError; our definitive
@@ -155,9 +175,14 @@ class ModalAceStepHttpProvider:
             # failure eligible for ambiguous-effect reconciliation.
             raise
         except (urllib.error.URLError,TimeoutError,socket.timeout,OSError) as exc:
+            self._request_remote_cancel_if_bound('HTTP_TIMEOUT')
             raise RemoteSubmissionUncertain('GATE3_PROVIDER_TIMEOUT_OR_IO_OUTCOME_UNKNOWN') from exc
+        except (KeyboardInterrupt,SystemExit):
+            self._request_remote_cancel_if_bound('CLIENT_ABORT')
+            raise
         elapsed=time.monotonic()-start
         if elapsed>self.http_timeout_sec:
+            self._request_remote_cancel_if_bound('HTTP_TIMEOUT')
             raise RemoteSubmissionUncertain('GATE3_PROVIDER_WALLCLOCK_HARD_TIMEOUT')
         return {'wave_bytes':raw,'elapsed_wall_seconds':round(elapsed,6),
             'estimated_gpu_cost_cents_unverified':estimate,
@@ -186,6 +211,11 @@ def run_bounded_local_http_gate3_trial(*,root,principal_id,scope,spend_store,
     from studio_server import project_operation,project_audio_bytes,make_m045_native_owner
     if type(provider) is not ModalAceStepHttpProvider:
         raise ModalTransportUnavailable('GATE3_HTTP_PROVIDER_TYPE_UNQUALIFIED')
+    if provider.host_call_supervisor is not None:
+        # The direct caller cannot prebind an arbitrary Modal ID. It must be
+        # constructed by a trusted host factory for the newly created
+        # GenerationAttempt's *actual* durable staging directory.
+        raise ModalTransportUnavailable('GATE3_UNBOUND_HOST_CALL_HANDLE_DENIED')
     if (not isinstance(receipt_signing_key,bytes)
         or len(receipt_signing_key)<32):
         raise ModalTransportUnavailable('GATE3_SIGNER_REQUIRED')
@@ -273,7 +303,24 @@ def run_bounded_local_http_gate3_trial(*,root,principal_id,scope,spend_store,
             outbound['repainting_end']=region['end_sample']/44100
         # The provider itself atomically consumes the host-signed token
         # BEFORE opening any socket. No other path can activate it.
-        transport=provider.fetch_approved_loopback(
+        active_provider=provider
+        if provider.host_call_supervisor_factory is not None:
+            from dataclasses import replace
+            factory=provider.host_call_supervisor_factory
+            if not callable(factory):
+                raise ModalTransportUnavailable('GATE3_TRUSTED_HOST_FACTORY_REQUIRED')
+            supervisor=factory(stage_dir,principal_id,scope)
+            if (type(supervisor) is not ModalFunctionCallSupervisor
+                or supervisor.stage_dir!=stage_dir.resolve()
+                or supervisor.principal_id!=principal_id
+                or supervisor.project_id!=scope['projectId']
+                or supervisor.source_revision_id!=scope['baseRevisionId']
+                or supervisor.attempt_id!=stage_dir.name[:-len('.stage')]):
+                raise ModalTransportUnavailable('GATE3_CALL_ID_WRONG_ATTEMPT_OWNER')
+            supervisor._read() # ID must be durable before possible effect.
+            active_provider=replace(provider,host_call_supervisor=supervisor,
+                                    host_call_supervisor_factory=None)
+        transport=active_provider.fetch_approved_loopback(
              principal_id=principal_id,spend_token=spend_token,scope=scope,
              spend_store=spend_store,request=outbound)
         normalized,physical=_physical_decode(transport['wave_bytes'],scope)
@@ -344,3 +391,176 @@ def run_bounded_local_http_gate3_trial(*,root,principal_id,scope,spend_store,
             **evidence
         },extra_result={'localLoopbackHttpCalls':1,'networkCallsMade':0,
                         'providerSpendHardCapVerified':False})
+
+
+# R17: one-call GPU exposure reference is not an enforceable account budget.
+# Modal publishes this specific L40S rate; CPU, memory, warmup, repeated inputs,
+# pricing changes and real cancellation delay remain independently unqualified.
+def compute_modal_l40s_exposure_reference(*,gpu_rate_usd_per_second,
+                                          runtime_seconds,
+                                          scaledown_window_seconds,
+                                          max_containers):
+    from decimal import Decimal,InvalidOperation
+    if (type(runtime_seconds) is not int or runtime_seconds!=120
+        or type(scaledown_window_seconds) is not int or scaledown_window_seconds!=30
+        or type(max_containers) is not int or max_containers!=1):
+        raise ValueError('GATE3_EXPOSURE_PROFILE_NOT_BOUNDED')
+    if not isinstance(gpu_rate_usd_per_second,Decimal):
+        raise ValueError('GATE3_GPU_RATE_DECIMAL_REQUIRED')
+    rate=gpu_rate_usd_per_second
+    if not rate.is_finite() or rate<=0:
+        raise ValueError('GATE3_GPU_RATE_INVALID')
+    running=Decimal(runtime_seconds)*rate
+    max_reference=Decimal(runtime_seconds+scaledown_window_seconds)*rate
+    return {'gpuRateUsdPerSecond':str(rate),
+            'runtimeOnlyGpuUsd':str(running.quantize(Decimal('0.000001'))),
+            'runtimePlusIdleGpuUsd':str(max_reference.quantize(Decimal('0.000001'))),
+            'scope':'SINGLE_FUNCTION_INPUT_GPU_ONLY_REFERENCE',
+            'assumptions':['NO_ADDITIONAL_INPUT','NO_RETRY','ONE_GPU_CONTAINER',
+                'STARTUP_OVERHEAD_NOT_BOUNDED','CPU_MEMORY_NOT_INCLUDED',
+                'NO_PROVIDER_BILLING_ENFORCEMENT','REFERENCE_NOT_COST_CEILING'],
+            'totalProviderBillingCapVerified':False}
+
+
+_MODAL_ID=re.compile(r'fc-[A-Za-z0-9_-]{8,128}\Z')
+def _validated_call_id(call_id):
+    if not isinstance(call_id,str) or not _MODAL_ID.fullmatch(call_id):
+        raise ModalTransportUnavailable('GATE3_MODAL_CALL_ID_NOT_HOST_QUALIFIED')
+    return call_id
+
+
+def modal_sdk_host_call_resolver(call_id):
+    """Host-only adapter: requires independently qualified Modal SDK/session.
+
+    Do not call without independent spend grant, checkpoint and billing policy.
+    Import is delayed: source/tests never create a live Modal session.
+    """
+    _validated_call_id(call_id)
+    import modal
+    return modal.FunctionCall.from_id(call_id)
+
+
+def cancel_remote_attempt(call_id,*,terminate_containers=True,host_call_resolver=None):
+    """Request termination of an identified Modal FunctionCall, not an HTTP URL.
+
+    A successful SDK call is *CANCEL_DISPATCHED*, not independent assurance
+    that a GPU has stopped or that a billing threshold was enforced.
+    """
+    _validated_call_id(call_id)
+    if terminate_containers is not True or not callable(host_call_resolver):
+        raise ModalTransportUnavailable('GATE3_HOST_MODAL_CANCEL_AUTHORITY_MISSING')
+    call=host_call_resolver(call_id)
+    if not callable(getattr(call,'cancel',None)):
+        raise ModalTransportUnavailable('GATE3_HOST_MODAL_CALL_HANDLE_INVALID')
+    call.cancel(terminate_containers=True)
+    return {'callId':call_id,'status':'CANCEL_DISPATCHED_UNVERIFIED',
+            'containerTerminationVerified':False,'billingHardCapVerified':False}
+
+
+def poll_remote_attempt(call_id,*,host_call_resolver=None):
+    """Never spawn, resubmit or use a remote result as Studio revision authority."""
+    _validated_call_id(call_id)
+    if not callable(host_call_resolver):
+        raise ModalTransportUnavailable('GATE3_HOST_MODAL_POLL_AUTHORITY_MISSING')
+    call=host_call_resolver(call_id)
+    if not callable(getattr(call,'get',None)):
+        raise ModalTransportUnavailable('GATE3_HOST_MODAL_CALL_HANDLE_INVALID')
+    try:
+        result=call.get(timeout=0)
+    except (TimeoutError,):
+        return {'callId':call_id,'status':'PENDING',
+                'containerTerminationVerified':False,'billingHardCapVerified':False}
+    except Exception as exc:
+        # Do not guess from unknown SDK errors whether a GPU stopped.  The
+        # exception is never surfaced with secrets or remote object content.
+        if exc.__class__.__name__ in ('TimeoutError','Timeout','FunctionTimeoutError'):
+            return {'callId':call_id,'status':'PENDING',
+                    'containerTerminationVerified':False,'billingHardCapVerified':False}
+        if exc.__class__.__name__ in ('CancelledError','FunctionCallCancelledError'):
+            return {'callId':call_id,'status':'CANCELLED_REPORTED_UNVERIFIED',
+                    'containerTerminationVerified':False,'billingHardCapVerified':False}
+        return {'callId':call_id,'status':'UNKNOWN_NEEDS_HOST_REVIEW',
+                'containerTerminationVerified':False,'billingHardCapVerified':False}
+    return {'callId':call_id,'status':'COMPLETED_UNVERIFIED',
+            'resultAvailable':True,
+            'acceptedStudioArtifact':False,
+            'containerTerminationVerified':False,'billingHardCapVerified':False}
+
+
+class ModalFunctionCallSupervisor:
+    """Durable source-bound call-ID receipt subordinate to an existing attempt.
+
+    It cannot create, authorize, resubmit or promote a GenerationAttempt. The
+    caller MUST have already passed Studio principal/project/revision/attempt
+    checks; the stage directory must belong to that existing attempt.
+    """
+    _RECORD='modal-function-call.json'
+    def __init__(self,*,stage_dir,principal_id,project_id,source_revision_id,
+                 attempt_id,host_call_resolver):
+        from pathlib import Path
+        self.stage_dir=Path(stage_dir).resolve()
+        self.principal_id=principal_id
+        self.project_id=project_id
+        self.source_revision_id=source_revision_id
+        self.attempt_id=attempt_id
+        self.host_call_resolver=host_call_resolver
+        if (not all(isinstance(v,str) and 1<=len(v)<=256 and
+                    all(c.isalnum() or c in '_-:' for c in v)
+                    for v in (principal_id,project_id,source_revision_id,attempt_id))
+            or self.stage_dir.name!=attempt_id+'.stage'
+            or not self.stage_dir.is_dir() or self.stage_dir.is_symlink()
+            or not callable(host_call_resolver)):
+            raise ModalTransportUnavailable('GATE3_EXISTING_HOST_ATTEMPT_REQUIRED')
+        self.path=self.stage_dir/self._RECORD
+    def _identity(self):
+        return {'schemaVersion':'sara.modal.call.control.v1',
+                'principalId':self.principal_id,'projectId':self.project_id,
+                'sourceRevisionId':self.source_revision_id,'attemptId':self.attempt_id}
+    def _read(self):
+        import json
+        if not self.path.is_file() or self.path.is_symlink():
+            raise ModalTransportUnavailable('GATE3_DURABLE_HOST_CALL_ID_MISSING')
+        try:doc=json.loads(self.path.read_bytes())
+        except (ValueError,OSError) as exc:
+            raise ModalTransportUnavailable('GATE3_DURABLE_HOST_CALL_ID_INVALID') from exc
+        if (not isinstance(doc,dict)
+            or any(doc.get(k)!=v for k,v in self._identity().items())
+            or doc.get('callId')!=_validated_call_id(doc.get('callId'))
+            or doc.get('state') not in ('CALL_ID_DURABLE','CANCEL_INTENT_DURABLE',
+                                       'CANCEL_DISPATCHED_UNVERIFIED')):
+            raise ModalTransportUnavailable('GATE3_OWNER_OR_CALL_ID_CONFLICT')
+        return doc
+    def _write(self,doc):
+        from m045_generation_attempt import native_atomic_write_bytes
+        payload=json.dumps(doc,sort_keys=True,separators=(',',':')).encode('utf-8')
+        native_atomic_write_bytes(self.path,payload)
+        if self.path.read_bytes()!=payload:
+            raise ModalTransportUnavailable('GATE3_CALL_ID_DURABLE_READBACK_MISMATCH')
+    def bind(self,call_id):
+        call_id=_validated_call_id(call_id)
+        if self.path.exists():
+            prior=self._read()
+            if prior['callId']!=call_id:
+                raise ModalTransportUnavailable('GATE3_CALL_ID_REBIND_DENIED')
+            return prior
+        doc={**self._identity(),'callId':call_id,'state':'CALL_ID_DURABLE',
+             'remoteEffect':'POSSIBLE_UNVERIFIED','billingHardCapVerified':False}
+        self._write(doc)
+        return doc
+    def cancel_on_uncertain(self,reason):
+        if reason not in ('HTTP_TIMEOUT','CLIENT_ABORT','HTTP_5XX','UNKNOWN_REMOTE_EFFECT'):
+            raise ValueError('GATE3_CANCEL_REASON_INVALID')
+        record=self._read()
+        if record['state']!='CALL_ID_DURABLE':
+            raise ModalTransportUnavailable('GATE3_CANCEL_ALREADY_DISPATCHED_OR_UNCERTAIN')
+        record={**record,'state':'CANCEL_INTENT_DURABLE','cancelReason':reason}
+        self._write(record) # durable intent BEFORE network control effect
+        result=cancel_remote_attempt(record['callId'],terminate_containers=True,
+                                    host_call_resolver=self.host_call_resolver)
+        record={**record,'state':result['status']}
+        self._write(record)
+        return result
+    def poll(self):
+        record=self._read()
+        return poll_remote_attempt(record['callId'],
+                                   host_call_resolver=self.host_call_resolver)
