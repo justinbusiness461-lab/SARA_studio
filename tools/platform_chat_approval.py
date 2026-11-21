@@ -187,7 +187,9 @@ def approved_operation(root,principal,challenge,expected,rights_policy=None):
           'sourceRevisionId':row['expected_revision_id'],'operationDigest':row['operation_digest'],
           'operationResult':result}
  except ValueError as error:
-  if action=="MASTER" and str(error)=="INDEPENDENT_TRUE_PEAK_CEILING_FAILED":
+  if action=="MASTER" and str(error) in {
+      "INDEPENDENT_TRUE_PEAK_CEILING_FAILED",
+      "MASTER_REFERENCE_TRUE_PEAK_CEILING_FAILED"}:
    store.settle(challenge,principal,'MASTER_REJECTED_BY_INDEPENDENT_METER')
    raise PlatformConflict("MASTER_TRUE_PEAK_CEILING_NOT_VERIFIED") from error
   # An unexpected error may follow an effect; never blindly retry.

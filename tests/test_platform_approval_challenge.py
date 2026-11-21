@@ -94,6 +94,19 @@ class ApprovalHTTP(unittest.TestCase):
   self.assertEqual(studio.project_operation(self.root,{"projectId":self.ref["projectId"]},
     principal_id=self.owner["principalId"])["manifest"]["currentRevisionId"],
     self.ref["revisionId"])
+ def test_r9_reference_true_peak_rejection_is_same_precise_fail_closed_status(self):
+  from unittest.mock import patch
+  challenge=self.issue()[2]["approval_challenge_id"]
+  with patch("m045_wave4_service.authorized_master",
+      side_effect=ValueError("MASTER_REFERENCE_TRUE_PEAK_CEILING_FAILED")):
+   status,_,result=self.approve(challenge)
+  self.assertEqual(status,409,result)
+  self.assertEqual(result["error"],"MASTER_TRUE_PEAK_CEILING_NOT_VERIFIED")
+  self.assertEqual(self.approve(challenge)[0],403)
+  self.assertEqual(studio.project_operation(self.root,{"projectId":self.ref["projectId"]},
+    principal_id=self.owner["principalId"])["manifest"]["currentRevisionId"],
+    self.ref["revisionId"])
+
  def test_concurrent_approval_has_one_winner_and_no_double_publication(self):
   challenge=self.issue()[2]["approval_challenge_id"]
   with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
@@ -134,4 +147,3 @@ class ApprovalHTTP(unittest.TestCase):
      principal_id=self.owner["principalId"])["manifest"]["currentRevisionId"],self.ref["revisionId"])
 
 if __name__=="__main__":unittest.main()
-
