@@ -277,3 +277,52 @@ def export_authorized_daw_bundle(root,request,principal_id,destination):
     return {'state':'DAW_BUNDLE_PREPARED_PRIVATE','projectRevisionId':rid,
         'masterArtifactId':master_sha,'fileCount':len(hashes)+1,
         'reconstructionExact':True,'releaseCleared':False,'creativeApproved':False}
+
+
+def verify_authorized_daw_bundle(root,request,principal_id,submitted):
+    """R11-B: untrusted ZIP gets comparison only; no imported source authority.
+
+    Re-export the selected historical Studio revision from its durable attempt
+    and compare canonical ZIP bytes in streaming chunks. Never unpack, trust
+    filenames, source code, or purported signatures from the uploaded archive.
+    A match independently proves every source stem was reconstructed and all
+    canonical per-entry checksums match; no revision or CAS object is created.
+    """
+    from pathlib import Path
+    from contextlib import nullcontext
+    if not isinstance(request,dict) or set(request)!={'projectId','revisionId','artifactId','mixRecipe'}:
+        raise DawExportHold('DAW_VERIFY_EXACT_SOURCE_REQUIRED')
+    with tempfile.TemporaryDirectory(prefix='sara-verify-daw-') as scratch:
+        canonical_path=Path(scratch)/'owner.zip'
+        export_authorized_daw_bundle(root,request,principal_id,canonical_path)
+        if isinstance(submitted,(bytes,bytearray)):
+            source=io.BytesIO(submitted)
+        elif isinstance(submitted,Path):
+            if submitted.is_symlink() or not submitted.is_file():
+                raise DawExportHold('DAW_SUBMITTED_UNSAFE_PATH')
+            source=submitted.open('rb')
+        else:raise DawExportHold('DAW_SUBMITTED_UNSUPPORTED')
+        digest=hashlib.sha256()
+        with source as incoming,canonical_path.open('rb') as original:
+            while True:
+                target=original.read(1024*1024)
+                part=incoming.read(1024*1024)
+                if part!=target:raise DawExportHold('DAW_ARCHIVE_NOT_CANONICAL_OR_TAMPERED')
+                if not part:break
+                digest.update(part)
+        with zipfile.ZipFile(canonical_path) as package:
+            manifest=json.loads(package.read('daw_manifest.json'))
+            hashes=manifest['fileSha256']
+            if set(hashes)|{'daw_manifest.json'}!=set(package.namelist()):
+                raise DawExportHold('DAW_MANIFEST_FILE_SET_UNQUALIFIED')
+            for name,sha in hashes.items():
+                with package.open(name) as item:
+                    h=hashlib.sha256()
+                    for block in iter(lambda:item.read(1024*1024),b''):h.update(block)
+                    if h.hexdigest()!=sha:raise DawExportHold('DAW_ARCHIVE_ENTRY_INTEGRITY_FAILED')
+        return {'schema':'sara.daw.bundle.verify.receipt.v1',
+                'state':'VERIFIED_UNMODIFIED_BUNDLE','projectRevisionId':request['revisionId'],
+                'masterArtifactId':request['artifactId'],'archiveSha256':digest.hexdigest(),
+                'verifiedEntries':len(hashes)+1,'reconstructionExact':True,
+                'importCommitted':False,'newRevisionCommitted':False,
+                'releaseCleared':False,'creativeApproved':False}

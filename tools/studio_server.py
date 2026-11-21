@@ -5,6 +5,7 @@ from __future__ import annotations
 import lyric_timeline as lyrics
 import io
 import wave
+import zipfile
 import http.server
 import json
 import math
@@ -1726,7 +1727,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         if not is_external_erasure and not secrets.compare_digest(supplied,CAPABILITY):
             return self._json(403,{"status":"ERROR","error":"capability denied"})
         principal_id = None
-        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant", "/api/m045/scratch/render", "/api/m045/export-daw-bundle"}:
+        if path.startswith("/api/projects/") or path in {"/api/m045/transcribe-midi", "/api/m045/preview-synth", "/api/m045/master", "/api/m045/compound-plan", "/api/m045/sample-preview", "/api/m045/soundtrack-grant", "/api/m045/scratch/render", "/api/m045/export-daw-bundle", "/api/m045/verify-daw-bundle", "/api/m045/gate3/request-spend", "/api/m045/gate3/redeem"}:
             try:
                 principal_id = (self._platform_principal() if PLATFORM_MODE
                   else resolve_studio_session(self.headers.get("X-Studio-Session", "")))
@@ -1758,7 +1759,7 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             path.startswith("/api/projects/") or
             path in {"/api/m045/transcribe-midi","/api/m045/preview-synth",
                 "/api/m045/master","/api/m045/compound-plan",
-                "/api/m045/sample-preview","/api/m045/soundtrack-grant","/api/m045/scratch/render","/api/m045/export-daw-bundle"}):
+                "/api/m045/sample-preview","/api/m045/soundtrack-grant","/api/m045/scratch/render","/api/m045/export-daw-bundle","/api/m045/verify-daw-bundle","/api/m045/gate3/request-spend","/api/m045/gate3/redeem"}):
             # The legacy local-only endpoints rely on ambient LOCAL principal,
             # capability-only auth or unchecked paths. None are admitted to
             # the multi-user platform until their owner contracts are repaired.
@@ -1793,6 +1794,43 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
             except (ValueError, KeyError, TypeError, OSError, wave.Error, EOFError):
                 return self._json(400, {"status": "ERROR",
                     "error": "historical soundtrack grant source unqualified"})
+
+        if path in {"/api/m045/gate3/request-spend","/api/m045/gate3/redeem"}:
+            # Artist request is pending, not permission to spend; trusted host
+            # approval has no HTTP endpoint. Redemption is OFFLINE ONLY.
+            from m045_gate3_authorization import Gate3AuthorizationStore
+            from platform_identity import PlatformDenied,PlatformConflict
+            host_key=os.environ.get('SARA_GATE3_HOST_SIGNING_KEY','').encode()
+            if len(host_key)<32:
+                return self._json(503,{'status':'BLOCKED','error':'GATE3_HOST_SIGNER_UNCONFIGURED'})
+            try:
+                store=Gate3AuthorizationStore(EXPORT_ROOT,host_signing_key=host_key)
+                if path.endswith('/request-spend'):
+                    return self._json(202,store.request(principal_id,payload))
+                if set(payload)!={'spendToken','scope'}:
+                    return self._json(400,{'status':'ERROR','error':'GATE3_TOKEN_AND_SCOPE_REQUIRED'})
+                return self._json(200,store.redeem(principal_id,payload['spendToken'],payload['scope']))
+            except PlatformConflict as e:return self._json(409,{'status':'CONFLICT','error':str(e)})
+            except PlatformDenied as e:return self._json(403,{'status':'DENY','error':str(e)})
+            except ValueError as e:return self._json(400,{'status':'ERROR','error':str(e)})
+
+        if path == "/api/m045/verify-daw-bundle":
+            from m045_daw_export import verify_authorized_daw_bundle,DawExportHold,DawSourceDenied
+            import base64,binascii
+            try:
+                if set(payload)!={'projectId','revisionId','artifactId','mixRecipe','archiveBase64'}:
+                    raise DawExportHold('DAW_VERIFY_SOURCE_FIELDS_REQUIRED')
+                encoded=payload['archiveBase64']
+                if not isinstance(encoded,str) or len(encoded)>60*1024*1024:
+                    raise DawExportHold('DAW_VERIFY_INLINE_BUNDLE_TOO_LARGE')
+                data=base64.b64decode(encoded,validate=True)
+                reference={k:payload[k] for k in ('projectId','revisionId','artifactId','mixRecipe')}
+                return self._json(200,verify_authorized_daw_bundle(EXPORT_ROOT,reference,principal_id,data))
+            except (ProjectConflict,DawSourceDenied,PermissionError) as e:
+                return self._json(403,{'status':'DENY','error':str(e)})
+            except DawExportHold as e:return self._json(409,{'status':'HOLD','error':str(e)})
+            except (ValueError,KeyError,TypeError,binascii.Error,OSError,EOFError,zipfile.BadZipFile):
+                return self._json(400,{'status':'ERROR','error':'DAW_VERIFY_UNQUALIFIED'})
 
         if path == "/api/m045/export-daw-bundle":
             # DAW package is an authenticated read-only projection of a known

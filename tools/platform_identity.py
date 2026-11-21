@@ -190,6 +190,11 @@ class PlatformStore:
                 (principal,))
             db.execute("UPDATE sessions SET revoked=1 WHERE principal=?",(principal,))
             db.execute("UPDATE publications SET active=0 WHERE principal=?",(principal,))
+            # Newly admitted offline Gate3 approvals must stop being redeemable
+            # as soon as deletion is requested, before the erasure worker runs.
+            present={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            if "gate3_spend_requests" in present:
+                db.execute("UPDATE gate3_spend_requests SET state='REVOKED_BY_ERASURE' WHERE principal=?",(principal,))
             db.commit()
         return {"status":"ACCEPTED","state":"ERASURE_PENDING","erasureComplete":False,
                 "sessionsRevoked":True,"catalogUnpublished":True}
@@ -244,6 +249,7 @@ class PlatformStore:
                 run("platform_workspace_projects","DELETE FROM platform_workspace_projects WHERE owner=?")
                 # Unexecuted command proposals can include personal creative prose.
                 run("chat_approvals","DELETE FROM chat_approvals WHERE principal=?")
+                run("gate3_spend_requests","DELETE FROM gate3_spend_requests WHERE principal=?")
                 run("sessions","DELETE FROM sessions WHERE principal=?")
                 # Rights/financial audit binds remain, but titles cannot leak.
                 run("publications","UPDATE publications SET title='Deleted account publication',active=0 WHERE principal=?")
@@ -352,7 +358,7 @@ class PlatformStore:
               "social_blocks","social_likes","social_comments_enabled",
               "social_comments","social_notifications",
               "platform_workspaces","platform_workspace_members",
-              "platform_workspace_projects"}
+              "platform_workspace_projects","chat_approvals","gate3_spend_requests"}
             unknown=names-reviewed-{"sqlite_sequence"}
             if unknown:
                 raise PlatformDenied("ERASURE_SCHEMA_UNREVIEWED")
@@ -360,7 +366,7 @@ class PlatformStore:
                   "social_albums":("principal",),"social_comments":("author",),
                   "platform_workspaces":("owner",),"platform_workspace_members":("principal",),
                   "social_likes":("principal",),"social_follows":("follower","followed"),
-                  "social_notifications":("target","actor"),"chat_approvals":("principal",)}
+                  "social_notifications":("target","actor"),"chat_approvals":("principal",),"gate3_spend_requests":("principal",)}
             for table,keys in refs.items():
                 if table not in names:continue
                 columns={x["name"] for x in db.execute(f"PRAGMA table_info({table})")}

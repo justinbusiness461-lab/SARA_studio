@@ -13,8 +13,8 @@ class DawHttp(unittest.TestCase):
   self.request={k:self.base[k] for k in ('projectId','revisionId','artifactId')}
  def request_bundle(self,payload=None,cookie=None):
   return self.fx.req('/api/m045/export-daw-bundle',payload or self.request,cookie=self.cookie if cookie is None else cookie)
- def build_canonical_mix(self):
-  frames=6000;sample=struct.pack('<dd',.08,-.12)*frames
+ def build_canonical_mix(self,frames=6000):
+  sample=struct.pack('<dd',.08,-.12)*frames
   digest=hashlib.sha256(sample).hexdigest()
   studio._publish_cas_exact(self.fx.root,digest,sample)
   spec=copy.deepcopy(studio.project_operation(self.fx.root,{'projectId':self.base['projectId']},
@@ -22,6 +22,7 @@ class DawHttp(unittest.TestCase):
   # Real SongSpec notes remain authoritative; no transcribed or invented pitches.
   spec['timebase']['meter']='4/4'
   spec['tracks'][0]['events']=[{'type':'NOTE','tick':0,'duration_ticks':120,'midi_note':60,'velocity':92}]
+  if frames==210*44100:spec['structure']['sections'][0]['end_tick']=403200
   revision=studio.project_operation(self.fx.root,{'projectId':self.base['projectId'],
      'expectedCurrentRevisionId':self.base['revisionId'],'songSpec':spec,
      'sourceAssetDigests':[digest],'outputArtifactIds':[self.base['artifactId']]},
