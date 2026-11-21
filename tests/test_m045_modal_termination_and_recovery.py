@@ -31,9 +31,10 @@ class BillingDeployment(unittest.TestCase):
         decorators=[d for d in target.decorator_list if isinstance(d,ast.Call)]
         function=next(d for d in decorators if isinstance(d.func,ast.Attribute) and d.func.attr=='function')
         params={k.arg:ast.literal_eval(k.value) for k in function.keywords
-                if k.arg in ('gpu','timeout','scaledown_window','max_containers','min_containers','retries')}
+                if k.arg in ('gpu','timeout','scaledown_window','max_containers','min_containers','retries','single_use_containers')}
         self.assertEqual(params,{'gpu':'L40S','timeout':120,'scaledown_window':30,
-                                 'max_containers':1,'min_containers':0,'retries':0})
+                                 'max_containers':1,'min_containers':0,'retries':0,
+                                 'single_use_containers':True})
         web=next(d for d in decorators if isinstance(d.func,ast.Attribute) and d.func.attr=='web_server')
         startup=next(k.value for k in web.keywords if k.arg=='startup_timeout')
         self.assertLessEqual(ast.literal_eval(startup),120)

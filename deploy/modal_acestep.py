@@ -76,6 +76,7 @@ def _manifest_sha256(entries: dict[str, str]) -> str:
     scaledown_window=30,
     min_containers=0,
     retries=0,
+    single_use_containers=True,
     max_containers=1,
 )
 @modal.concurrent(max_inputs=1)
