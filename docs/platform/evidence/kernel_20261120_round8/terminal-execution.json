@@ -1,0 +1,182 @@
+{
+  "baselineEvidenceHead": "f9c692af1d54fee9af6e212adbada12d97882066",
+  "branch": "feat/platform-identity-and-catalog",
+  "certification": "SOURCE_AND_SYNTHETIC_MEDIA_ONLY",
+  "chromium": {
+    "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+    "executions": 28,
+    "failures": 0,
+    "log": "chromium-full-final.log",
+    "skips": 0
+  },
+  "cinemaRepoMutated": false,
+  "draft": true,
+  "exactSourceAndTestCommit": "36f7fb3d33d38f98d80e6e64a2be899ec79d3b3e",
+  "gate3ModalTrialAuthorized": false,
+  "gpuChargeUsd": 0,
+  "mainMutated": false,
+  "node": {
+    "command": "node --test tests/*.test.cjs",
+    "executions": 51,
+    "failures": 0,
+    "log": "node-full-final.log",
+    "skips": 0
+  },
+  "pr": 37,
+  "productionReleaseReady": false,
+  "python": {
+    "command": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -v",
+    "executions": 375,
+    "failures": 0,
+    "log": "python-full-final.log",
+    "skips": 0
+  },
+  "r8a": {
+    "creativeApproved": false,
+    "durability": "private file staging fsync/atomic directory fsync; Studio render attempt CAS publication and historical binding",
+    "independentFfmpeg": true,
+    "inputEncoding": "interleaved float64 L/R, little endian",
+    "outputEncoding": "PCM16 stereo 44.1kHz",
+    "pcmSha256": "aca1b59a1262dac77f0be0865bcf4cdea5d46017b089c90d877ebb7adce855cf",
+    "rawInputStemBytesAt210s": 148176000,
+    "rightsStatus": "UNVERIFIED_HELD",
+    "sampleExact": true,
+    "streaming": "two-pass peak normalization then quantization, bounded 128..65536 frames per chunk",
+    "wavOutputBytesAt210s": 37044044,
+    "wavSha256": "05aa562c828eef87d0c58382ada277751fc250dda4bacf63a4dec20566cc944a"
+  },
+  "r8b": {
+    "deployedPublicDeletionUrl": "NOT_VERIFIED",
+    "externalProviderErasure": "NOT_VERIFIED",
+    "financialAuditTombstones": "RETAINED",
+    "immutableHistoricalProjectRetention": "COMPLETE_BLOCKED",
+    "receiptSchema": "sara.account.erasure.completion.v1",
+    "scheduledWorker": "NOT_CONFIGURED",
+    "stages": [
+      "PENDING",
+      "PURGED_MUTABLE",
+      "COMPLETED"
+    ],
+    "supportedCompletionScope": "ELIGIBLE_PERSONAL_DATA_ONLY_AND_NO_OWNED_STUDIO_PROJECT",
+    "unknownFutureDatabaseTables": "FAIL_CLOSED"
+  },
+  "r8c": {
+    "appleStoreKit": "HOST_VERIFIER_NOT_PHYSICALLY_INTEGRATED",
+    "binarySigning": "NOT_RUN",
+    "googlePlayBilling": "HOST_VERIFIER_NOT_PHYSICALLY_INTEGRATED",
+    "nativeProjectDirectories": "NOT_GENERATED",
+    "nativeShellContractTests": [
+      "NS-001",
+      "NS-002",
+      "NS-003",
+      "NS-004",
+      "NS-005",
+      "NS-006",
+      "NS-007",
+      "NS-008",
+      "NS-009"
+    ],
+    "physicalDeviceQA": "NOT_RUN",
+    "routeDisconnectPause": "JS_NATIVE_HOST_CONTRACT_ONLY"
+  },
+  "rawEvidenceSha256": {
+    "chromium-full-final.log": {
+      "bytes": 6632,
+      "sha256": "35760bebe8b1167591896e344f477f633681c2cf49dac29c59d103433a6c5133"
+    },
+    "chromium-intermediate-timing-fail.log": {
+      "bytes": 1590,
+      "sha256": "3742639dc84bdaf5f4b32c03bf766bdd678e85a055982c2e671b9d8272d671e5"
+    },
+    "erasure-green.log": {
+      "bytes": 4495,
+      "sha256": "9c69758d7ddc63e9255f99072f6112edb97ca7c5675676e8a0d47e3f2358fb66"
+    },
+    "final-evidence-builder.py": {
+      "bytes": 16324,
+      "sha256": "b3c153ac9d1b03febee1b917dc1bd6a835b37542c0126be5d1b38062e3d6fe0f"
+    },
+    "independent-physical-probe.py": {
+      "bytes": 2736,
+      "sha256": "d16a3e484be3c12f0c8f8fc180c806688bbb7185de6203d4faa90640d0d2d69f"
+    },
+    "independent-physical.json": {
+      "bytes": 754,
+      "sha256": "a5d8341ad58e11b37dd3e9699829ad2dcf1139c44d79827d8515e1542000d6cd"
+    },
+    "independent-physical.log": {
+      "bytes": 700,
+      "sha256": "09ecf10d27aafac2511549932468ac1a3aa991b6e3a1c3252eaec58bda570386"
+    },
+    "lifecycle-green.log": {
+      "bytes": 414,
+      "sha256": "a83df8af580ca385545fdb36c3ad5659b29f7bdc6950426c08562aecf3bdfb1b"
+    },
+    "lifecycle-red.log": {
+      "bytes": 1719,
+      "sha256": "64750e9ca68c757a394a21d60bb650bb94f490f358447e61eb6828658b52e535"
+    },
+    "native-green.log": {
+      "bytes": 1926,
+      "sha256": "5e42b2a5e3ae058c670338c1ff2a03eb59354054663a4a0ddf8b197227f234c2"
+    },
+    "native-red.log": {
+      "bytes": 6435,
+      "sha256": "9eb3106352acff46d8f86f62361b03d88d6bd924aba49400cee6b501c0b0492b"
+    },
+    "node-full-final.log": {
+      "bytes": 10347,
+      "sha256": "fa116e75883a340ab2bb9bfdf6851f2cdc9afc71e1a7eb66037bb850ea20c298"
+    },
+    "owner-210s-green.log": {
+      "bytes": 99,
+      "sha256": "f8bf531b1e2656970505b60c0efad0afa6e8af25783f472ea4f17d2b3f1f5c6b"
+    },
+    "python-full-final.log": {
+      "bytes": 93840,
+      "sha256": "8018416fa649578b57fd16e6352ad603065dfef2d177a78567594e85eb020ccc"
+    },
+    "python-initial-compat-fail.log": {
+      "bytes": 94470,
+      "sha256": "adae92b2b3cad2fd1b33f7636cda605d347d0e70d2368482f53d01a40f4912ac"
+    },
+    "streaming-red.log": {
+      "bytes": 6998,
+      "sha256": "856f73e638480acca563a9b1f6cdbeee2c2f11d083d4ef3c9e0c361b57f5f894"
+    },
+    "streaming-small-green.log": {
+      "bytes": 100,
+      "sha256": "fefd166249373c22bb2d282e0ce97b29629bb483ebf37ff0769f08b9370f8b7d"
+    }
+  },
+  "redGreen": {
+    "final": "ALL_FINAL_RUNS_REQUIRED_SUCCESS",
+    "initialPython": "FAILED_ONE_COMPATIBILITY_ERROR_TYPE; fixed without changing regression assertion",
+    "intermediateBrowser": "FAILED_UNQUALIFIED_RESOURCE_TIMING; superseded by final full replay"
+  },
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "schema": "sara.platform.round8.engineer1.receipt.v1",
+  "sourceReadback": {
+    "matched": 13,
+    "method": "IMMUTABLE_RAW_GITHUB_BYTE_READBACK_INDEPENDENT",
+    "total": 13
+  },
+  "sourceSha256": {
+    "app-ui.js": "b62fc86ed77c6b901b26a1d71d26abf92b746af1eee1dfddadc72d509b55deda",
+    "capacitor.config.json": "5d5bad34272e30dd85c8bef230e3386833557cc9788900468837025336c429b6",
+    "capacitor.release-policy.json": "5c7417c536ce5eecead9734c652dc146f49f7eabb9457ddfc4ec0c932c386f33",
+    "index.html": "675c09d5b32be82a761d22a008b0a7bde788cf1f1fec2fabf311d2ed92482d63",
+    "native-bridge.js": "59e5a74ebf7090a94b2a88487b166f3de724154a9508c65cb01b98ad9c411b26",
+    "tests/native-store-shell.test.cjs": "124686ea6f720b497233a8c9edba2532fcd4acba93f6ae54e98f214abf934a4d",
+    "tests/test_platform_round8_erasure_completion.py": "26001bc77c693c73400cd7b881bba902914eec4739e515e7b6b72ce29d25d012",
+    "tests/test_platform_round8_owner_full210.py": "70bc79b8e4a1dc3053177bc0ca9bebf21011c108fe2ec0973337b62069e2bdbb",
+    "tests/test_platform_round8_stream_mix.py": "5d062630a894514f551f762c8d2b65b0079d98c1699ad01057bb57f7ce8ea27a",
+    "tools/m045_stem_reconstruction.py": "5b8d8adff055282923c0396104f62e2a7012460b78aa303459ce4e336538b2d8",
+    "tools/m045_stem_reconstruction_owner.py": "5dd6e0585dc2f9e6aaad84647adb6c9ff64592adae731dbcb24a236ff5398285",
+    "tools/platform_identity.py": "d93319878087744a900ca5f3f9daaba004fe67b151099b5d64533919a45d333e",
+    "tools/studio_server.py": "1e754cc3f89d491b2bc14a08b8d80cf00e1f0871513e24bc1b06404c7b019013"
+  },
+  "sourceTree": "3bf7a757bf65c14ec2e5068666573123e2ebb1ca",
+  "time_utc": "2026-11-21",
+  "totalAutomatedExecutions": 454
+}

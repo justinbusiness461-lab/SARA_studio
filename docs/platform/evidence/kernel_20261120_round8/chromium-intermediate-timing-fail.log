@@ -1,0 +1,38 @@
+TAP version 13
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 16931.322017
+  type: 'test'
+  ...
+# Subtest: HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+ok 2 - HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+  ---
+  duration_ms: 1817.566369
+  type: 'test'
+  ...
+# Subtest: RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+not ok 3 - RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+  ---
+  duration_ms: 81353.361826
+  type: 'test'
+  location: '/tmp/sara-round8/tests/m045-mobile-endurance.browser.cjs:29:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara-round8/tests/m045-mobile-endurance.browser.cjs:60:13)
+  ...
+# Subtest: M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+ok 4 - M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+  ---
+  duration_ms: 6929.685935
+  type: 'test'
+  ...
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 5 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 6451.928498
+  type: 'test'
+  ...
