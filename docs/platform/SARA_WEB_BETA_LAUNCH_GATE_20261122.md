@@ -4,7 +4,7 @@
 **Current decision: HOLD — not a launch authorization.** This is an engineering acceptance ledger, not a release receipt. `main`, cinema authority, production accounts and billing remain outside this document's write scope.
 
 ## Evidence newly available
-- The user-identified Google Drive folder `1cY3gnTl_hF-3UirAMQimZAQKZAuL2WMl` has three real artist source files. Independent transfer, source SHA-256 and full 44.1/48 kHz stereo PCM16 decoding are recorded in `docs/platform/evidence/kernel_20261122_round18/three-song-source-observation.json`.
+- The user-identified authorized private Google Drive folder (source IDs withheld) has three real artist source files. Independent transfer, source SHA-256 and full 44.1/48 kHz stereo PCM16 decoding are recorded in `docs/platform/evidence/kernel_20261122_round18/three-song-source-observation.json`.
 - Round 18 host-ingestion source exists on the Studio draft feature branch in `tools/m045_artist_master_ingestion.py` and `tests/test_m045_artist_master_ingestion.py`. Its host-rights callback, canonical project graph, exact render-artifact association, and fail-closed timing check should be preserved.
 - That manifest does **not** certify these media as commercially rights-cleared, imported Studio project revisions, accepted soundtracks, physically playable via the hosted app, or approved for cinema.
 - Source-byte verification is independent of upstream title/metadata; local filenames are not creative authority. All three decodes succeeded, but all `issuedGrantCount` fields remain zero.
