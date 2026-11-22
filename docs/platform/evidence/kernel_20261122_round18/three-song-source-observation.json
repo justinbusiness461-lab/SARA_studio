@@ -4,8 +4,8 @@
   "classification": "OBSERVED_SOURCE_BYTES_ONLY_NOT_PROJECT_REVISION",
   "sourceAuthority": {
     "provider": "Google Drive",
-    "folderId": "1cY3gnTl_hF-3UirAMQimZAQKZAuL2WMl",
-    "method": "connector raw-byte transfer + local ffprobe/ffmpeg/sha256"
+    "method": "connector raw-byte transfer + local ffprobe/ffmpeg/sha256",
+    "visibility": "private Drive locator withheld from public repo"
   },
   "ffmpeg": "7.1.5-0+deb13u1",
   "rightsStatus": "UNVERIFIED_HELD",
@@ -17,7 +17,6 @@
     {
       "title": "Turn The Noise Back On",
       "fileName": "Turn The Noise Back On MASTER.mp3",
-      "driveFileId": "1FxuVcYL1_AivJZUkwEKFqx3D2oO_ZMng",
       "sourceBytes": 6924924,
       "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
       "codec": "mp3",
@@ -38,7 +37,6 @@
     {
       "title": "If This Is All I Get",
       "fileName": "If This Is All I Get.m4a",
-      "driveFileId": "1JkypLpFPuqsAVinEAyBKaGbLluPrvqa5",
       "sourceBytes": 4913812,
       "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
       "codec": "opus",
@@ -59,7 +57,6 @@
     {
       "title": "Outlaws and Echoes",
       "fileName": "Outlaws and Echoes.m4a",
-      "driveFileId": "1gyWT1A2O6vN1WPZGNWX0IJ3ln_i7lEpF",
       "sourceBytes": 3659883,
       "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
       "codec": "opus",
@@ -85,6 +82,7 @@
     "Stereo PCM16 output is SHA-256 hashed directly from ffmpeg stdout at each rate with no intermediate PCM file.",
     "Audio byte transfer came from explicitly identified Drive folder; two M4A titles were materialized with a misleading .m4a.mp3 local suffix but their detected audio codec was Opus.",
     "Real Studio ProjectRevision, SourceAsset ownership, rights policy, section timebase and current-selection authority must be separately qualified.",
-    "No signed grant issued; no production media published; no GPU or paid resource invoked."
+    "No signed grant issued; no production media published; no GPU or paid resource invoked.",
+    "Drive folder/file IDs and access locators are intentionally absent from public source evidence; resolve through the connected authorized Drive account."
   ]
 }
