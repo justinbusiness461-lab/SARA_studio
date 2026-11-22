@@ -1,0 +1,253 @@
+{
+  "Round15EvidenceReconciliation": {
+    "files": [
+      {
+        "blobSha": "cf91e8f03a529d606bfb4af1eae58efbe738b1eb",
+        "bytes": 4593,
+        "path": "docs/platform/PLATFORM_ROUND15_ENGINEER1_RECEIPT_20261121.md",
+        "sha256": "107f44a756733a965c70908b9ddbe0c43c99a7c63d9f040f5cd4e3a6eeae3299",
+        "verified": true
+      },
+      {
+        "blobSha": "f560a3ecaf5a845917ba619dff9fc02fcdfc4f86",
+        "bytes": 5202,
+        "path": "docs/platform/evidence/kernel_20261121_round15/execution.json",
+        "sha256": "33a46acbda73f6c0de8b0f75e6a04a1999a4ccef3ec1b68bc393fa223fa868d8",
+        "verified": true
+      }
+    ],
+    "historicalFilesUnmodified": true,
+    "resolvingEvidenceCommit": "1bd7822436ce19a428e8da368b756fe7256f2136"
+  },
+  "artifactHierarchy": "SOURCE→TESTED; NOT INTEGRATED/REMOTE EXECUTED/PHYSICALLY CERTIFIED/CREATIVE APPROVED/RELEASE READY",
+  "branch": "feat/platform-identity-and-catalog",
+  "draftPrNumber": 37,
+  "evidenceFiles": [
+    {
+      "bytes": 4467,
+      "compression": "gzip",
+      "originalBytes": 132777,
+      "originalSha256": "3565c1f4cd1cc34997b3ab721e2797c9e17c4d3ed03ddf7d4c32ae52f7b156f4",
+      "path": "docs/platform/evidence/kernel_20261122_round17/full-python.log.gz",
+      "sha256": "77547c6e2735653f4d543f62b0ee20870bf291302c84323f86f6d24b63402c53"
+    },
+    {
+      "bytes": 10348,
+      "compression": "none",
+      "originalBytes": 10348,
+      "originalSha256": "92b157508b49bee1505d0a20f540c8939b597faca835af33f2c486b33178e52f",
+      "path": "docs/platform/evidence/kernel_20261122_round17/full-node.log",
+      "sha256": "92b157508b49bee1505d0a20f540c8939b597faca835af33f2c486b33178e52f"
+    },
+    {
+      "bytes": 10347,
+      "compression": "none",
+      "originalBytes": 10347,
+      "originalSha256": "b13151c89332872fbb342311f70a6e50a9f1faf780f634a587a0d3d6975d0120",
+      "path": "docs/platform/evidence/kernel_20261122_round17/independent-node.log",
+      "sha256": "b13151c89332872fbb342311f70a6e50a9f1faf780f634a587a0d3d6975d0120"
+    },
+    {
+      "bytes": 2155,
+      "compression": "gzip",
+      "originalBytes": 7951,
+      "originalSha256": "9089de41702609dd6749ad7232fafc79d87dc78e60c646768ca83c7e64484f80",
+      "path": "docs/platform/evidence/kernel_20261122_round17/full-chromium-serial.log.gz",
+      "sha256": "da344254f39c42dfc51726b546cee959e5026da154b55a1c2ec16892a9e5b06e"
+    },
+    {
+      "bytes": 644,
+      "compression": "none",
+      "originalBytes": 644,
+      "originalSha256": "93165256ef7c44a45e176680991ea321bb4905a05cead5230801ca86e533052b",
+      "path": "docs/platform/evidence/kernel_20261122_round17/round17-scoped-green.log",
+      "sha256": "93165256ef7c44a45e176680991ea321bb4905a05cead5230801ca86e533052b"
+    },
+    {
+      "bytes": 644,
+      "compression": "none",
+      "originalBytes": 644,
+      "originalSha256": "acee70b4e0dc4f02c3c6c10d759e691e8193e503d98c574142ffa6a5dab18327",
+      "path": "docs/platform/evidence/kernel_20261122_round17/independent-round17-scoped-green.log",
+      "sha256": "acee70b4e0dc4f02c3c6c10d759e691e8193e503d98c574142ffa6a5dab18327"
+    },
+    {
+      "bytes": 196,
+      "compression": "none",
+      "originalBytes": 196,
+      "originalSha256": "da18414abd9b57529982a5cdc8fcefbe21d09560c0fc021c88d9c538e3d782e0",
+      "path": "docs/platform/evidence/kernel_20261122_round17/product-source-git-tree.json",
+      "sha256": "da18414abd9b57529982a5cdc8fcefbe21d09560c0fc021c88d9c538e3d782e0"
+    },
+    {
+      "bytes": 1139,
+      "compression": "none",
+      "originalBytes": 1139,
+      "originalSha256": "ec48a98321dbfe2a8b6218e241b6e94d0f3d69850f5a733708dc7b053eb4d610",
+      "path": "docs/platform/evidence/kernel_20261122_round17/round17-legacy-modal-red-repro.log",
+      "sha256": "ec48a98321dbfe2a8b6218e241b6e94d0f3d69850f5a733708dc7b053eb4d610"
+    },
+    {
+      "bytes": 109,
+      "compression": "none",
+      "originalBytes": 109,
+      "originalSha256": "4c1da74546200ea175c302f79612c4945eaef0272dfb2debc76f7d650ba19efa",
+      "path": "docs/platform/evidence/kernel_20261122_round17/round17-current-modal-green-repro.log",
+      "sha256": "4c1da74546200ea175c302f79612c4945eaef0272dfb2debc76f7d650ba19efa"
+    },
+    {
+      "bytes": 2444,
+      "compression": "gzip",
+      "originalBytes": 8546,
+      "originalSha256": "164407f016787c486ec70c3128778bb7f2fc7efda979ee7b063ca4b7f06fab2a",
+      "path": "docs/platform/evidence/kernel_20261122_round17/initial-chromium-offline-red.log.gz",
+      "sha256": "c461ea6f8166ea54b7e97d12ae65ff9803f98620f32dba64ab272dffa92f8ba4"
+    },
+    {
+      "bytes": 940,
+      "compression": "none",
+      "originalBytes": 940,
+      "originalSha256": "54d6ff5bf3a92995b3b5fc09e007965ddc3daf7dc8a8c6d90a2b1f271892550b",
+      "path": "docs/platform/evidence/kernel_20261122_round17/offline-targeted-red.log",
+      "sha256": "54d6ff5bf3a92995b3b5fc09e007965ddc3daf7dc8a8c6d90a2b1f271892550b"
+    },
+    {
+      "bytes": 1295,
+      "compression": "none",
+      "originalBytes": 1295,
+      "originalSha256": "dfe0fe537e3ee64407d601d5060e765c8960a18c901b16d1ccb80449d3eb5985",
+      "path": "docs/platform/evidence/kernel_20261122_round17/offline-diagnosis.log",
+      "sha256": "dfe0fe537e3ee64407d601d5060e765c8960a18c901b16d1ccb80449d3eb5985"
+    },
+    {
+      "bytes": 352,
+      "compression": "none",
+      "originalBytes": 352,
+      "originalSha256": "cd9afdbed5c265a0f126db3f3a413516eb538afe25363a14aaba3befe019c585",
+      "path": "docs/platform/evidence/kernel_20261122_round17/offline-minimal-green.log",
+      "sha256": "cd9afdbed5c265a0f126db3f3a413516eb538afe25363a14aaba3befe019c585"
+    },
+    {
+      "bytes": 1332,
+      "compression": "none",
+      "path": "docs/platform/evidence/kernel_20261122_round17/offline-security-attack-proof.json",
+      "sha256": "d9aa5ed2b8e5c4e0dba5f3087d2c06244fb9ced79937cb947e7c24d7ed7a7d04"
+    },
+    {
+      "bytes": 691,
+      "compression": "none",
+      "path": "docs/platform/evidence/kernel_20261122_round17/g15-001-history.json",
+      "sha256": "b178296323f36153ba37e151563d3188a37b3246721b516a468910f8068e8da6"
+    }
+  ],
+  "exactExecutedProductCommit": "7dc7a7c31a7786363a62ead3d1581cd14210e4b3",
+  "exactProductSourceFiles": [
+    {
+      "bytes": 3015,
+      "path": "service-worker.js",
+      "sha256": "086a13f6b5b2bb5db2df9dc1f55eb8f09efcd355eeca9b3feac4b9e723508c14"
+    },
+    {
+      "bytes": 4544,
+      "path": "deploy/modal_acestep.py",
+      "sha256": "048797fce1c84bac64212d9f661ba9e06f13f900fc2665c21cd39cc8050e644f"
+    },
+    {
+      "bytes": 31027,
+      "path": "tools/m045_modal_live_client.py",
+      "sha256": "ed57e025812bae2e3671e1251c776f5270b576a2f7ac1f22825e5cf376e6636b"
+    },
+    {
+      "bytes": 12853,
+      "path": "tests/test_m045_modal_termination_and_recovery.py",
+      "sha256": "4c509c5a7483ceb5295b482dcb5f9a508c6b00f63e30895e1ee36ab9f148ad8a"
+    },
+    {
+      "bytes": 3526,
+      "path": "tests/test_m045_modal_deployment.py",
+      "sha256": "93653e245fc96180e48a5eaa7e4b082974d0fbe7c1bfdc102a98a564c267596d"
+    }
+  ],
+  "governanceStatus": {
+    "actualHumanListening": "UNVERIFIED",
+    "commercialRights": "UNVERIFIED_HELD",
+    "externalProviderDeployment": "NOT_PERFORMED",
+    "independentBillingStop": "UNPROVEN",
+    "liveTrial": "HOLD",
+    "mainMerge": "NOT_PERFORMED",
+    "productionRelease": "HOLD",
+    "sourceTests": "PASS"
+  },
+  "independentPhysicalDawBundle": {
+    "peakRssKiB": 453884,
+    "sha256": "246948c6e75eba588ed06f7d88d8e8a9520600cae2b93791bb58879553e90041",
+    "state": "VERIFIED_UNMODIFIED_BUNDLE",
+    "zipBytes": 222269212
+  },
+  "productSourceChanges": {
+    "actualModalFunctionCallObserved": false,
+    "actualModalGpuTerminated": false,
+    "clientTimeoutAtMostSeconds": 120,
+    "deployFunctionTimeoutSeconds": 120,
+    "hostCallIdPersistedBeforeCancel": true,
+    "hostFunctionCallCancelWithTerminateContainers": true,
+    "liveModalAuthorized": false,
+    "maxContainers": 1,
+    "minContainers": 0,
+    "modalWebServerStartupTimeoutSeconds": 100,
+    "offlineNavigationLocalhostCredentialIsolation": true,
+    "pollGetTimeoutSeconds": 0,
+    "productionGpuExposureHardCapVerified": false,
+    "providerBillingHardCapVerified": false,
+    "retries": 0,
+    "scaledownWindowSeconds": 30,
+    "singleUseContainers": true,
+    "sourceCheckpointRightsVerified": false,
+    "startupTimeoutSeconds": 110
+  },
+  "r17EngineeringProductCommit": "702d4775c7fb9c353990897b3f49735b0abe6f98",
+  "referenceGpuCost": {
+    "independentTotalBillCeiling": false,
+    "listRateCheckedUtcDate": "2026-11-22",
+    "listRateSource": "https://modal.com/pricing",
+    "model": "L40S",
+    "note": "Illustrative isolated GPU-only arithmetic, not a guaranteed provider charge or authorization.",
+    "quotedRateUsdPerSecond": "0.000542",
+    "runtimeOnly120secUsd": "0.065040",
+    "runtimePlusIdle150secUsd": "0.081300"
+  },
+  "regression": {
+    "allConfiguredGatesPassed": true,
+    "chromium": {
+      "cancelled": 0,
+      "exitCode": 0,
+      "fail": 0,
+      "pass": 33,
+      "passed": true,
+      "skipped": 0,
+      "tests": 33
+    },
+    "node": {
+      "cancelled": 0,
+      "exitCode": 0,
+      "fail": 0,
+      "pass": 51,
+      "passed": true,
+      "skipped": 0,
+      "tests": 51
+    },
+    "python": {
+      "durationSeconds": 813.582,
+      "exitCode": 0,
+      "failures": [],
+      "passed": true,
+      "skipped": 0,
+      "tests": 624
+    },
+    "totalPassed": 708,
+    "totalTests": 708
+  },
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "schemaVersion": "sara.engineering.round17.evidence.v1",
+  "verifiedAtUtc": "2026-11-22T11:57:29.062540+00:00"
+}

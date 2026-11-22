@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "blobSha": "cf91e8f03a529d606bfb4af1eae58efbe738b1eb",
+      "bytes": 4593,
+      "path": "docs/platform/PLATFORM_ROUND15_ENGINEER1_RECEIPT_20261121.md",
+      "sha256": "107f44a756733a965c70908b9ddbe0c43c99a7c63d9f040f5cd4e3a6eeae3299",
+      "verified": true
+    },
+    {
+      "blobSha": "f560a3ecaf5a845917ba619dff9fc02fcdfc4f86",
+      "bytes": 5202,
+      "path": "docs/platform/evidence/kernel_20261121_round15/execution.json",
+      "sha256": "33a46acbda73f6c0de8b0f75e6a04a1999a4ccef3ec1b68bc393fa223fa868d8",
+      "verified": true
+    }
+  ],
+  "historicalFilesUnmodified": true,
+  "resolvingEvidenceCommit": "1bd7822436ce19a428e8da368b756fe7256f2136"
+}
