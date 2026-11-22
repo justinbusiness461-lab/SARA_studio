@@ -51,6 +51,12 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || new URL(e.request.url).pathname.startsWith('/api/')) return;
   if (e.request.mode === 'navigate') {
+    // If Chromium reports offline but loopback remains reachable, never use
+    // an online session-bearing shell in place of the sanitized offline one.
+    if (self.navigator && self.navigator.onLine === false) {
+      e.respondWith(caches.match('./index.html').then(r => r || Response.error()));
+      return;
+    }
     // Online navigations always fetch fresh session state. Offline only a
     // credential-free local ScoreCore shell can load; no authenticated page.
     e.respondWith(fetch(e.request).catch(async () =>
