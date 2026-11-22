@@ -73,8 +73,17 @@ def _call_host_catalog(principal_id, title, source_sha, host_catalog_lookup):
     if not isinstance(entry, dict):
         raise ArtistMasterDenied('ARTIST_MASTER_CATALOG_MISSING')
     required = {'title':title,'principalId':principal_id,
-                'sourceSha256':source_sha,'rightsStatus':'ARTIST_OWNED'}
+                'sourceSha256':source_sha}
     if any(entry.get(k)!=v for k,v in required.items()):
+        raise ArtistMasterDenied('ARTIST_MASTER_RIGHTS_NOT_HOST_VERIFIED')
+    rights=entry.get('rightsStatus')
+    if rights=='UNVERIFIED_HELD':
+        # Host attestation permits bounded private review, never a release.
+        # A browser flag, raw digest or Drive possession is not this policy.
+        if (entry.get('privatePilotAuthorized') is not True
+            or entry.get('commercialReleaseAuthorized') is not False):
+            raise ArtistMasterDenied('HELD_MASTER_HOST_PRIVATE_RIGHTS_REQUIRED')
+    elif rights!='ARTIST_OWNED':
         raise ArtistMasterDenied('ARTIST_MASTER_RIGHTS_NOT_HOST_VERIFIED')
     if (not isinstance(entry.get('projectId'),str)
         or not _PROJECT.fullmatch(entry['projectId'])
@@ -146,22 +155,52 @@ def inspect_host_attested_master(*, principal_id, title, source_path,
     sha=_digest(raw)
     entry=_call_host_catalog(principal_id,title,sha,host_catalog_lookup)
     physical=_decode_rates(raw)
-    return {'entry':entry,'source':source,'raw':raw,'sha':sha,'physical':physical}
+    pilot=None
+    if entry['rightsStatus']=='UNVERIFIED_HELD':
+        proposed=entry.get('pilotSection')
+        frames=physical['byRate'][44100]['frames']
+        if (not isinstance(proposed,dict)
+            or set(proposed)!={'id','sampleRate','startSample','endSampleExclusive'}
+            or not isinstance(proposed['id'],str)
+            or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}',proposed['id'])
+            or type(proposed['sampleRate']) is not int or proposed['sampleRate']!=44100
+            or type(proposed['startSample']) is not int
+            or type(proposed['endSampleExclusive']) is not int
+            or not 0<=proposed['startSample']<proposed['endSampleExclusive']<=frames
+            or proposed['endSampleExclusive']-proposed['startSample']!=20*44100):
+            raise ArtistMasterDenied('HELD_MASTER_HOST_SAMPLE_WINDOW_NOT_QUALIFIED')
+        pilot={'id':proposed['id'],'sample_rate':44100,
+               'start_sample':proposed['startSample'],
+               'end_sample_exclusive':proposed['endSampleExclusive']}
+    return {'entry':entry,'source':source,'raw':raw,'sha':sha,
+            'physical':physical,'pilotSection':pilot}
 
 
-def _unqualified_import_spec(title,source_sha,codec):
+def _unqualified_import_spec(title,source_sha,codec,rights_status='ARTIST_OWNED',pilot_section=None):
     # This neutral scaffold intentionally provides NO sections or events.
     # It is *not* a guessed BPM or accepted musical timing interpretation.
     # The 120 BPM internal coordinate placeholder must never support a grant.
-    return {'song_id':'artist-master-'+source_sha[:16], 'title':title,
-            'artistMasterImport':{
-                'sourceSha256':source_sha,'sourceCodec':codec,
-                'musicalTimingQualified':False,
-                'timebaseIsUnqualifiedPlaceholder':True,
-                'creativeApproved':False,
-                'productionQualified':False},
-            'timebase':{'initial_bpm':120,'ticks_per_quarter_note':960},
-            'structure':{'sections':[]},'tracks':[]}
+    spec={'song_id':'artist-master-'+source_sha[:16], 'title':title,
+          'artistMasterImport':{
+             'sourceSha256':source_sha,'sourceCodec':codec,
+             'musicalTimingQualified':False,
+             'timebaseIsUnqualifiedPlaceholder':True,
+             'creativeApproved':False,'productionQualified':False},
+          'timebase':{'initial_bpm':120,'ticks_per_quarter_note':960},
+          'structure':{'sections':[]},'tracks':[]}
+    if rights_status=='UNVERIFIED_HELD':
+        spec['artistMasterImport'].update({
+            'rightsStatus':'UNVERIFIED_HELD',
+            'privatePilotAuthorized':True,
+            'commercialReleaseAuthorized':False,
+            'playbackSampleRate':44100,
+            'preservationTier':'P0_SOURCE_BYTES'})
+        # Studio's canonical project_operation derives immutable
+        # ProductionTimeline.sections from SongSpec.structure.sections.
+        # These are exact sample coordinates; the internal 120 BPM
+        # timebase remains explicitly unqualified for musical inference.
+        spec['structure']['sections']=[pilot_section]
+    return spec
 
 
 def _stage_record(directory, filename, document):
@@ -196,22 +235,29 @@ def _commit_preflight(root,principal_id,title,detail):
     catalog,physical=detail['entry'],detail['physical']
     pid=catalog['projectId']
     source_sha=detail['sha']
-    playback=physical['byRate'][48000]
+    held=catalog['rightsStatus']=='UNVERIFIED_HELD'
+    rate=44100 if held else 48000
+    playback=physical['byRate'][rate]
     artifact=playback['wavSha256']
-    spec=_unqualified_import_spec(title,source_sha,physical['sourceCodec'])
+    spec=_unqualified_import_spec(title,source_sha,physical['sourceCodec'],
+           catalog['rightsStatus'],detail.get('pilotSection'))
 
     # PREPARING is durable *before* any canonical project transition.
     # On reentry, ALWAYS reread the real project graph first; stage alone
     # cannot confer artifact authority, revision selection or creator rights.
     directory=project_owner_directory(root,pid,principal_id,allow_create=True)
-    stage=directory/'artist-master-intakes'
+    stage=directory/('artist-master-held-intakes' if held else 'artist-master-intakes')
     identity={'schemaVersion':'sara.master.ingest.host.v1','state':'PREPARING',
         'projectId':pid,'principalId':principal_id,'title':title,
-        'rightsStatus':'ARTIST_ORIGINAL',
+        'rightsStatus':'UNVERIFIED_HELD' if held else 'ARTIST_ORIGINAL',
         'rightsEvidenceSha256':catalog['rightsEvidenceSha256'],
         'sourceSha256':source_sha,'playbackWavSha256':artifact,
         'decoded48000PcmSha256':physical['byRate'][48000]['pcmSha256'],
         'decoded44100PcmSha256':physical['byRate'][44100]['pcmSha256']}
+    if held:
+        identity.update({'privatePilotAuthorized':True,
+                         'commercialReleaseAuthorized':False,
+                         'pilotSection':detail['pilotSection']})
     stage_file,prior=_stage_record(stage,source_sha+'.json',identity)
     try:
         selected=project_operation(root,{'projectId':pid},principal_id=principal_id)
@@ -280,9 +326,11 @@ def _commit_preflight(root,principal_id,title,detail):
     },sort_keys=True,separators=(',',':')).encode())
     return {'status':'IMPORTED_UNAPPROVED','title':title,'projectId':pid,
         'revisionId':rid,'artifactId':artifact,'sourceSha256':source_sha,
-        'rightsStatus':'ARTIST_ORIGINAL','rightsEvidenceSha256':catalog['rightsEvidenceSha256'],
+        'rightsStatus':'UNVERIFIED_HELD' if held else 'ARTIST_ORIGINAL',
+        'privatePilotAuthorized':held,'commercialReleaseAuthorized':False,
+        'rightsEvidenceSha256':catalog['rightsEvidenceSha256'],
         'sourceCodec':physical['sourceCodec'],
-        'audioSampleRate':48000,'audioChannels':2,
+        'audioSampleRate':rate,'audioChannels':2,
         'decoded48000Frames':playback['frames'],
         'decoded48000PcmSha256':playback['pcmSha256'],
         'decoded44100Frames':physical['byRate'][44100]['frames'],
@@ -355,18 +403,26 @@ def issue_accepted_master_grant(*,root,principal_id,project_id,revision_id,
     observed=project_operation(root,{'projectId':project_id,'revisionId':revision_id},
                                principal_id=principal_id)
     meta=observed['songSpec'].get('artistMasterImport') or {}
-    if (meta.get('timebaseIsUnqualifiedPlaceholder') is not False
+    held=meta.get('rightsStatus')=='UNVERIFIED_HELD'
+    if not held and (meta.get('timebaseIsUnqualifiedPlaceholder') is not False
         or meta.get('musicalTimingQualified') is not True
         or not observed['productionTimeline'].get('sections')):
         raise ArtistMasterDenied('MASTER_GRANT_MUSICAL_TIMELINE_NOT_VERIFIED')
+    if held and (meta.get('privatePilotAuthorized') is not True
+                 or meta.get('commercialReleaseAuthorized') is not False
+                 or not observed['productionTimeline'].get('sections')):
+        raise ArtistMasterDenied('MASTER_GRANT_PRIVATE_SAMPLE_WINDOW_UNQUALIFIED')
     if not callable(host_rights_policy):
         raise ArtistMasterDenied('MASTER_GRANT_HOST_RIGHTS_REQUIRED')
+    request={'projectId':project_id,'revisionId':revision_id,
+             'artifactId':artifact_id,'cinemaProjectId':cinema_project_id,
+             'sectionId':section_id,'fps':'24/1'}
+    if held:
+        request['scope']='private_cinema_pilot'
     return issue_authorized_grant(root=root,principal_id=principal_id,
          ring=host_signing_ring,rights_policy=host_rights_policy,
          read_project=project_operation,read_audio=project_audio_bytes,
-         request={'projectId':project_id,'revisionId':revision_id,
-                  'artifactId':artifact_id,'cinemaProjectId':cinema_project_id,
-                  'sectionId':section_id,'fps':'24/1'},now=now)
+         request=request,now=now)
 
 
 def ingest_three_song_batch(*,root,principal_id,sources_by_title,host_catalog_lookup):
