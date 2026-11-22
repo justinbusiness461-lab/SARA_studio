@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "sara.studio.three_song_grants.v1",
+  "state": "HOLD_HOST_RIGHTS_AND_QUALIFIED_MUSICAL_TIMELINE",
+  "createdDate": "2026-11-22",
+  "purpose": "explicit fail-closed handoff to PulseForge; no grant authorization inferred from source decode",
+  "sourceMediaEvidencePath": "docs/platform/evidence/kernel_20261122_round18/three-song-source-observation.json",
+  "issuedGrantCount": 0,
+  "grants": [],
+  "externalSpendUsd": 0,
+  "productionQualified": false,
+  "creativeApproved": false,
+  "expectedNextOwner": "SARA_studio authenticated owner/source rights + timing qualification",
+  "songs": [
+    {
+      "title": "Turn The Noise Back On",
+      "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
+      "sourceBytesDecoded": true,
+      "acceptedStudioProjectRevisionId": null,
+      "acceptedAudioArtifactId": null,
+      "grantStatus": "NOT_ISSUED"
+    },
+    {
+      "title": "If This Is All I Get",
+      "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
+      "sourceBytesDecoded": true,
+      "acceptedStudioProjectRevisionId": null,
+      "acceptedAudioArtifactId": null,
+      "grantStatus": "NOT_ISSUED"
+    },
+    {
+      "title": "Outlaws and Echoes",
+      "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
+      "sourceBytesDecoded": true,
+      "acceptedStudioProjectRevisionId": null,
+      "acceptedAudioArtifactId": null,
+      "grantStatus": "NOT_ISSUED"
+    }
+  ],
+  "wakeCondition": "Host owner authorizes rights, admits authentic media into lawful ProjectRevisions, validates musical timebase, signs per-project/per-section grants, verifies physical readback."
+}
