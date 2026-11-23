@@ -3,6 +3,24 @@ Never publishes source media or grants. Browser inputs never supply rights.
 """
 import hashlib,io,json,os,socketserver,struct,sys,wave
 from pathlib import Path
+
+# Certification gate is deliberately evaluated before importing Studio or constructing
+# synthetic audio. CI fixture mode remains available only when strict mode is OFF.
+strict_value = os.environ.get('SARA_R25_REAL_MEDIA_STRICT', '0')
+if strict_value not in ('0', '1'):
+ raise SystemExit('R27_REAL_MEDIA_STRICT_INVALID: expected 0 or 1')
+strict_real_media = strict_value == '1'
+real_root = os.environ.get('SARA_R25_REAL_MEDIA_ROOT')
+real_receipts = os.environ.get('SARA_R25_REAL_MEDIA_RECEIPTS')
+if strict_real_media:
+ if not real_root or not real_receipts:
+  raise SystemExit('R27_REAL_MEDIA_REQUIRED: real root and receipts must both be set')
+ if not Path(real_root).is_dir():
+  raise SystemExit('R27_REAL_MEDIA_ROOT_NOT_FOUND')
+ for receipt_name in ('private_ingestion_receipt.json', 'private_r2_receipt.json'):
+  if not (Path(real_receipts) / receipt_name).is_file():
+   raise SystemExit('R27_REAL_MEDIA_RECEIPT_MISSING: ' + receipt_name)
+
 sys.path.insert(0,'tools')
 import studio_server as studio
 from m045_artist_master_ingestion import ingest_three_song_batch,commit_verified_edit
@@ -60,5 +78,5 @@ for r in originals:
 class Server(socketserver.ThreadingTCPServer):allow_reuse_address=True;daemon_threads=True
 with Server(('127.0.0.1',0),studio.StudioHandler) as srv:
  studio.PORT=srv.server_address[1]
- print(json.dumps({'port':studio.PORT,'songs':songs,'stagingRealMedia':bool(real)}),flush=True)
+ print(json.dumps({'port':studio.PORT,'songs':songs,'stagingRealMedia':bool(real),'strictRealMedia':strict_real_media}),flush=True)
  srv.serve_forever()
