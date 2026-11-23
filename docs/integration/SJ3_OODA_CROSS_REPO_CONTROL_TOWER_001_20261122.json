@@ -1,0 +1,136 @@
+{
+  "schema": "sj3.control-tower.integration-observation.v1",
+  "generatedDate": "2026-11-22",
+  "status": "READ_ONLY_COORDINATION_NOT_AUTHORITY",
+  "source": "GitHub PR exact-ref observation; historical source receipts not rerun",
+  "repositories": {
+    "SARA_studio": {
+      "main": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+      "issuerPR36": {
+        "head": "862a7ed11f12835b92c4f0b5673241ae4362b8c2",
+        "base": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+        "draft": true
+      },
+      "platformPR37": {
+        "head": "b093437f7c0aa5e836a1c30fa5f2ecdf866eefb7",
+        "base": "862a7ed11f12835b92c4f0b5673241ae4362b8c2",
+        "draft": true
+      }
+    },
+    "dj_rezrxtion": {
+      "main": "aaed100cb41cac9df32962a441fad4434e3f6071",
+      "cinemaPR91": {
+        "head": "450a004b5857be2dde4455a93310c21a185f7108",
+        "base": "aaed100cb41cac9df32962a441fad4434e3f6071",
+        "draft": true
+      },
+      "forgeV3PR94": {
+        "head": "a7a00a1ff114056f512979f15d35558a1a66c792",
+        "draft": true
+      }
+    }
+  },
+  "sourceBlobs": {
+    "studioIssuer": "c55dc916f98a418a0054b20c1783f07a9f1c9f0d",
+    "cinemaConsumer": "9ea329c46dc44c814589c4ecd05e3d8d1e5375b0"
+  },
+  "entries": [
+    {
+      "id": "CT-01",
+      "owner": "SARA_studio integration",
+      "blocker": "STACKED_PR_HEADS",
+      "nextLawfulAction": "compare PR36/PR37 source and exact CI",
+      "acceptance": "PR37 base exactly PR36 head; full source tests and hosted CI",
+      "dependsOn": [
+        "CT-02"
+      ],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-02",
+      "owner": "SARA_studio rights/issuer",
+      "blocker": "HOST_RIGHTS_SIGNER_UNQUALIFIED",
+      "nextLawfulAction": "authorize host-only real Studio R1/R2 and execute authenticated endpoint",
+      "acceptance": "lawful source membership, rights readback, signed verified grant",
+      "dependsOn": [],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-03",
+      "owner": "dj_rezrxtion consumer",
+      "blocker": "REAL_LIVE_JOINT1_NOT_PROVEN",
+      "nextLawfulAction": "consume authenticated Studio real grant and decode 15s result",
+      "acceptance": "Studio signed grant and actual verified film artifact",
+      "dependsOn": [
+        "CT-02"
+      ],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-04",
+      "owner": "dj_rezrxtion visual/Foreman/QA",
+      "blocker": "GLOBAL_EQ_7114FRAME_QA_HOLD",
+      "nextLawfulAction": "repair first visible verified cyan target and prove all registered EQ",
+      "acceptance": "18 scenes, 17 seams, all registered bars, same candidate G-EQ and G-REMOVE",
+      "dependsOn": [
+        "CT-03"
+      ],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-05",
+      "owner": "SARA_studio production/QA",
+      "blocker": "ARTIST_SOURCE_AB_NOT_VERIFIED",
+      "nextLawfulAction": "real accepted source P0/P1 target edit audition and cold reopen",
+      "acceptance": "source and candidate digests, exact musical position, unaffected region proof",
+      "dependsOn": [],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-06",
+      "owner": "dj_rezrxtion Forge owner",
+      "blocker": "FORGE_V3_DIGEST_FORMAT_NOT_AUTHENTICITY",
+      "nextLawfulAction": "RED forged receipt tests, read owner evidence, fail closed",
+      "acceptance": "resolved digest bytes/source/owner/artifact plus acceptance",
+      "dependsOn": [],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-07",
+      "owner": "SARA_studio platform/security",
+      "blocker": "NATIVE_SECURITY_DEVICE_RELEASE_HOLD",
+      "nextLawfulAction": "physical device and security tests on exact reconciled heads",
+      "acceptance": "CI, Android/iOS, production identity, rights and release policy",
+      "dependsOn": [
+        "CT-01"
+      ],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    },
+    {
+      "id": "CT-08",
+      "owner": "SARA_studio platform/business",
+      "blocker": "ROOMS_CONNECTORS_SCOPE_HOLD",
+      "nextLawfulAction": "review existing rooms/social source then scoped OAuth tests",
+      "acceptance": "consented rooms ACL and actual Gmail/Meta provider readback",
+      "dependsOn": [
+        "CT-07"
+      ],
+      "certification": "UNVERIFIED_FOR_THIS_EXACT_CURRENT_HEAD",
+      "productionAuthority": "NONE"
+    }
+  ],
+  "laws": [
+    "NO_SHADOW_REVISION_AUTHORITY",
+    "AUTHN_AUTHZ_TENANCY_CURRENTNESS_FIRST",
+    "ACCEPTED_NEQ_EXECUTED_NEQ_VALID_NEQ_APPROVED",
+    "AUTHORITATIVE_REREAD_BEFORE_RETRY",
+    "NEW_CURRENT_TRUTH_PREEMPTS_STALE_PLAN"
+  ]
+}
