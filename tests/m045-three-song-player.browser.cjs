@@ -8,7 +8,13 @@ const {once}=require('node:events');
 const {createInterface}=require('node:readline');
 const {chromium}=require('playwright');
 const root=resolve(__dirname,'..');
+const strictValue=process.env.SARA_R25_REAL_MEDIA_STRICT||'0';
+if(!['0','1'].includes(strictValue)) throw new Error('R27_REAL_MEDIA_STRICT_INVALID');
+const strictRealMedia=strictValue==='1';
 async function boot(location){
+ if(strictRealMedia&&(!process.env.SARA_R25_REAL_MEDIA_ROOT||!process.env.SARA_R25_REAL_MEDIA_RECEIPTS)){
+  throw new Error('R27_REAL_MEDIA_REQUIRED');
+ }
  const server=spawn('python3',['-u','tests/r25_three_song_fixture_server.py',location],{
   cwd:root,env:process.env,stdio:['ignore','pipe','inherit']});
  const closed=once(server,'close');
@@ -34,9 +40,13 @@ test('R25 three-song real or test-source cold open at mobile/desktop and exact R
  const startup=await boot(join(temporary,'studio'));
  const inventory=startup.songs;
  assert.equal(inventory.length,3);
+ assert.equal(startup.strictRealMedia,strictRealMedia,'server mode must match requested mode');
+ if(strictRealMedia) assert.equal(startup.stagingRealMedia,true,'synthetic startup forbidden in strict mode');
  await startup.stop(); // all project and media truth must survive a terminated server
  const runtime=await boot(join(temporary,'studio'));t.after(runtime.stop);
  assert.deepEqual(runtime.songs,inventory);
+ assert.equal(runtime.strictRealMedia,strictRealMedia,'server mode changed across cold reopen');
+ if(strictRealMedia) assert.equal(runtime.stagingRealMedia,true,'synthetic cold reopen forbidden');
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});t.after(()=>browser.close());
  const results=[];
  for(const width of [390,1440]){
@@ -73,5 +83,5 @@ test('R25 three-song real or test-source cold open at mobile/desktop and exact R
    await page.close();
   }
  }
- console.log('R25_COLD_REOPEN_PHYSICAL_EVIDENCE',JSON.stringify({realMedia:runtime.stagingRealMedia,inventory:results}));
+ console.log('R25_COLD_REOPEN_PHYSICAL_EVIDENCE',JSON.stringify({realMedia:runtime.stagingRealMedia,strictRealMedia,certificationMode:strictRealMedia?'REAL_MEDIA_STRICT':'SYNTHETIC_FIXTURE_NOT_REAL_MEDIA_CERTIFICATION',inventory:results}));
 });
