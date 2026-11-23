@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "SARA_COLLAB_V1_1_ACCEPTANCE_SPEC",
+  "architectureState": "FROZEN_V1_1",
+  "sourceRepo": "justinbusiness461-lab/SARA_studio",
+  "sourceMainSha": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+  "meaning": "These 28 entries are acceptance specifications, not runnable or executed RED tests. Implement tests at exact rightful owner APIs.",
+  "cases": [
+    {
+      "id": "COL-001",
+      "expected": "Two authorized principals join a room; identities remain separate.",
+      "phase": 1,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-002",
+      "expected": "Cross-tenant private room subscription/message read DENY.",
+      "phase": 1,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-003",
+      "expected": "Revoked member cannot obtain subsequent media/project access.",
+      "phase": 1,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-004",
+      "expected": "Shared audition requires exact authorized artifact and musical position.",
+      "phase": 2,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-005",
+      "expected": "Reconnect rereads current Studio revision; session has no current authority.",
+      "phase": 2,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-006",
+      "expected": "Concurrent edits merge only after proven commutativity or safe rebase.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-007",
+      "expected": "Conflicting edits must not silently overwrite.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-008",
+      "expected": "Late R1 response cannot replace newer selected/current R2.",
+      "phase": 2,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-009",
+      "expected": "Revision acceptance cannot imply commercial rights clearance.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-010",
+      "expected": "Shared S.A.R.A. acts as requester; denied scopes stay denied.",
+      "phase": 4,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-011",
+      "expected": "Lost commit ACK recovers original operation by readback.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-012",
+      "expected": "Both principals cold reopen lawful revision and decode same audio.",
+      "phase": 2,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-013",
+      "expected": "Revoke edit grant after candidate before commit => HELD_AUTHORITY.",
+      "phase": 0,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-014",
+      "expected": "Revoke during media/AI job => no new unauthorized access/publication.",
+      "phase": 4,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-015",
+      "expected": "Duplicate delivery/lost ACK => at most one canonical operation.",
+      "phase": 0,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-016",
+      "expected": "Two CAS writers same revision => one current promotion.",
+      "phase": 0,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-017",
+      "expected": "Different tracks with shared tempo/bus => no unproven auto-merge.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-018",
+      "expected": "Room prompt injection cannot export foreign project.",
+      "phase": 4,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-019",
+      "expected": "Voice-model operation denied absent exact performer/asset/purpose consent.",
+      "phase": 4,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-020",
+      "expected": "Oversized/mislabeled/digest-mismatched media rejected/quarantined.",
+      "phase": 1,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-021",
+      "expected": "Accepted song revision without license => commercial release still denied.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-022",
+      "expected": "Crash after pointer promotion before rebroadcast => recover event, no recommit.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-023",
+      "expected": "Artifact identical but musical sample position different => audition FAIL.",
+      "phase": 2,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-024",
+      "expected": "Candidate B replacing A invalidates A-specific approval.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-025",
+      "expected": "Revoked signer/policy change before commit => approval held.",
+      "phase": 0,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-026",
+      "expected": "Realtime provider outage => no change in Studio history/current.",
+      "phase": 1,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-027",
+      "expected": "Cross-room/project media/subscription mismatch => DENY and audit.",
+      "phase": 1,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "COL-028",
+      "expected": "Offline stale edit => private candidate/HELD_STALE, no promotion.",
+      "phase": 3,
+      "execution_status": "SPECIFIED_NOT_EXECUTED",
+      "proof_status": "UNVERIFIED",
+      "owner_assignment": "RECONCILE_RIGHTFUL_OWNER_BEFORE_IMPLEMENTATION"
+    }
+  ]
+}
