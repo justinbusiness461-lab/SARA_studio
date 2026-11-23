@@ -1,0 +1,36 @@
+# S.A.R.A. Studio™ / Sound Forge™ — MUSIC CAPABILITY FORGE 2.0 (owner contract)
+**Date:** 2026-11-22 · **Disposition:** DESIGN CANDIDATE / SOURCE ONLY · **Owner:** `justinbusiness461-lab/SARA_studio` (repo ID 1427534706). **No music rendering, plugins, store shipping or source authority mutation.**
+
+## Purpose
+Give Studio **equal, first-class capability intelligence** within the shared SJ³ Capability Forge. Cover generative song engines, vocal tools, DAWs, MIDI, DJ decks and performance, mixers/mastering, samples, instruments, effects, hardware and licensing/economic concerns. The Control Tower/Forge UI is a read projection owned by existing BOB Engineering UI/Forge owners; this document defines **Studio's musical capability and benchmark ownership**, never a second SongSpec or project registry.
+
+## Evidence preflight
+The historical 2026-10-15 PulseForge `forge/competition/music_generation/competitors.v1.json` describes 10 music-donor candidates + 12 native epics, but expressly no physical music-vendor benchmarking or native qualification. That historical file remains preserved in cinema's donor corpus. **The native music upgrade's rightful code owner is Studio**, which owns SongSpec, ProductionTimeline, ProjectRevision, RenderAttempt, RenderArtifact, SampleAsset, Mix Station™, DJ Grid™, remix and Change ONLY This™.
+Existing Studio draft #36 and #37 are candidates; they do not establish current production/creative certification. This is the Studio design PR #38, not another implementation branch.
+
+## Discovery dimensions — 107 seed names, not 107 audited products
+- **AI MUSIC (32):** Suno, Eleven Music, Udio, Mureka, Stable Audio, MusicGPT, Sonauto, AIVA, SOUNDRAW, Loudly, Boomy, Beatoven.ai, Mubert, Soundful, Riffusion, Splash, JEN, Google Lyria, ACE-Step, Meta MusicGen, Google Magenta, BandLab SongStarter, Moises, LALAL.AI, Kits AI, Audimee, Controlla Voice, Soundverse, Sondu (identity UNRESOLVED), Sonify, Tad AI, Producer.ai.
+- **DAW / MUSIC PRODUCTION (27):** Ableton Live, Logic Pro, FL Studio, Avid Pro Tools, REAPER, Steinberg Cubase, Steinberg Nuendo, Bitwig Studio, Fender Studio Pro, Reason, Audacity, Ardour, GarageBand, LMMS, Cakewalk Sonar, Tracktion Waveform, Universal Audio LUNA, Renoise, Akai MPC Software, Native Instruments Maschine, Serato Studio, Soundtrap, BandLab, Zrythm, Digital Performer, Mixcraft, Studio One (historical branding).
+- **DJ / LIVE (18):** Serato DJ Pro, rekordbox, Traktor Pro, VirtualDJ, Algoriddim djay, Engine DJ, Mixxx, DJ.Studio, Cross DJ, edjing Mix, Denon Engine OS, Mixonset, Pacemaker, Serato Sample, DJUCED, Mixvibes Cross, Ableton Live Performance, Pioneer DJ hardware ecosystem.
+- **PLUGINS / HARDWARE (30):** iZotope Ozone, RX, Neutron, FabFilter Pro-Q, Waves, UAD Console, Auto-Tune Pro, Melodyne, VocAlign, Soundtoys, Valhalla, SPAN, Neural DSP, Kontakt, Splice, Loopcloud, MPC hardware, Push, CDJ-3000, DJM-A9, RANE ONE, Kontrol S4, Arturia KeyLab, Launchpad, Battery, Omnisphere, Serum, Vital, Pianoteq, T-RackS.
+Names are **discovery leads only**, some are technologies/brands rather than individual products; exact vendor identity/version/licensing/active status must be individually researched. No feature or maturity score has been inferred from a name. User-supplied `Sondu` remains unresolved; don't silently substitute `Sonauto` or `Suno`. The research-preview seed and UI are stored in private Command Center Drive folder; the source-of-truth remains existing admitted owner records, not the preview.
+
+## Native capability taxonomy
+`Generate (prompt/song/audio reference/voice) → Arrange (sections, harmony, MIDI/MPE) → Perform (DJ decks/scratch/cue/samples/controllers) → Edit (Change ONLY This™, P0–P3) → Mix (gain/bus/FX/sidechain) → Master (loudness/dynamics/translation) → Export/rights (WAV, stems, provenance)`.
+For every meaningful external feature capture: `competitor/product/version/observedAt/firstPartySource/observedBehavior/workflow/input/output/limit/license/rights/cost/implementationOwner/nativeMechanismRef/measuredGap/qualifyingFixture/actualPhysicalTest/artistReview/decision/retestTrigger`.
+A third-party API or published model may be an optional provider under Studio render authorization. It never becomes a second ProjectRevision/RenderArtifact or automatically grants commercial rights.
+
+## Benchmark campaigns
+1. **GEN-SONG-001 (AI music):** 30/60/210-sec rights-cleared song prompts; same lyrics/structure/seed where exposed; vocal intelligibility, genre fit, groove, dynamic range, arrangement identity, prompt adherence, hallucinated lyrics, decode, sample rate, artifact SHA, repeatability, actual blinded listening and commercial terms. Modal may host opt-in licensed models only with explicit cost and rights gates. Generic CPU tones DO NOT certify song quality.
+2. **EDIT-REGION-001:** target a selected Verse 2 bass region, explicit locks, P0/P1 exact preservation or P2/P3 disclosure; compare entire source minus approved dependency/tail regions by decoded audio; wrong song position is FAILED A/B.
+3. **DAW-SESSION-001:** 16-track WAV/MIDI project, 5-minute material, tempo/key changes, automation, buses, import/export/reopen and real project revision history. Measure CPU/headroom, xrun/dropouts, MIDI event accuracy, stem roundtrip, clean paths, accessible mobile UX.
+4. **DJ-LIVE-001:** professional wired native audio device/controller, jog wheel/beat/quantized scratch/cue response, 48kHz source, Bluetooth separately, device/OS/driver/transport measured, p50/p95 latency and jitter, real audible capture and operator review; low latency requires native real-time-safe DSP, not cloud HTTP.
+5. **MIX-MASTER-001:** before/after real song with measurable loudness, true peaks, clipping, spectral/phase response, distortion/noise, multi-device listening; no 'faster' score if quality/preservation falls.
+Every benchmark records hardware/OS, sample rate, connection, real input/output bytes, sample size, costs, source license, exact Studio SHA/revision, failure/recovery and independent listening. No '5×' or parity badge without matched verified results.
+
+## UX/Forge contract
+The shared Forge presents music as the leading equal domain, with four first-class Studio filters plus the Cinema filter. Each product opens an evidence dossier and `Propose native upgrade` action routed into existing Studio owner; never an unauthenticated direct render. Color and status: documented ≠ physically executed ≠ technically certified ≠ creatively approved. Studio's editor remains *Chat / Canvas / DJ Grid / Proof* with one immutable project graph. UI prototype version 2 is an **offline** demonstration, not product deployment.
+
+## Initial validation and owner gates
+First seed = research pending; audit Suno, Eleven Music, Ableton Live, Serato DJ Pro, VirtualDJ, FL Studio, REAPER with current primary product sources. Source-level discovery is not physical music parity. No protected code, music assets, weights or brand visuals copied without rights. Route licensed mechanism to existing Studio operations, test-first and physical audition before progression. Cinema consumes only accepted Studio soundtrack IDs.
+**Owner:** Studio music implementation owner; **reviewer:** independent Studio music QA; **wake:** exact integrated source + legally usable full song fixture + hardware & playback path.
