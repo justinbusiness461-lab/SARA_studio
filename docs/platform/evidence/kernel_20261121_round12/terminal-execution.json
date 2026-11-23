@@ -1,0 +1,84 @@
+{
+  "branch": "feat/platform-identity-and-catalog",
+  "canonical_source_design": "SARA-UX-PLAN-001 PR #38 35a9ae65e0a6be2d272c70dc65e03bf59027b7f4",
+  "caveat": "Existing Studio PR #37 does not prove app-store devices, actual ACE-Step generation, creative approval or production rights.",
+  "creative_approved": false,
+  "draft_pr": 37,
+  "evidence_log_sha256": {
+    "chromium-full-31.log": "52dabc20c91bc05f4dc6be5376811e97fc6cbaa0421997e2426de3b72e146d79",
+    "execution-status.txt": "efe2394f21670231aa44a863bddfcceaff8a280b9e17954e22569c0e3081f3c3",
+    "node-full.log": "3c74f702ee0d33563750c9c877ab35a4f3afcd6d3913a11e2be24665b8dca933",
+    "python-corrected.log": "7601eb9f16c428a7d3c361dc2c9bac95bdf71b19eb9c70098397541627052cd0",
+    "python-invalid-env.log": "2e54307ef535e0fc27ea935c65ae9faf6a4e159433f0def009e7a38cc7bccbfa",
+    "python-recovery-focused.log": "830dd332074aff70570ec1827dc48714692304bdc7eb7b813f2a51ef23988edc"
+  },
+  "external_gpu_calls": 0,
+  "generation_ui": "non-authoritative state projection; APPROVE stays pending absent canonical owner approval",
+  "paid_spend_authorized": false,
+  "raw_byte_github_readback": "4/4 identical",
+  "regression": {
+    "final_chromium": {
+      "cancellations": 0,
+      "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+      "failures": 0,
+      "skips": 0,
+      "tests_passed": 31
+    },
+    "final_node": {
+      "command": "node --test --test-concurrency=1 tests/*.test.cjs",
+      "failures": 0,
+      "skips": 0,
+      "tests_passed": 51
+    },
+    "final_python": {
+      "command": "PYTHONPATH=tools python3 -m unittest discover -s tests -v",
+      "failures": 0,
+      "skips": 0,
+      "tests_passed": 486
+    },
+    "focus_replay": {
+      "command": "PYTHONPATH=tools python3 -m unittest discover -s tests -p test_m044_operations.py -v",
+      "tests_failed": 0,
+      "tests_passed": 11
+    },
+    "initial_python": {
+      "cause": "child process could not import studio_server because subprocess lacked tools in PYTHONPATH",
+      "failures": 3,
+      "log": "python-invalid-env.log",
+      "status": "NONCERTIFYING_WRONG_EXECUTOR_PYTHONPATH",
+      "tests_executed": 486
+    },
+    "new_browser_tests": 3,
+    "original_browser_tests": 28,
+    "total_test_executions": 568
+  },
+  "release_authorized": false,
+  "schema": "sara.platform.round12.execution.v1",
+  "source": {
+    "app-ui.js": {
+      "bytes": 102943,
+      "has_terminal_lf": false,
+      "sha256": "ee242c7a91be4363c5199352448e6e9a535f1cc5dbce3857e7dac5c1286b0110"
+    },
+    "index.html": {
+      "bytes": 29428,
+      "has_terminal_lf": false,
+      "sha256": "b613b12163e28e57397b8d4a8dab9fcda8409f8a91963f3e10c0b0b9797e96d6"
+    },
+    "studio-shell.css": {
+      "bytes": 15842,
+      "has_terminal_lf": true,
+      "sha256": "13f367ed2a1b931186813f040dfa23d107a371605180ed2ded3b150fa3e48b0e"
+    },
+    "tests/m045-ux-master-plan.browser.cjs": {
+      "bytes": 6640,
+      "has_terminal_lf": true,
+      "sha256": "a5745ad94ae95326d089faecbca8dd3af1b33126a72945278bbdb00ceb6d2339"
+    }
+  },
+  "source_parent_evidence_head": "a3192d67fa82317d5cf3a87a9565f9a97f5e1c04",
+  "source_repository": "justinbusiness461-lab/SARA_studio",
+  "test_source_bytes_equal_committed_source": true,
+  "tested_product_commit": "4f31c5f7fa7767dfe35709dcbdfe338281292064",
+  "visual_meter_classification": "sparse decoded-PCM16 waveform envelope, NOT accredited LUFS or true-peak"
+}

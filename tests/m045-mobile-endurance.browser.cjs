@@ -8,6 +8,7 @@ const {join,resolve}=require('node:path');
 const {once}=require('node:events');
 const {createInterface}=require('node:readline');
 const {chromium}=require('playwright');
+const {installQaLongtasks,qaSnapshot}=require('./qa-longtasks.cjs');
 
 const root=resolve(__dirname,'..');
 async function boot(workspace){
@@ -30,6 +31,7 @@ test('RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and fail
  const studio=await boot(workspace);t.after(studio.stop);
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined});t.after(()=>browser.close());
  const page=await browser.newPage({viewport:{width:390,height:844},serviceWorkers:'block'});
+ await installQaLongtasks(page);
  await page.route('https://cdn.jsdelivr.net/**',r=>r.abort());await page.goto(studio.url);
  await page.locator('#prompt').fill('92 BPM E minor smoke country guitar groove');
  await page.locator('#studioModeChat').click();await page.locator('#btnCompile').click();const r1=await ready(page);
@@ -47,7 +49,9 @@ test('RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and fail
  assert.equal(r2.projectId,r1.projectId);assert.notEqual(r2.revisionId,r1.revisionId);assert.equal(r2.wavSha256,r2.artifactId);
  assert.equal(await page.locator('#btnABR1').isDisabled(),false);assert.equal(await page.locator('#btnABR2').isDisabled(),false);
  await page.locator('#dockPlay').click();await page.waitForFunction(()=>window.__M044_PLAYBACK_STARTED__===true);
- await page.waitForTimeout(220);await page.locator('#btnABR1').click();await page.waitForFunction(id=>window.__M044_AB_SWITCH__?.state==='COMPLETE'&&window.__M044_PLAYBACK_PROOF__?.revisionId===id,r1.revisionId,{timeout:15000});
+ await page.waitForTimeout(220);await page.locator('#btnABR1').click();
+ try{await page.waitForFunction(id=>window.__M044_AB_SWITCH__?.state==='COMPLETE'&&window.__M044_PLAYBACK_PROOF__?.revisionId===id,r1.revisionId,{timeout:15000});}
+ catch(error){console.log('RS002_ACTIVE_MEDIA_LONGTASKS',JSON.stringify(await qaSnapshot(page)));throw error;}
  const ab1=await abProof(page);assert.equal(ab1.toRevisionId,r1.revisionId);assert.ok(Math.abs(ab1.fromPositionSec-ab1.toPositionSec)<=0.05);
  await page.locator('#btnABR2').click();await page.waitForFunction(id=>window.__M044_AB_SWITCH__?.state==='COMPLETE'&&window.__M044_PLAYBACK_PROOF__?.revisionId===id,r2.revisionId,{timeout:15000});
  const ab2=await abProof(page);assert.equal(ab2.toRevisionId,r2.revisionId);assert.ok(Math.abs(ab2.fromPositionSec-ab2.toPositionSec)<=0.05);

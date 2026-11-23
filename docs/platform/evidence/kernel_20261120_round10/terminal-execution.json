@@ -1,0 +1,94 @@
+{
+  "branch": "feat/platform-identity-and-catalog",
+  "chromiumCancellations": 0,
+  "commands": {
+    "chromium": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+    "node": "node --test tests/*.test.cjs",
+    "python": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -v"
+  },
+  "dawGate": {
+    "archiveSchema": "sara.daw.bundle.v1",
+    "midiNotesNotInvented": true,
+    "midiPpq": 480,
+    "productionRights": "UNVERIFIED_HELD",
+    "requiredAuthority": "Studio ProjectRevision + lawful RenderAttempt + verified source stem CAS",
+    "unprovenStemSourcesReturnHold": true
+  },
+  "deployment": false,
+  "executedSourceFileCount": 6,
+  "exitCodes": {
+    "chromium": "0",
+    "node": "0",
+    "python": "0"
+  },
+  "failures": 0,
+  "fileHashes": {
+    "chromium-full-final.log": {
+      "bytes": 6647,
+      "sha256": "73f9089b9d892479e3a7be21e93385386ac3fc43d230d81fee835f8c200a7569"
+    },
+    "focused-daw-green.log": {
+      "bytes": 7498,
+      "sha256": "e025589b5a1d23d86c2e4e7f04808beb3a182b80731eade9b3dcf6ef2aed973d"
+    },
+    "focused-modal-green.log": {
+      "bytes": 696,
+      "sha256": "55f74c853bff13c438f0c2e01add12380596df4084f0185e0b29c03a77a38ae0"
+    },
+    "focused-red.log": {
+      "bytes": 11291,
+      "sha256": "9f1921e376ca5f11708e49c2e8a8a6d10a9685b4f1b9e131230162cc78d28f07"
+    },
+    "node-full-final.log": {
+      "bytes": 10342,
+      "sha256": "0ff461138b75d2c97eb03161577a4796746fe5b129bb9b67883eccf5780d3c1b"
+    },
+    "physical-daw-ffprobe-reproducer.py": {
+      "bytes": 2823,
+      "sha256": "8241bd1bd3ea738c2922cf61ee97adde0d98b54d266a6e634105ad18ecda941b"
+    },
+    "physical-daw-ffprobe-witness.json": {
+      "bytes": 1347,
+      "sha256": "543fddf33dc49cca1944d0149f677bb54deb1bff269a75e504500c1c39d6946a"
+    },
+    "python-full-final.log": {
+      "bytes": 122917,
+      "sha256": "7a0462952301d42da3f5e8dea2e30f61f128d912470781525345b20e9f52dd7c"
+    },
+    "source-index.json": {
+      "bytes": 1629,
+      "sha256": "3a2c1de9907340426e2238c8c296cdd1ed61ccbdb813728db4e26e93f837b0df"
+    }
+  },
+  "fullRegression": {
+    "chromium": 28,
+    "node": 51,
+    "python": 446,
+    "total": 525
+  },
+  "modalGate": {
+    "costEnforcementInProvider": "NOT_PROVEN",
+    "modelCheckpointIdentity": "NOT_VERIFIED",
+    "operatorFlagDoesNotAuthorizeSpend": true,
+    "state": "DRY_RUN_ONLY"
+  },
+  "networkModalCalls": 0,
+  "noPaidGPU": true,
+  "physicalDawWitness": {
+    "independentDecoder": "FFprobe",
+    "releaseCleared": false,
+    "suite": "synthetic_44k1_pcm16"
+  },
+  "productionGates": {
+    "gate1": "SCOPED_ENGINEERING_GREEN_INDEPENDENT_QA_PENDING",
+    "gate2": "STUDIO_R10_NOT_YET_REPINNED_IN_CINEMA",
+    "gate3": "HOLD_NO_SPEND_AUTHORIZATION",
+    "gate4": "HOLD_ORIGINAL_FILM",
+    "gate5": "HOLD_NO_SIGNED_NATIVE_BUILDS"
+  },
+  "repo": "justinbusiness461-lab/SARA_studio",
+  "schema": "sara.platform.round10.final.v1",
+  "skips": 0,
+  "storeRelease": false,
+  "testedProductCommit": "8fadf6d02b2ab347ba3c25b97301295bb6ec2cd7"
+}

@@ -42,7 +42,10 @@ def authorized_master(root,payload,principal_id):
         "targetLufs":payload["targetLufs"],"truePeakCeilingDbtp":payload["truePeakCeilingDbtp"],
         "measuredOutputLufs":telemetry["measured_output_lufs"],
         "measuredOutputTruePeakDbtp":telemetry["measured_output_true_peak_dbtp"],
-        "meterConformance":telemetry["meterConformance"]}])
+        "meterConformance":telemetry["meterConformance"],
+        "referenceIntegratedLufs":telemetry["reference_meter"]["integrated_lufs"],
+        "referenceTruePeakDbtp":telemetry["reference_meter"]["true_peak_dbtp"],
+        "referenceMeterInputWavSha256":telemetry["reference_meter"]["input_wav_sha256"]}])
  provenance.validate()
  # Same intended request has a stable operation identifier; NO blind retry from
  # the UI after an ambiguous server response—authoritative readback first.

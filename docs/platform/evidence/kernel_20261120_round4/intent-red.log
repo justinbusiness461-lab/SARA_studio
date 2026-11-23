@@ -1,0 +1,18 @@
+test_distinct_creative_instructions_bind_distinct_operation_digests (tests.test_platform_approval_challenge.ApprovalHTTP) ... FAIL
+
+======================================================================
+FAIL: test_distinct_creative_instructions_bind_distinct_operation_digests (tests.test_platform_approval_challenge.ApprovalHTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r4/SARA_studio-546c6a6def951b020f5a42a2c03415751d281af3/tests/test_platform_approval_challenge.py", line 29, in test_distinct_creative_instructions_bind_distinct_operation_digests
+    self.assertNotEqual(a["operation_digest"],b["operation_digest"],
+AssertionError: '09fa3483960b44d140174b94d553b1898d34f97e3c74cd7b70e60d44be4dcfd7' == '09fa3483960b44d140174b94d553b1898d34f97e3c74cd7b70e60d44be4dcfd7' : An approval of darker music must not also approve a brighter edit
+
+----------------------------------------------------------------------
+Ran 1 test in 0.630s
+
+FAILED (failures=1)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/chat HTTP/1.1" 200 -

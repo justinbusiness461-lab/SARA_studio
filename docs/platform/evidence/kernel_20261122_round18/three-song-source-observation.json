@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "sara.real_artist_source_intake.evidence.v1",
+  "observedDate": "2026-11-22",
+  "classification": "OBSERVED_SOURCE_BYTES_ONLY_NOT_PROJECT_REVISION",
+  "sourceAuthority": {
+    "provider": "Google Drive",
+    "method": "connector raw-byte transfer + local ffprobe/ffmpeg/sha256",
+    "visibility": "private Drive locator withheld from public repo"
+  },
+  "ffmpeg": "7.1.5-0+deb13u1",
+  "rightsStatus": "UNVERIFIED_HELD",
+  "creativeApproved": false,
+  "productionQualified": false,
+  "issuedGrantCount": 0,
+  "externalSpendUsd": 0,
+  "songs": [
+    {
+      "title": "Turn The Noise Back On",
+      "fileName": "Turn The Noise Back On MASTER.mp3",
+      "sourceBytes": 6924924,
+      "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
+      "codec": "mp3",
+      "reportedDurationSec": 296.4,
+      "inputRate": 48000,
+      "channels": 2,
+      "decodes": {
+        "44100": {
+          "frames": 13069476,
+          "pcmSha256": "e2f0208c39cede2033178aff049d4b4bb4fbae7f33c656e5f5dc5d07a6bc064d"
+        },
+        "48000": {
+          "frames": 14225280,
+          "pcmSha256": "b2635756b0799b930984ab2adb9ad22f6e97bbab938416d09337c877b7d4cd33"
+        }
+      }
+    },
+    {
+      "title": "If This Is All I Get",
+      "fileName": "If This Is All I Get.m4a",
+      "sourceBytes": 4913812,
+      "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
+      "codec": "opus",
+      "reportedDurationSec": 290,
+      "inputRate": 48000,
+      "channels": 2,
+      "decodes": {
+        "44100": {
+          "frames": 12789596,
+          "pcmSha256": "5c13dbcf0b59b56e691ea0a77d18b831f60158cf280c141fc81519cc5ae9612f"
+        },
+        "48000": {
+          "frames": 13920648,
+          "pcmSha256": "c73a42f38b513baba472fa70a13f48b435e99bee4bfd2405a49a46332bf8bffa"
+        }
+      }
+    },
+    {
+      "title": "Outlaws and Echoes",
+      "fileName": "Outlaws and Echoes.m4a",
+      "sourceBytes": 3659883,
+      "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
+      "codec": "opus",
+      "reportedDurationSec": 218.4,
+      "inputRate": 48000,
+      "channels": 2,
+      "decodes": {
+        "44100": {
+          "frames": 9632036,
+          "pcmSha256": "00388e5dadf019b2cf878b7e7ed658e599e20b63b3118dab85957a5b511c794b"
+        },
+        "48000": {
+          "frames": 10483848,
+          "pcmSha256": "907b4f63af20200eec820c55ac08b226b7079699e9678cb9e9a0ca22e6699bc0"
+        }
+      }
+    }
+  ],
+  "grantStatus": "NOT_ISSUED_NO_ACCEPTED_REVISION_OR_TIMELINE_OR_HOST_RIGHTS",
+  "canonicalProjectRevisionsCreated": 0,
+  "provenanceNotes": [
+    "Evidence records local source-byte and decoded-PCM measurements, not artist licensing or ownership attestation.",
+    "Stereo PCM16 output is SHA-256 hashed directly from ffmpeg stdout at each rate with no intermediate PCM file.",
+    "Audio byte transfer came from explicitly identified Drive folder; two M4A titles were materialized with a misleading .m4a.mp3 local suffix but their detected audio codec was Opus.",
+    "Real Studio ProjectRevision, SourceAsset ownership, rights policy, section timebase and current-selection authority must be separately qualified.",
+    "No signed grant issued; no production media published; no GPU or paid resource invoked.",
+    "Drive folder/file IDs and access locators are intentionally absent from public source evidence; resolve through the connected authorized Drive account."
+  ]
+}

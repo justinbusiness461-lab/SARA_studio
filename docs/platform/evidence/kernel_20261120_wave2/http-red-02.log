@@ -1,0 +1,77 @@
+test_http_authorized_listings_exclude_other_artist_data (tests.test_platform_wave2_http.Wave2HTTP) ... ----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 41282)
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tools/studio_server.py", line 1262, in __init__
+    super().__init__(*args, directory=str(ROOT), **kwargs)
+  File "/usr/lib/python3.10/http/server.py", line 668, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+    self.handle()
+  File "/usr/lib/python3.10/http/server.py", line 433, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+    method()
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tools/studio_server.py", line 1515, in do_GET
+    return self._platform_get(path)
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tools/studio_server.py", line 1314, in _platform_get
+    self._json(200,{"status":"SUCCESS","playlists":SocialStore(EXPORT_ROOT).my_playlists(principal)});return True
+AttributeError: 'SocialStore' object has no attribute 'my_playlists'
+----------------------------------------
+ERROR
+test_http_workspace_real_revision_audio_denies_after_revoke (tests.test_platform_wave2_http.Wave2HTTP) ... ok
+
+======================================================================
+ERROR: test_http_authorized_listings_exclude_other_artist_data (tests.test_platform_wave2_http.Wave2HTTP)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/test_platform_wave2_http.py", line 20, in test_http_authorized_listings_exclude_other_artist_data
+    self.assertEqual(len(self.api("/api/playlists",cookie=ca)[2]["playlists"]),1)
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/test_platform_identity_and_catalog.py", line 46, in api
+    status,headers,body=self.req(*args,**kw)
+  File "/tmp/sj3wave2/SARA_studio-15ccefb7a2cff76bbd8549ef073a6be97e481af8/tests/test_platform_identity_and_catalog.py", line 43, in req
+    with urllib.request.urlopen(req,timeout=10) as r:return r.status,dict(r.headers),r.read()
+  File "/usr/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/usr/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+  File "/usr/lib/python3.10/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+  File "/usr/lib/python3.10/http/client.py", line 1404, in getresponse
+    response.begin()
+  File "/usr/lib/python3.10/http/client.py", line 323, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.10/http/client.py", line 292, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.745s
+
+FAILED (errors=1)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/playlists HTTP/1.1" 201 -
+[Studio-Server] "POST /api/workspaces HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces HTTP/1.1" 201 -
+[Studio-Server] "POST /api/workspaces/ws-a946035e3a92e8f3c8d9dd3a1455fc18/bind HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-a946035e3a92e8f3c8d9dd3a1455fc18/invite HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-a946035e3a92e8f3c8d9dd3a1455fc18/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-a946035e3a92e8f3c8d9dd3a1455fc18/revoke HTTP/1.1" 200 -
+[Studio-Server] "POST /api/workspaces/ws-a946035e3a92e8f3c8d9dd3a1455fc18/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/workspaces/ws-a946035e3a92e8f3c8d9dd3a1455fc18/project HTTP/1.1" 403 -

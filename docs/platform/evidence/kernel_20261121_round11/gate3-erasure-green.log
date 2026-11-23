@@ -1,0 +1,31 @@
+test_pending_and_admitted_tokens_are_revoked_during_account_purge (test_m045_gate3_erasure.Gate3ErasureBoundary) ... ok
+test_reviewed_empty_approval_table_does_not_hold_unrelated_account_erasure (test_m045_gate3_erasure.Gate3ErasureBoundary) ... ok
+test_expired_host_token_cannot_be_redeemed (test_m045_gate3_spend_token.Gate3ExpiryAndStale) ... ok
+test_key_rotation_invalidates_old_token (test_m045_gate3_spend_token.Gate3ExpiryAndStale) ... ok
+test_stale_revision_after_admission_fails_closed_without_consume (test_m045_gate3_spend_token.Gate3ExpiryAndStale) ... ok
+test_authenticated_pending_request_and_host_admission_redeem (test_m045_gate3_spend_token.Gate3HttpSecurity) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.825s
+
+OK
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/gate3/request-spend HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/gate3/request-spend HTTP/1.1" 202 -
+[Studio-Server] "POST /api/m045/gate3/redeem HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/gate3/redeem HTTP/1.1" 200 -
+[Studio-Server] "POST /api/m045/gate3/redeem HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/gate3/request-spend HTTP/1.1" 503 -

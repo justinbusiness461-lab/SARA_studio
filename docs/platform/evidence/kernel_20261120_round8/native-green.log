@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: NS-001 native bridge denies web fallback for secure credential
+ok 1 - NS-001 native bridge denies web fallback for secure credential
+  ---
+  duration_ms: 3.682193
+  type: 'test'
+  ...
+# Subtest: NS-002 native credential key and value inputs are bounded
+ok 2 - NS-002 native credential key and value inputs are bounded
+  ---
+  duration_ms: 0.343055
+  type: 'test'
+  ...
+# Subtest: NS-003 native file import must verify SHA and remain unassigned
+ok 3 - NS-003 native file import must verify SHA and remain unassigned
+  ---
+  duration_ms: 7.188773
+  type: 'test'
+  ...
+# Subtest: NS-004 native file rejects invalid digest even if plugin returns a file
+ok 4 - NS-004 native file rejects invalid digest even if plugin returns a file
+  ---
+  duration_ms: 2.658538
+  type: 'test'
+  ...
+# Subtest: NS-005 export rejects false sha before native save
+ok 5 - NS-005 export rejects false sha before native save
+  ---
+  duration_ms: 0.588202
+  type: 'test'
+  ...
+# Subtest: NS-006 audio-route guard requires actual native session plugin
+ok 6 - NS-006 audio-route guard requires actual native session plugin
+  ---
+  duration_ms: 0.247972
+  type: 'test'
+  ...
+# Subtest: NS-007 disconnected audio route and lost focus pause immediately
+ok 7 - NS-007 disconnected audio route and lost focus pause immediately
+  ---
+  duration_ms: 1.498177
+  type: 'test'
+  ...
+# Subtest: NS-008 native store receipts cannot directly assert credits or verification
+ok 8 - NS-008 native store receipts cannot directly assert credits or verification
+  ---
+  duration_ms: 0.252659
+  type: 'test'
+  ...
+# Subtest: NS-009 release config denies remote URLs, requires both native binaries for ship
+ok 9 - NS-009 release config denies remote URLs, requires both native binaries for ship
+  ---
+  duration_ms: 2.131877
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157.338057

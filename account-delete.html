@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Delete your S.A.R.A. Studio account</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#111927;color:#f0f5ff}
+body{max-width:580px;margin:0 auto;padding:clamp(14px,4vw,28px);line-height:1.5}
+main{background:#192438;border:1px solid #41516b;border-radius:16px;padding:clamp(16px,4vw,30px)}
+label{display:block;font-weight:600;margin-top:18px}
+input,button{box-sizing:border-box;width:100%;min-height:48px;margin-top:8px;padding:10px 12px;border-radius:8px}
+input{background:#0d1625;color:#fff;border:1px solid #71859d}
+button{background:#0c7988;border:1px solid #72dbe6;font-weight:700;color:white;cursor:pointer}
+button:disabled{opacity:.7}
+small,p{color:#d3deed}
+#result{margin-top:18px;white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+</head>
+<body><main>
+<h1>Delete your S.A.R.A. Studio account</h1>
+<p>This public page works without opening the app. Sign in below to submit an account deletion request for the account you own.</p>
+<p>When accepted, the request returns <strong>ERASURE_PENDING</strong>: sessions are revoked and public music is unpublished immediately. Personal profile, sessions, and editable social drafts are scheduled for removal. Immutable project history and financial/rights records may require separate retention review; requesting deletion does not mean every record has already been destroyed.</p>
+<form id="deleteForm">
+<label for="handle">Artist handle</label><input id="handle" autocomplete="username" minlength="3" maxlength="30" required>
+<label for="password">Account password</label><input id="password" type="password" autocomplete="current-password" required>
+<label for="confirmation">Type DELETE_MY_ACCOUNT to confirm</label><input id="confirmation" required pattern="DELETE_MY_ACCOUNT" autocomplete="off">
+<button type="submit" id="submit">Submit account deletion request</button>
+</form>
+<p id="result" role="status" aria-live="polite">No deletion request submitted.</p>
+</main>
+<script>
+"use strict";
+document.querySelector("#deleteForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ const out=document.querySelector("#result"),button=document.querySelector("#submit");
+ const handle=document.querySelector("#handle").value;
+ const password=document.querySelector("#password").value;
+ const confirm=document.querySelector("#confirmation").value;
+ button.disabled=true;out.textContent="Submitting request...";
+ try{
+  const response=await fetch("/api/account/delete-request",{
+   method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",
+   credentials:"omit",body:JSON.stringify({handle,password,confirm})
+  });
+  const result=await response.json();
+  if(response.status===202 && result.state==="ERASURE_PENDING" && result.erasureComplete===false){
+   out.textContent="ERASURE_PENDING — request accepted. Sign-in and public publication access have been disabled. Personal data removal remains pending retention checks.";
+   document.querySelector("#deleteForm").reset();
+  }else{
+   out.textContent="Deletion request not accepted. Verify your credentials and confirmation, or contact support. No data has been deleted.";
+  }
+ }catch(_){out.textContent="Unable to confirm the request. No successful deletion receipt was received. Contact support before retrying.";}
+ finally{button.disabled=false;}
+});
+</script></body></html>

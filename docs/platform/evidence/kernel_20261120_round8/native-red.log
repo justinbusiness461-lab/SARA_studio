@@ -1,0 +1,164 @@
+TAP version 13
+# Subtest: NS-001 native bridge denies web fallback for secure credential
+ok 1 - NS-001 native bridge denies web fallback for secure credential
+  ---
+  duration_ms: 2.941082
+  type: 'test'
+  ...
+# Subtest: NS-002 native credential key and value inputs are bounded
+ok 2 - NS-002 native credential key and value inputs are bounded
+  ---
+  duration_ms: 0.317266
+  type: 'test'
+  ...
+# Subtest: NS-003 native file import must verify SHA and remain unassigned
+ok 3 - NS-003 native file import must verify SHA and remain unassigned
+  ---
+  duration_ms: 6.561642
+  type: 'test'
+  ...
+# Subtest: NS-004 native file rejects invalid digest even if plugin returns a file
+ok 4 - NS-004 native file rejects invalid digest even if plugin returns a file
+  ---
+  duration_ms: 2.47333
+  type: 'test'
+  ...
+# Subtest: NS-005 export rejects false sha before native save
+ok 5 - NS-005 export rejects false sha before native save
+  ---
+  duration_ms: 0.63306
+  type: 'test'
+  ...
+# Subtest: NS-006 audio-route guard requires actual native session plugin
+not ok 6 - NS-006 audio-route guard requires actual native session plugin
+  ---
+  duration_ms: 0.763836
+  type: 'test'
+  location: '/tmp/sara-round8/tests/native-store-shell.test.cjs:45:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /NATIVE_HOST_CAPABILITY_UNAVAILABLE/. Input:
+    
+    'TypeError: bridge.listenAudioRouteGuard is not a function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'bridge.listenAudioRouteGuard is not a function'
+  name: 'TypeError'
+  stack: |-
+    /tmp/sara-round8/tests/native-store-shell.test.cjs:48:30
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (/tmp/sara-round8/tests/native-store-shell.test.cjs:48:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara-round8/tests/native-store-shell.test.cjs:48:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: NS-007 disconnected audio route and lost focus pause immediately
+not ok 7 - NS-007 disconnected audio route and lost focus pause immediately
+  ---
+  duration_ms: 0.249514
+  type: 'test'
+  location: '/tmp/sara-round8/tests/native-store-shell.test.cjs:51:1'
+  failureType: 'testCodeFailure'
+  error: 'bridge.listenAudioRouteGuard is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara-round8/tests/native-store-shell.test.cjs:56:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: NS-008 native store receipts cannot directly assert credits or verification
+not ok 8 - NS-008 native store receipts cannot directly assert credits or verification
+  ---
+  duration_ms: 0.221211
+  type: 'test'
+  location: '/tmp/sara-round8/tests/native-store-shell.test.cjs:64:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /INVALID_NATIVE_STORE_EVIDENCE_FIELDS/. Input:
+    
+    'TypeError: bridge.nativeReceiptForHost is not a function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'bridge.nativeReceiptForHost is not a function'
+  name: 'TypeError'
+  stack: |-
+    /tmp/sara-round8/tests/native-store-shell.test.cjs:65:28
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (/tmp/sara-round8/tests/native-store-shell.test.cjs:65:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara-round8/tests/native-store-shell.test.cjs:65:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: NS-009 release config denies remote URLs, requires both native binaries for ship
+not ok 9 - NS-009 release config denies remote URLs, requires both native binaries for ship
+  ---
+  duration_ms: 0.84654
+  type: 'test'
+  location: '/tmp/sara-round8/tests/native-store-shell.test.cjs:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'https'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'https'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sara-round8/tests/native-store-shell.test.cjs:76:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 5
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 108.608406

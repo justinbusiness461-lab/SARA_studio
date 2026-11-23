@@ -1,0 +1,10 @@
+test_legacy_artist_owned_grant_retains_15_second_behavior (test_m045_round20_private_grants.HostPrivatePilotRights) ... ok
+test_rejects_unbound_rights_and_private_authority_spoofing (test_m045_round20_private_grants.HostPrivatePilotRights) ... ok
+test_rejects_unsupported_scope_and_15_second_section (test_m045_round20_private_grants.HostPrivatePilotRights) ... ok
+test_signature_tampering_invalid (test_m045_round20_private_grants.HostPrivatePilotRights) ... ok
+test_signs_held_20_second_exact_window_without_bpm_or_release_clearance (test_m045_round20_private_grants.HostPrivatePilotRights) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 1.093s
+
+OK

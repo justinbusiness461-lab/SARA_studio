@@ -1,0 +1,82 @@
+{
+  "campaign": "PF-COMPLETION-001",
+  "role": "ENGINEER_1_ROUND_5",
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "branch": "feat/platform-identity-and-catalog",
+  "baseline_sha": "6d46be8254617d07521e314b47ec56d29d030fb4",
+  "tested_product_tree_commit_sha": "7d433258624e6fe135ca2dd1ab2581df3b3f1163",
+  "test_environment": "isolated KERNEL 1GiB VM, Python 3.10.12, Node 22.23.2, Chromium installed, Playwright 1.65.1 installed for attempted browser",
+  "suites": [
+    {
+      "name": "python_complete",
+      "command": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "passed": 288,
+      "failed": 0,
+      "skipped": 0,
+      "completed": true,
+      "log": "r5-python-full-final.log",
+      "sha256": "c8e5bbf2fef783c9242d68fd7d3f2f1a68ce0cfce4aafc8666afad6bf2d8eedc"
+    },
+    {
+      "name": "node_complete",
+      "command": "node --test --test-concurrency=1 tests/*.test.cjs",
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "completed": true,
+      "log": "r5-node-full-final.log",
+      "sha256": "7b9b30243d823efec7fec0beb8fa57ecd9032f36a047470af8b79fb83e1b1344"
+    },
+    {
+      "name": "chromium_full_attempt",
+      "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+      "passed_observed": 2,
+      "failed_observed": 1,
+      "completed": false,
+      "executor_timeout": true,
+      "qualification": "FAILED_INCOMPLETE",
+      "failure": "Scratch Surgeon #djTechnique locator.selectOption 12s timeout",
+      "log": "r5-chromium-full.log",
+      "sha256": "e719fb0404302ae31a1cbf3de010d5cd77f9aae6a79bc9d70d5dfad5234d1ef6",
+      "source_scope": "PRE_ACCOUNT_ERASURE_INTERMEDIATE_LOCAL_ROUND5_CANDIDATE; NOT_EXACT_FINAL_SHA",
+      "final_sha_qualification": false
+    }
+  ],
+  "source_files_committed": 13,
+  "owner_operations_qualified": [
+    "TOGGLE_LOCK",
+    "CREATE_MUSIC_VIDEO_GRANT_HOST_CONFIGURED"
+  ],
+  "owner_operations_held": [
+    "REPAINT",
+    "ADD_SCRATCH"
+  ],
+  "native_foundation": {
+    "native_bridge": "CONTRACT_ONLY_NOT_PHYSICAL_NATIVE_PLUGINS",
+    "capacitor": "CONFIG_SCAFFOLD_NO_GENERATED_IOS_ANDROID_PROJECTS",
+    "native_receipt": "INJECTABLE_HOST_VERIFIER_WITH_LEDGER_IDEMPOTENCY; NO_LIVE_STORE_PROVIDER",
+    "account_erasure": "IN_APP_AND_EXTERNAL_REQUEST_ROUTES; SESSION_REVOCATION_AND_UNPUBLISH; PHYSICAL_ERASURE_PENDING",
+    "external_public_deletion_web_page": "NOT_DELIVERED",
+    "physical_device_qa": false,
+    "release_ready": false
+  },
+  "evidence_ladder": {
+    "source": true,
+    "python_node_executed": true,
+    "chromium_qualified": false,
+    "physical_native_qa": false,
+    "provider_credential_verified": false,
+    "creative_approved": false,
+    "main_merged": false
+  },
+  "raw_log_sha256": {
+    "r5-python-full-final.log": "c8e5bbf2fef783c9242d68fd7d3f2f1a68ce0cfce4aafc8666afad6bf2d8eedc",
+    "r5-node-full-final.log": "7b9b30243d823efec7fec0beb8fa57ecd9032f36a047470af8b79fb83e1b1344",
+    "r5-chromium-full.log": "e719fb0404302ae31a1cbf3de010d5cd77f9aae6a79bc9d70d5dfad5234d1ef6",
+    "r5-delete-red.log": "32303e7c763db0aeee00c02c92acd4d9b5c7fabcd1c7a48e56655b5841e8c60f",
+    "r5-delete-green.log": "6c5fe256be92a34e839eea38fd99de025d7b6b54aad363af45b11aaa0c5b01b5",
+    "round5-focused.log": "292a441d12c978e3a43086d0d0c88b9f46c969b7a1c054db7076b30e4f8c9df4",
+    "round5-native-red.log": "675237041580bce1a0d5d4f9f3e69e6b9356b16e94cd3bb62071835f9dcdccbb",
+    "round5-native-green.log": "12452f22b05231c7af357d5db6b38875a259bd4ed8451ab78e951964001bb8fc"
+  }
+}

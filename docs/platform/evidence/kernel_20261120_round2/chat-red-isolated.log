@@ -1,0 +1,231 @@
+test_acc01_entry_does_not_bootstrap_local_user (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc02_signup_login_cross_session_and_revoke (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc03_concurrent_handle_uniqueness_and_bio_sanitization (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc04_cross_owner_cas_and_public_deny (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_acc05_legacy_mutations_are_not_user_bound_and_must_be_blocked (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_profile_and_session_survive_fresh_store (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub01_no_public_listing_without_approval (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub02_unbound_cas_and_rights_always_fail_closed (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub03_explicit_publication_explore_search_stream_unpublish (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_pub04_historical_takes_cannot_become_public (test_platform_identity_and_catalog.PlatformHTTP) ... ok
+test_add_to_playlist_uses_public_catalog_no_private_digest_shortcut (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+test_audio_to_midi_requires_lawful_artifact (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+test_chat_still_rejects_credit_mint_and_unbounded_requests (tests.test_platform_chat_studio.StudioChatRound2) ... ok
+test_foreign_project_denied_before_studio_plan (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+test_generate_is_client_studio_command_not_fake_committed_song (tests.test_platform_chat_studio.StudioChatRound2) ... ERROR
+test_lock_requires_exact_track_and_never_auto_commits (tests.test_platform_chat_studio.StudioChatRound2) ... ERROR
+test_no_target_returns_structured_clarification (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+test_repaint_needs_disambiguated_track_and_bars (tests.test_platform_chat_studio.StudioChatRound2) ... ERROR
+test_repaint_with_explicit_target_is_proposal_not_audio_change (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+test_sample_preview_source_bound_and_unpublished (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+test_scratch_needs_beat_target (tests.test_platform_chat_studio.StudioChatRound2) ... ERROR
+test_soundtrack_grant_requires_existing_authority (tests.test_platform_chat_studio.StudioChatRound2) ... ERROR
+test_source_bound_master_requires_explicit_artist_approval (tests.test_platform_chat_studio.StudioChatRound2) ... FAIL
+
+======================================================================
+ERROR: test_generate_is_client_studio_command_not_fake_committed_song (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 82, in test_generate_is_client_studio_command_not_fake_committed_song
+    self.assertEqual(r["state"],"STUDIO_ACTION_READY")
+KeyError: 'state'
+
+======================================================================
+ERROR: test_lock_requires_exact_track_and_never_auto_commits (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 73, in test_lock_requires_exact_track_and_never_auto_commits
+    self.assertEqual(r["action"],"TOGGLE_LOCK")
+KeyError: 'action'
+
+======================================================================
+ERROR: test_repaint_needs_disambiguated_track_and_bars (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 43, in test_repaint_needs_disambiguated_track_and_bars
+    self.assertEqual(r["state"],"CLARIFICATION_REQUIRED")
+KeyError: 'state'
+
+======================================================================
+ERROR: test_scratch_needs_beat_target (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 55, in test_scratch_needs_beat_target
+    self.assertEqual(r["state"],"CLARIFICATION_REQUIRED")
+KeyError: 'state'
+
+======================================================================
+ERROR: test_soundtrack_grant_requires_existing_authority (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 78, in test_soundtrack_grant_requires_existing_authority
+    self.assertEqual(r["action"],"CREATE_MUSIC_VIDEO_GRANT")
+KeyError: 'action'
+
+======================================================================
+FAIL: test_add_to_playlist_uses_public_catalog_no_private_digest_shortcut (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 96, in test_add_to_playlist_uses_public_catalog_no_private_digest_shortcut
+    self.assertEqual(r[0],403,r[2])
+AssertionError: 400 != 403 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+======================================================================
+FAIL: test_audio_to_midi_requires_lawful_artifact (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 60, in test_audio_to_midi_requires_lawful_artifact
+    self.assertEqual(r[0],403,r[2])
+AssertionError: 400 != 403 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+======================================================================
+FAIL: test_foreign_project_denied_before_studio_plan (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 90, in test_foreign_project_denied_before_studio_plan
+    self.assertEqual(status,403,r)
+AssertionError: 400 != 403 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+======================================================================
+FAIL: test_no_target_returns_structured_clarification (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 26, in test_no_target_returns_structured_clarification
+    self.assertEqual(status,200,data)
+AssertionError: 400 != 200 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+======================================================================
+FAIL: test_repaint_with_explicit_target_is_proposal_not_audio_change (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 49, in test_repaint_with_explicit_target_is_proposal_not_audio_change
+    self.assertEqual(status,200,r)
+AssertionError: 400 != 200 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+======================================================================
+FAIL: test_sample_preview_source_bound_and_unpublished (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 66, in test_sample_preview_source_bound_and_unpublished
+    self.assertEqual(status,200,r)
+AssertionError: 400 != 200 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+======================================================================
+FAIL: test_source_bound_master_requires_explicit_artist_approval (tests.test_platform_chat_studio.StudioChatRound2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/test_platform_chat_studio.py", line 31, in test_source_bound_master_requires_explicit_artist_approval
+    self.assertEqual(status,200,data)
+AssertionError: 400 != 200 : {'status': 'ERROR', 'error': 'INVALID_PLATFORM_REQUEST'}
+
+----------------------------------------------------------------------
+Ran 23 tests in 15.712s
+
+FAILED (failures=7, errors=5)
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-69283edc180c632b31d234ac2a82a9ed HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-69283edc180c632b31d234ac2a82a9ed/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-69283edc180c632b31d234ac2a82a9ed/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-69283edc180c632b31d234ac2a82a9ed/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/platform/chat HTTP/1.1" 400 -

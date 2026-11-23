@@ -1,0 +1,27 @@
+EE
+======================================================================
+ERROR: test_worker_advances_pending_to_completed_with_idempotent_receipt (tests.test_platform_round8_erasure_completion.FullErasureLifecycleWorker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round8/tests/test_platform_round8_erasure_completion.py", line 48, in test_worker_advances_pending_to_completed_with_idempotent_receipt
+    result=self.store.process_account_erasure_lifecycle(studio_root=self.fx.root)
+AttributeError: 'PlatformStore' object has no attribute 'process_account_erasure_lifecycle'
+
+======================================================================
+ERROR: test_worker_holds_nonempty_project_and_preserves_history (tests.test_platform_round8_erasure_completion.FullErasureLifecycleWorker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round8/tests/test_platform_round8_erasure_completion.py", line 58, in test_worker_holds_nonempty_project_and_preserves_history
+    result=self.store.process_account_erasure_lifecycle(studio_root=self.fx.root)
+AttributeError: 'PlatformStore' object has no attribute 'process_account_erasure_lifecycle'
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.433s
+
+FAILED (errors=2)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -

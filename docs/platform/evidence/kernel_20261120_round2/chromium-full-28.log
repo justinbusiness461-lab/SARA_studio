@@ -1,0 +1,211 @@
+TAP version 13
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+not ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 38009.030552
+  type: 'test'
+  location: '/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/m045-dj-grid.browser.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 12000ms exceeded.
+    Call log:
+      - waiting for locator('[data-dj-step="3"]')
+        - locator resolved to <button class="cell" type="button" data-dj-step="3" aria-pressed="false" title="Add chirp · Deck A · step 4">4</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - performing click action
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/m045-dj-grid.browser.cjs:42:43)
+  ...
+# Subtest: HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+ok 2 - HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+  ---
+  duration_ms: 4411.28711
+  type: 'test'
+  ...
+# Subtest: RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+not ok 3 - RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+  ---
+  duration_ms: 59910.824562
+  type: 'test'
+  location: '/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/m045-mobile-endurance.browser.cjs:28:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/m045-mobile-endurance.browser.cjs:52:52)
+  ...
+# Subtest: M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+ok 4 - M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+  ---
+  duration_ms: 24545.668113
+  type: 'test'
+  ...
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 5 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 34600.515765
+  type: 'test'
+  ...
+# Subtest: Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+ok 6 - Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+  ---
+  duration_ms: 18754.895802
+  type: 'test'
+  ...
+# Subtest: Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+ok 7 - Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+  ---
+  duration_ms: 4125.020627
+  type: 'test'
+  ...
+# Subtest: Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+ok 8 - Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+  ---
+  duration_ms: 4642.495814
+  type: 'test'
+  ...
+# Subtest: Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+ok 9 - Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+  ---
+  duration_ms: 3234.705446
+  type: 'test'
+  ...
+# Subtest: Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+ok 10 - Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+  ---
+  duration_ms: 5573.060351
+  type: 'test'
+  ...
+# Subtest: shared-device account B never reads cached A project/attempt pointer
+ok 11 - shared-device account B never reads cached A project/attempt pointer
+  ---
+  duration_ms: 3184.109474
+  type: 'test'
+  ...
+# Subtest: platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+ok 12 - platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+  ---
+  duration_ms: 4441.113491
+  type: 'test'
+  ...
+# Subtest: local offline ScoreCore shell contains zero session or capability bearer tokens
+ok 13 - local offline ScoreCore shell contains zero session or capability bearer tokens
+  ---
+  duration_ms: 3118.754864
+  type: 'test'
+  ...
+# Subtest: authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+ok 14 - authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+  ---
+  duration_ms: 4424.369923
+  type: 'test'
+  ...
+# Subtest: Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+ok 15 - Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+  ---
+  duration_ms: 8162.587751
+  type: 'test'
+  ...
+# Subtest: Studio loads ScoreCore, persists Generate, and reopens the exact revision
+ok 16 - Studio loads ScoreCore, persists Generate, and reopens the exact revision
+  ---
+  duration_ms: 10483.992408
+  type: 'test'
+  ...
+# Subtest: Installed Studio precaches the matching ScoreCore adapter
+ok 17 - Installed Studio precaches the matching ScoreCore adapter
+  ---
+  duration_ms: 4057.712806
+  type: 'test'
+  ...
+# Subtest: Generate reaches verified revision-bound WAV before Play is enabled
+ok 18 - Generate reaches verified revision-bound WAV before Play is enabled
+  ---
+  duration_ms: 19592.454692
+  type: 'test'
+  ...
+# Subtest: audio retrieval failure never presents Generate as playable
+ok 19 - audio retrieval failure never presents Generate as playable
+  ---
+  duration_ms: 7754.825325
+  type: 'test'
+  ...
+# Subtest: fresh Studio process reopens exact R1 and refetches same authorized WAV
+ok 20 - fresh Studio process reopens exact R1 and refetches same authorized WAV
+  ---
+  duration_ms: 27552.991115
+  type: 'test'
+  ...
+# Subtest: R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+ok 21 - R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+  ---
+  duration_ms: 7006.257078
+  type: 'test'
+  ...
+# Subtest: Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+ok 22 - Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+  ---
+  duration_ms: 18280.944424
+  type: 'test'
+  ...
+# AB_DEBUG {"status":"Playing verified revision · 9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080","abStatus":"Selected R1 · historical","ab":{"fromRevisionId":"34632bdd6a513c5232c5784c24001087c635986bc305180aac0150e82505b030","fromPositionSec":3.84706,"fromArtifactId":"b51a30773d7df325a1a93050eccea7b4ad68f3c21eed7968e6978c714cef4d87","toRevisionId":"9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080","toArtifactId":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","toPositionSec":3.84706},"switch":{"generation":1,"operationId":"ab:1:9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080","targetRevisionId":"9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080","artifactId":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","state":"COMPLETE","fromRevisionId":"34632bdd6a513c5232c5784c24001087c635986bc305180aac0150e82505b030","fromPositionSec":3.84706,"toPositionSec":3.84706,"transportSelectedRevision":"9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080","proofRevisionId":"9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080"},"proof":{"projectId":"f3c7a64cb10842eb8e96ae8938954990","revisionId":"9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080","artifactId":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","wavSha256":"81d23d6cd1d75a4798b6f66c3064268862e9919d50588f73155fb23a6d30046b","decodedWavValidity":true,"durationSec":50.5,"transportSelectedRevision":"9bd1696acfaf790df51bcf6420abf15c237a5db80e2467192db11dc760441080"},"playing":true,"currentProject":"f3c7a64cb10842eb8e96ae8938954990","audioElements":[{"src":false,"paused":true,"readyState":0,"currentTime":0},{"src":false,"paused":true,"readyState":0,"currentTime":0},{"src":false,"paused":true,"readyState":0,"currentTime":0},{"src":false,"paused":true,"readyState":0,"currentTime":0}]}
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+not ok 23 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 65760.875035
+  type: 'test'
+  location: '/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/r2-ab.browser.cjs:136:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/r2/SARA_studio-482f1f7a887bb529eb16c6927bcb84d6f1769f03/tests/r2-ab.browser.cjs:159:16)
+  ...
+# Subtest: late R1 A-B response cannot replace newer R2 selection
+ok 24 - late R1 A-B response cannot replace newer R2 selection
+  ---
+  duration_ms: 25009.561966
+  type: 'test'
+  ...
+# Subtest: A/B exposes completion only after transport, proof, artifact and position agree
+ok 25 - A/B exposes completion only after transport, proof, artifact and position agree
+  ---
+  duration_ms: 39858.152426
+  type: 'test'
+  ...
+# Subtest: fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+ok 26 - fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+  ---
+  duration_ms: 57266.519578
+  type: 'test'
+  ...
+# Subtest: RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+ok 27 - RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+  ---
+  duration_ms: 4855.016663
+  type: 'test'
+  ...
+# Subtest: mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+ok 28 - mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+  ---
+  duration_ms: 12110.868879
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 25
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 532123.931453

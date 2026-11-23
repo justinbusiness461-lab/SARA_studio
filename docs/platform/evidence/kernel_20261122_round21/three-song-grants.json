@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "sara.studio.round21.canonical_ingestion_host_gate.v1",
+  "date": "2026-11-22",
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "branch": "feat/platform-identity-and-catalog",
+  "program": "M045 Round 21",
+  "status": "SOURCE_AND_LOCAL_PHYSICAL_PROOF__LIVE_HOST_HOLD",
+  "rightsStatus": "UNVERIFIED_HELD",
+  "commercialReleaseAuthorized": false,
+  "scopeProposed": "private_cinema_pilot",
+  "sourceShaQualified": true,
+  "currentBranchImplementation": {
+    "importerPath": "tools/m045_artist_master_ingestion.py",
+    "importerBlobSha1": "406cb1766bf3ba9a2b731d4fcda2edd54d3eebd7",
+    "newTests": "tests/test_m045_round21_canonical_three_song_player.py",
+    "newTestBlobSha1": "96678fb61c99dd7c526e1cf8995b27333a22cacc",
+    "heldRightsRequireHostCatalog": true,
+    "selectedPlaybackSampleRate": 44100,
+    "preservesArtistOwned48000Path": true,
+    "durableOwner": "existing ProjectManifest/ProjectRevision/CAS",
+    "pilotTimingAuthority": "immutable ProductionTimeline.sections exact sample coordinates"
+  },
+  "localPhysicalEvidence": {
+    "scope": "older uploaded Studio source + new admission adapter in independent local host-policy fixture",
+    "realOriginalSourcesVerified": 3,
+    "localScratchR1RevisionsCreated": 3,
+    "localScratchR2RevisionsCreated": 1,
+    "realMediaWavSha256Readbacks": 4,
+    "freshProcessPythonLawfulReadbacks": 3,
+    "freshProcessStudioHandlerHTTPSourceWav200": 3,
+    "freshProcessStudioHandlerHistoricalR2Http200": 1,
+    "forgedSessionHttp403": true,
+    "testOnlyLocalKeyGrantChecksPassed": 3,
+    "localHostAttestationIsProduction": false,
+    "realHostSignedGrantsIssued": 0,
+    "unmergedStudioAppDeployed": false,
+    "localFocusedAdapterTestsPassed": 8,
+    "redWindowTestsReproducedBeforeFix": 2
+  },
+  "artistSongs": [
+    {
+      "logicalTitle": "Turn The Noise Back On",
+      "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
+      "stagedWavSha256": "6dcf6984e2899eb694507009b7743872fbb84ae0a30a64f68d922acbd1d8b980",
+      "sampleRate": 44100,
+      "totalFrames": 13069476,
+      "pilotStartSample": 11113200,
+      "pilotEndSampleExclusive": 11995200,
+      "pilotFramesAt24fps": 480,
+      "R2StagedMasterSha256": "6136b53588ea1d79c2e587b5481b1f069eebddf6bbca6e5990c3cb4d393913d9"
+    },
+    {
+      "logicalTitle": "If This Is All I Get",
+      "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
+      "stagedWavSha256": "d889ccf2f55ac4b59c242b2377b8bbf3ea9f1310357816a343805522ba99c025",
+      "sampleRate": 44100,
+      "totalFrames": 12789596,
+      "pilotStartSample": 11554200,
+      "pilotEndSampleExclusive": 12436200,
+      "pilotFramesAt24fps": 480
+    },
+    {
+      "logicalTitle": "Outlaws and Echoes",
+      "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
+      "stagedWavSha256": "871a091d2f5b0a03f7f0a4f2917901b84ed42ba24efadae4ec1f635bc388e2a6",
+      "sampleRate": 44100,
+      "totalFrames": 9632036,
+      "pilotStartSample": 8687700,
+      "pilotEndSampleExclusive": 9569700,
+      "pilotFramesAt24fps": 480
+    }
+  ],
+  "grantLedger": {
+    "issuedGrantCount": 0,
+    "canonicalProductionProjectRevisionsCreated": 0,
+    "signature_redacted": true,
+    "grants": [],
+    "blockedReason": "No authenticated production principal/host source catalog, production signer/trust-root and exact-head runtime available in this executor; local test-key signatures are not deliverable authorization"
+  },
+  "certificationGates": {
+    "R21ImporterCodeCommitted": "SOURCE",
+    "LocalRealMediaScratchAndColdProcess": "EXECUTED_PHYSICALLY_VERIFIED_IN_ISOLATED_SNAPSHOT",
+    "CurrentHeadPythonRegression": "NOT_EXECUTED",
+    "CurrentHeadNodeRegression": "NOT_EXECUTED",
+    "CurrentHeadChromiumRegression": "NOT_EXECUTED",
+    "ChromiumBrowserAgainstLocalhost": "BLOCKED_BY_ADMINISTRATOR",
+    "StudioPlayerMobile390Desktop1440": "NOT_VERIFIED",
+    "CommercialReleasePrivateGrant403": "NOT_VERIFIED",
+    "ProductionGrantSigner": "NOT_CONFIGURED",
+    "ArtistCreativeApproval": "NOT_EARNED"
+  },
+  "executorVantageMissing": [
+    "AUTHENTICATED_LIVE_STUDIO_HOST_SOURCE_AND_SIGNER",
+    "EXACT_HEAD_CHECKOUT_FOR_FULL_TEST_SUITES",
+    "CHROMIUM_LOCALHOST_POLICY"
+  ],
+  "owners": {
+    "importer": "SARA_studio Engineer #1",
+    "hostCatalogAndSigner": "SARA_studio platform host/operator",
+    "browserQA": "SARA_studio integration test executor",
+    "commercialRights": "artist/commercial rights authority"
+  },
+  "externalCloudGpuSpendUSD": 0,
+  "publicRepoPrivateDriveURLsOrIDs": false,
+  "releaseReady": false,
+  "nextWakeCondition": "Authenticated production host + exact-head source checkout + browser executor with localhost access and commercial-publication negative tests"
+}

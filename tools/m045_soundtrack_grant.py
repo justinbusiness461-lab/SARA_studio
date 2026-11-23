@@ -104,7 +104,9 @@ def issue_authorized_grant(*,root,request: Mapping,principal_id:str,ring:HostSig
     if not isinstance(request,Mapping):raise GrantIssuerDenied('OBJECT_REQUIRED')
     if any(k in request for k in ('resolved_start_sample','resolved_end_sample_exclusive',
                                    'resolved_start_frame','resolved_end_frame_exclusive','source_pcm_frames',
-                                   'sample_rate','channels','rights_status','signature','signer_key_id')):
+                                   'sample_rate','channels','rights_status','signature','signer_key_id',
+                                   'private_pilot_authorized','approved_start_sample',
+                                   'approved_end_sample_exclusive','commercial_release_authorized')):
         raise GrantIssuerDenied('CLIENT_SAMPLE_COORDINATES_DENIED')
     pid=request.get('projectId');rid=request.get('revisionId');aid=request.get('artifactId')
     cinema=request.get('cinemaProjectId');section_id=request.get('sectionId')
@@ -115,6 +117,9 @@ def issue_authorized_grant(*,root,request: Mapping,principal_id:str,ring:HostSig
                             ('SECTION_ID',section_id,r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}')]:
         if not isinstance(txt,str) or not re.fullmatch(pattern,txt):
             raise GrantIssuerDenied('INVALID_'+name)
+    scope=request.get('scope')
+    if scope not in (None,'private_cinema_pilot'):
+        raise GrantIssuerDenied('UNSUPPORTED_SOUNDTRACK_GRANT_SCOPE')
     fps=request.get('fps','24/1')
     if fps not in ('24/1','30000/1001'):raise GrantIssuerDenied('UNSUPPORTED_VIDEO_FPS')
     fps_num,fps_den=map(int,fps.split('/'))
@@ -133,9 +138,60 @@ def issue_authorized_grant(*,root,request: Mapping,principal_id:str,ring:HostSig
         raise GrantIssuerDenied('ACCEPTED_AUDIO_ARTIFACT_MISMATCH')
     rate,channels,count,pcm_digest=_wav_identity(audio)
     rights=rights_policy(pid,rid,aid,principal_id)
-    if rights not in ('ARTIST_OWNED','LICENSED_FOR_CINEMA'):
-        raise GrantIssuerDenied('RIGHTS_NOT_HOST_ATTESTED')
-    start,end=_section_bounds(observed['productionTimeline'],section_id,rate,count)
+    if scope=='private_cinema_pilot':
+        # Only the host-owned rights callback may permit unverified audio for
+        # a bounded, non-commercial private preview. Client flags do nothing.
+        if (not isinstance(rights,Mapping)
+            or rights.get('rights_status')!='UNVERIFIED_HELD'
+            or rights.get('private_pilot_authorized') is not True
+            or rights.get('principal_id')!=principal_id
+            or rights.get('revision_id')!=rid
+            or rights.get('artifact_id')!=aid
+            or rights.get('cinema_project_id')!=cinema):
+            raise GrantIssuerDenied('PRIVATE_PILOT_HOST_RIGHTS_NOT_ATTESTED')
+        # Reuse Studio's revision-backed timeline; do not infer exact samples
+        # from the unqualified 120 BPM coordinate scaffold. Host must also
+        # independently attest the *same* source window, by exact integers.
+        sections=observed.get('productionTimeline',{}).get('sections',[])
+        if not isinstance(sections,list):
+            raise GrantIssuerDenied('CANONICAL_SAMPLE_SECTIONS_UNAVAILABLE')
+        matches=[sec for sec in sections if isinstance(sec,Mapping)
+                 and sec.get('id')==section_id]
+        if len(matches)!=1:
+            raise GrantIssuerDenied('UNKNOWN_OR_AMBIGUOUS_CANONICAL_SECTION')
+        sec=matches[0]
+        start,end=sec.get('start_sample'),sec.get('end_sample_exclusive')
+        # Host-owned multi-window policy: each requested section is independently
+        # matched to its immutable timeline coordinates. Legacy flat one-window
+        # policies remain supported; client-supplied coordinates never are.
+        approved=rights
+        if 'approved_sections' in rights:
+            window_map=rights['approved_sections']
+            if not isinstance(window_map,Mapping):
+                raise GrantIssuerDenied('PRIVATE_PILOT_APPROVED_SECTION_MAP_INVALID')
+            approved=window_map.get(section_id)
+            if not isinstance(approved,Mapping):
+                raise GrantIssuerDenied('PRIVATE_PILOT_SECTION_NOT_HOST_ATTESTED')
+            approved_start=approved.get('start_sample')
+            approved_end=approved.get('end_sample_exclusive')
+        else:
+            approved_start=approved.get('approved_start_sample')
+            approved_end=approved.get('approved_end_sample_exclusive')
+        if (type(start) is not int or type(end) is not int
+            or type(sec.get('sample_rate')) is not int
+            or sec['sample_rate']!=rate or not 0<=start<end<=count
+            or end-start not in (19*rate,20*rate)
+            or type(approved_start) is not int
+            or type(approved_end) is not int
+            or approved_start!=start or approved_end!=end):
+            raise GrantIssuerDenied('PRIVATE_PILOT_EXACT_WINDOW_NOT_HOST_APPROVED')
+        rights_status='UNVERIFIED_HELD'
+    else:
+        # Existing commercially cleared / licensed issuer path unchanged.
+        if rights not in ('ARTIST_OWNED','LICENSED_FOR_CINEMA'):
+            raise GrantIssuerDenied('RIGHTS_NOT_HOST_ATTESTED')
+        rights_status=rights
+        start,end=_section_bounds(observed['productionTimeline'],section_id,rate,count)
     frame0,frame1=_frame_covering_window(start,end,rate,fps_num,fps_den)
     now=float(time.time() if now is None else now)
     if not math.isfinite(now) or now<0:raise GrantIssuerDenied('INVALID_HOST_TIME')
@@ -149,11 +205,15 @@ def issue_authorized_grant(*,root,request: Mapping,principal_id:str,ring:HostSig
            'resolved_end_sample_exclusive':end,'resolved_start_frame':frame0,
            'resolved_end_frame_exclusive':frame1,'fps_numerator':fps_num,
            'fps_denominator':fps_den,'cinema_project_id':cinema,
-           'rights_status':rights,
+           'rights_status':rights_status,
            'production_timeline_digest':observed['revision'].get('productionTimelineDigest'),
            'lyric_timeline_revision_digest':observed['revision'].get('lyricTimelineDigest'),
            'section_id':section_id,'issued_at':now,'expires_at':now+300,
            'claim_ceiling':'SIGNED_ISSUER_AUTHORIZED_NOT_CINEMA_MEASURED_OR_APPROVED'}
+    if scope=='private_cinema_pilot':
+        grant.update({'scope':'private_cinema_pilot',
+                      'commercial_release_authorized':False,
+                      'claim_ceiling':'PRIVATE_NONCOMMERCIAL_CINEMA_PILOT_ONLY_NOT_RELEASE_CLEARED'})
     # DJ marks are not playable scratch evidence; no synthetic DJ cue truth.
     signed=hmac.new(ring.require_active_key(),_canonical(grant),hashlib.sha256).hexdigest()
     return {**grant,'signature':signed}

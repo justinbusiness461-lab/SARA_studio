@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "sara.studio.r19.real_media_execution_receipt.v1",
+  "date": "2026-11-22",
+  "owner": "SARA_studio",
+  "scope": "REAL_MEDIA_LOCAL_STAGING_NOT_STUDIO_COMMITTED",
+  "provenance": {
+    "sourceIdentity": "Three artist master source SHA-256s previously independently verified",
+    "sourceRightsStatus": "UNVERIFIED_HELD",
+    "mediaTagsNote": "Originals contain Suno generation provenance metadata; media possession alone does not assert commercial rights.",
+    "externalSpendUSD": 0,
+    "privateDriveIdentifiersCommitted": false
+  },
+  "focusedTests": {
+    "redObserved": true,
+    "green": 4,
+    "failed": 0,
+    "skipped": 0,
+    "resourceWarnings": 0,
+    "fullRepoPythonRun": false,
+    "fullRepoNodeRun": false,
+    "fullRepoChromiumRun": false
+  },
+  "studioAuthority": {
+    "canonicalProjectRevisionsCommitted": 0,
+    "hostSignedSoundtrackGrantsIssued": 0,
+    "privateCinemaPilotHostAuthorized": false,
+    "StudioPlayerColdReopenExecuted": false,
+    "creativeApproved": false,
+    "productionQualified": false
+  },
+  "r1Staged": [
+    {
+      "title": "Turn The Noise Back On",
+      "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
+      "wavSha256": "6dcf6984e2899eb694507009b7743872fbb84ae0a30a64f68d922acbd1d8b980",
+      "decodedPcmSha256": "e2f0208c39cede2033178aff049d4b4bb4fbae7f33c656e5f5dc5d07a6bc064d",
+      "sampleRate": 44100,
+      "channels": 2,
+      "frames": 13069476,
+      "pilotStartSample": 11113200,
+      "pilotEndSampleExclusive": 11995200,
+      "pilotSourceFrame24fpsStart": 6048,
+      "pilotSourceFrame24fpsEndExclusive": 6528
+    },
+    {
+      "title": "If This Is All I Get",
+      "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
+      "wavSha256": "d889ccf2f55ac4b59c242b2377b8bbf3ea9f1310357816a343805522ba99c025",
+      "decodedPcmSha256": "5c13dbcf0b59b56e691ea0a77d18b831f60158cf280c141fc81519cc5ae9612f",
+      "sampleRate": 44100,
+      "channels": 2,
+      "frames": 12789596,
+      "pilotStartSample": 11554200,
+      "pilotEndSampleExclusive": 12436200,
+      "pilotSourceFrame24fpsStart": 6288,
+      "pilotSourceFrame24fpsEndExclusive": 6768
+    },
+    {
+      "title": "Outlaws and Echoes",
+      "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
+      "wavSha256": "871a091d2f5b0a03f7f0a4f2917901b84ed42ba24efadae4ec1f635bc388e2a6",
+      "decodedPcmSha256": "00388e5dadf019b2cf878b7e7ed658e599e20b63b3118dab85957a5b511c794b",
+      "sampleRate": 44100,
+      "channels": 2,
+      "frames": 9632036,
+      "pilotStartSample": 8687700,
+      "pilotEndSampleExclusive": 9569700,
+      "pilotSourceFrame24fpsStart": 4728,
+      "pilotSourceFrame24fpsEndExclusive": 5208
+    }
+  ],
+  "nonDestructiveMastering": {
+    "song": "Turn The Noise Back On",
+    "sourceWavSha256": "6dcf6984e2899eb694507009b7743872fbb84ae0a30a64f68d922acbd1d8b980",
+    "candidateWavSha256": "6136b53588ea1d79c2e587b5481b1f069eebddf6bbca6e5990c3cb4d393913d9",
+    "candidatePcmSha256": "a7c5d364cd50124a91071d16db604fe663bff0c03b4d47a5b46cd23dcba75520",
+    "frames": 13069476,
+    "targetLUFS": -14,
+    "targetTruePeakDBTP": -1,
+    "measuredLUFS": -13.95,
+    "measuredTruePeakDBTP": -1,
+    "R1SourcePreserved": true,
+    "R2IsProjectRevision": false
+  },
+  "localEvidenceBundle": {
+    "filename": "SARA_Studio_R19_host_staging_and_mastering_evidence_20261122.zip",
+    "sha256": "cbb60381f29ec7d0b80252376a8edae5841b82735f868897e53935fd2ae0aa08",
+    "includes": "R1/R2 20-second comparison; full three-song identity manifest; RED and GREEN test logs; executable offline staging reproducer; loudness analysis"
+  },
+  "blockers": [
+    {
+      "owner": "SARA_studio host operator",
+      "edge": "Commit all three 44.1kHz immutable CAS+ProjectRevision associations with host rights catalog at UNVERIFIED_HELD, preserve readback"
+    },
+    {
+      "owner": "SARA_studio issuer engineer",
+      "edge": "Extend bounded pilot rights policy, 20s and full-track scopes; never use 120 BPM placeholder; host signer must authorize real grants"
+    },
+    {
+      "owner": "SARA_studio QA executor",
+      "edge": "Run full exact-HEAD Python Node Chromium and Studio player cold-process reopen; no historical result reused"
+    },
+    {
+      "owner": "Artist/commercial rights host",
+      "edge": "Verify actual Suno-era contractual rights and commercial permission before publication"
+    }
+  ],
+  "specConflicts": [
+    "The fixed [0,882000) pilot targets track start, whereas measured high-energy Turn The Noise passage is [11113200,11995200) samples. Both are 20 seconds; they must not be confused.",
+    "Three songs times two scopes implies six signed grant instances unless explicitly grouped as three descriptors containing two independently authorized windows.",
+    "Existing grant issuer's default section cap is 15s, and grants expire 300s after issue; publication of stale signed descriptors cannot be treated as live current authorization."
+  ]
+}

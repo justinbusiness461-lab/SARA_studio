@@ -1,0 +1,41 @@
+TAP version 13
+# Subtest: Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+ok 1 - Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+  ---
+  duration_ms: 12100.319837
+  type: 'test'
+  ...
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+ok 2 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 39847.901964
+  type: 'test'
+  ...
+# Subtest: late R1 A-B response cannot replace newer R2 selection
+ok 3 - late R1 A-B response cannot replace newer R2 selection
+  ---
+  duration_ms: 15771.238886
+  type: 'test'
+  ...
+# Subtest: A/B exposes completion only after transport, proof, artifact and position agree
+not ok 4 - A/B exposes completion only after transport, proof, artifact and position agree
+  ---
+  duration_ms: 51673.729749
+  type: 'test'
+  location: '/tmp/sj3-platform/baseline/SARA_studio-862a7ed11f12835b92c4f0b5673241ae4362b8c2/tests/r2-ab.browser.cjs:215:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 15000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/tmp/sj3-platform/baseline/SARA_studio-862a7ed11f12835b92c4f0b5673241ae4362b8c2/tests/r2-ab.browser.cjs:249:14)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 120064.582461

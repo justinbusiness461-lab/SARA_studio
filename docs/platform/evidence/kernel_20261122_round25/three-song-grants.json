@@ -1,0 +1,85 @@
+{
+  "canonicalProjectsCreatedInStaging": 3,
+  "commercialReleaseAuthorized": false,
+  "creativeApproved": false,
+  "durableRevisionRecordsCreatedInStaging": 7,
+  "grants": [
+    {
+      "durationSeconds": 19,
+      "globalFrameEndExclusive": 5952,
+      "globalFrameStart": 5496,
+      "sampleRate": 44100,
+      "sampleWindow": [
+        10098900,
+        10936800
+      ],
+      "sectionId": "s15_229_248",
+      "signatureValidInStaging": true,
+      "signature_redacted": true,
+      "sourceRevisionId": "8ba16522dd63b72ab144aa86d661e3b7516d2729fbd6e558af951f15da621ecb",
+      "title": "Turn The Noise Back On"
+    },
+    {
+      "durationSeconds": 20,
+      "globalFrameEndExclusive": 6528,
+      "globalFrameStart": 6048,
+      "sampleRate": 44100,
+      "sampleWindow": [
+        11113200,
+        11995200
+      ],
+      "sectionId": "pilot_252_272",
+      "signatureValidInStaging": true,
+      "signature_redacted": true,
+      "sourceRevisionId": "8ba16522dd63b72ab144aa86d661e3b7516d2729fbd6e558af951f15da621ecb",
+      "title": "Turn The Noise Back On"
+    },
+    {
+      "durationSeconds": 20,
+      "globalFrameEndExclusive": 6768,
+      "globalFrameStart": 6288,
+      "sampleRate": 44100,
+      "sampleWindow": [
+        11554200,
+        12436200
+      ],
+      "sectionId": "pilot_262_282",
+      "signatureValidInStaging": true,
+      "signature_redacted": true,
+      "sourceRevisionId": "df3785d4ad234654790043a77d96cba0ed98a048cacad578429f5e77324a36b1",
+      "title": "If This Is All I Get"
+    },
+    {
+      "durationSeconds": 20,
+      "globalFrameEndExclusive": 5208,
+      "globalFrameStart": 4728,
+      "sampleRate": 44100,
+      "sampleWindow": [
+        8687700,
+        9569700
+      ],
+      "sectionId": "pilot_197_217",
+      "signatureValidInStaging": true,
+      "signature_redacted": true,
+      "sourceRevisionId": "875a9b2e09095c9bb6e9ef9207ff301f18024b3e99fdbb847ccafd0855c40a70",
+      "title": "Outlaws and Echoes"
+    }
+  ],
+  "hostPolicy": "ephemeral_staging_only",
+  "issuedGrantCount": 4,
+  "negativeHTTP": {
+    "bad_session": 403,
+    "client_samples": 403,
+    "commercial_scope": 403,
+    "foreign_section": 403
+  },
+  "playableRevisionsCreatedInStaging": 4,
+  "privatePilotAuthorized": true,
+  "productionIssuedGrantCount": 0,
+  "productionQualified": false,
+  "rightsStatus": "UNVERIFIED_HELD",
+  "schemaVersion": "sara.studio.r25.local.private.grants.v1",
+  "signature_redacted": true,
+  "stagingIssuedGrantCount": 4,
+  "status": "LOCAL_STAGING_ONLY_PRODUCTION_UNQUALIFIED"
+}

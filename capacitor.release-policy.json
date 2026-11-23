@@ -1,0 +1,40 @@
+{
+  "schema": "sara.capacitor.release.policy.v1",
+  "productionReleaseAuthorized": false,
+  "webDir": "www",
+  "ios": {
+    "requiredPhysicalDeviceQa": true,
+    "requiresSignedArchive": true,
+    "requiresPrivacyManifestReview": true,
+    "requiresStoreKitProviderVerification": true
+  },
+  "android": {
+    "requiredPhysicalDeviceQa": true,
+    "requiresSignedAppBundle": true,
+    "requiresDataSafetyReview": true,
+    "requiresPlayBillingProviderVerification": true,
+    "requiresPublicDeletionUrl": true
+  },
+  "stores": {
+    "billing": {
+      "hostVerifiedOnly": true,
+      "noClientCredits": true
+    },
+    "accountDeletion": {
+      "webRequestRoute": "/account/delete",
+      "internetHttpsVerified": false
+    }
+  },
+  "nativeProjects": {
+    "ios": "NOT_GENERATED",
+    "android": "NOT_GENERATED"
+  },
+  "releaseGates": [
+    "REAL_NATIVE_PLUGINS_UNIMPLEMENTED",
+    "SIGNED_IOS_ARCHIVE_UNVERIFIED",
+    "SIGNED_ANDROID_AAB_UNVERIFIED",
+    "PHYSICAL_DEVICE_AUDIO_ROUTE_UNVERIFIED",
+    "HOST_BILLING_RECEIPTS_UNVERIFIED",
+    "PUBLIC_DELETION_URL_NOT_DEPLOYED"
+  ]
+}

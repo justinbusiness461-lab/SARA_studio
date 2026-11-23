@@ -1,0 +1,75 @@
+{
+  "campaign": "PF-COMPLETION-001",
+  "workstream": "ENGINEER_1_PLATFORM_ROUND_4",
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "repository_id": "1427534706",
+  "branch": "feat/platform-identity-and-catalog",
+  "source_baseline_sha": "546c6a6def951b020f5a42a2c03415751d281af3",
+  "tested_product_tree_commit_sha": "6abea201e0f66143f809a9b8c2d67c790258308c",
+  "execution_date": "2026-11-20",
+  "suites": [
+    {
+      "name": "python",
+      "command": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "passed": 279,
+      "failed": 0,
+      "skipped": 0,
+      "log": "python-full.log",
+      "sha256": "54e528aa5a43e139ed1e94564773bf29f6a8df003c983ed0944448eee570ecf7"
+    },
+    {
+      "name": "node",
+      "command": "node --test --test-concurrency=1 tests/*.test.cjs",
+      "passed": 39,
+      "failed": 0,
+      "skipped": 0,
+      "log": "node-full.log",
+      "sha256": "cb475b14f092a7e2357fcaa34e2570d267d12a4ff6b478b511b203c904ea8d77"
+    },
+    {
+      "name": "chromium_full_first",
+      "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "log": "chromium-full-28.log",
+      "sha256": "bf337db198838d537d2ab7ce01c50c1090727ed97fb63e0252d3d71fe6b38aa2"
+    },
+    {
+      "name": "chromium_full_repeat",
+      "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "log": "chromium-repeat-28.log",
+      "sha256": "8eb0aedcf9a00e26ee6e67cfd766991d4e835d867b4768011d2c289672e79ffb"
+    }
+  ],
+  "unique_test_total": 346,
+  "total_executions_including_browser_repeat": 374,
+  "source_blob_readback_count": 14,
+  "evidence_sha256_independent_github_raw_readback": "MATCHED_PYTHON_NODE_FIRST_BROWSER",
+  "certification": {
+    "source": true,
+    "executed": true,
+    "physically_verified_scope": "WAV_SHA256_DIGEST_REVISION_READBACK_AND_MASTER_TEST_FIXTURE",
+    "automated_regression_qualified": true,
+    "release_ready": false,
+    "creative_approved": false,
+    "independent_mastering_meter_accredited": false,
+    "deployed": false,
+    "android_hardware_tested": false,
+    "chat_protected_effects_qualified": [
+      "MASTER",
+      "TRANSCRIBE_MIDI_AS_UNPUBLISHED_P3_CANDIDATE",
+      "PUBLISH_WITH_HOST_RIGHTS"
+    ],
+    "chat_protected_effects_held": [
+      "REPAINT",
+      "ADD_SCRATCH",
+      "TOGGLE_LOCK",
+      "CREATE_MUSIC_VIDEO_GRANT"
+    ],
+    "browser_main_thread_stall_root_cause_exclusively_proven": false
+  }
+}

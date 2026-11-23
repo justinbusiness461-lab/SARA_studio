@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+ok 1 - Scratch Surgeon grid saves exact DJ event and restores via canonical revision
+  ---
+  duration_ms: 14704.233564
+  type: 'test'
+  ...
+# Subtest: HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+ok 2 - HVC003 mobile grant: 48px truthful HTTP-503 and success without film proof, stale response discarded
+  ---
+  duration_ms: 2126.567764
+  type: 'test'
+  ...
+# Subtest: RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+ok 3 - RS-002 mobile 390px R1→R2→A/B→Proof→Restore, stale switch and failed reopen
+  ---
+  duration_ms: 32274.289313
+  type: 'test'
+  ...
+# Subtest: M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+ok 4 - M045 real HTTP multi-take audition, explicit selections, cold browser reload and request fencing
+  ---
+  duration_ms: 9213.724516
+  type: 'test'
+  ...
+# Subtest: M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+ok 5 - M045 Studio UI submits revision-fenced attempt and never fabricates physical proof
+  ---
+  duration_ms: 10473.427725
+  type: 'test'
+  ...
+# Subtest: R12-A: six viewports keep accessible zoom, thumb dock and 3-column wide composition
+ok 6 - R12-A: six viewports keep accessible zoom, thumb dock and 3-column wide composition
+  ---
+  duration_ms: 2389.138985
+  type: 'test'
+  ...
+# Subtest: R12-B: PCM level never advertises playback until authorized WAV plays; generation stages never fake approval
+ok 7 - R12-B: PCM level never advertises playback until authorized WAV plays; generation stages never fake approval
+  ---
+  duration_ms: 4632.079278
+  type: 'test'
+  ...
+# Subtest: R12-C: committed receipt never claims new audio playable or creative approval without authoritative WAV
+ok 8 - R12-C: committed receipt never claims new audio playable or creative approval without authoritative WAV
+  ---
+  duration_ms: 5364.759098
+  type: 'test'
+  ...
+# Subtest: Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+ok 9 - Wave004 390px operator requests lawful plans and sample previews without current revision mutation
+  ---
+  duration_ms: 7427.873945
+  type: 'test'
+  ...
+# Subtest: Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+ok 10 - Wave004 six viewport shell shows truthful P3 candidate, studio-only preview, mastering preset
+  ---
+  duration_ms: 2784.679306
+  type: 'test'
+  ...
+# Subtest: Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+ok 11 - Wave004 real authorized artist journey: FM preview, P3 estimate, mastered immutable R3
+  ---
+  duration_ms: 2441.578646
+  type: 'test'
+  ...
+# Subtest: Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+ok 12 - Wave004 unsaved mobile project fails visibly instead of rejecting a promise
+  ---
+  duration_ms: 1204.505958
+  type: 'test'
+  ...
+# Subtest: Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+ok 13 - Wave004 corrupted mastered WAV cannot become verified merely because commit succeeded
+  ---
+  duration_ms: 2737.309239
+  type: 'test'
+  ...
+# Subtest: shared-device account B never reads cached A project/attempt pointer
+ok 14 - shared-device account B never reads cached A project/attempt pointer
+  ---
+  duration_ms: 1974.498906
+  type: 'test'
+  ...
+# Subtest: platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+ok 15 - platform 360/390 mobile sign-in, real profile, Explore empty, private Library and logout
+  ---
+  duration_ms: 2205.569969
+  type: 'test'
+  ...
+# Subtest: local offline ScoreCore shell contains zero session or capability bearer tokens
+ok 16 - local offline ScoreCore shell contains zero session or capability bearer tokens
+  ---
+  duration_ms: 1180.203988
+  type: 'test'
+  ...
+# Subtest: authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+ok 17 - authorized browser Studio R2 publish, Explore stream hash, unpublish denies replay
+  ---
+  duration_ms: 1891.405768
+  type: 'test'
+  ...
+# Subtest: Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+ok 18 - Wave2 360px real playlist, workspace, credits and Chat use authenticated account
+  ---
+  duration_ms: 17087.900463
+  type: 'test'
+  ...
+# Subtest: Studio loads ScoreCore, persists Generate, and reopens the exact revision
+ok 19 - Studio loads ScoreCore, persists Generate, and reopens the exact revision
+  ---
+  duration_ms: 6886.285506
+  type: 'test'
+  ...
+# Subtest: Installed Studio precaches the matching ScoreCore adapter
+ok 20 - Installed Studio precaches the matching ScoreCore adapter
+  ---
+  duration_ms: 1563.586052
+  type: 'test'
+  ...
+# Subtest: Generate reaches verified revision-bound WAV before Play is enabled
+ok 21 - Generate reaches verified revision-bound WAV before Play is enabled
+  ---
+  duration_ms: 6421.464537
+  type: 'test'
+  ...
+# Subtest: audio retrieval failure never presents Generate as playable
+ok 22 - audio retrieval failure never presents Generate as playable
+  ---
+  duration_ms: 5465.15059
+  type: 'test'
+  ...
+# Subtest: fresh Studio process reopens exact R1 and refetches same authorized WAV
+ok 23 - fresh Studio process reopens exact R1 and refetches same authorized WAV
+  ---
+  duration_ms: 12796.103744
+  type: 'test'
+  ...
+# Subtest: R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+ok 24 - R1/R2 A/B releases old verified WAV decoders without losing 50ms position or revision authority
+  ---
+  duration_ms: 2954.611467
+  type: 'test'
+  ...
+# Subtest: Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+ok 25 - Verse 2 Bass -12 creates lawful R2 and preserves non-target SongSpec
+  ---
+  duration_ms: 8880.578734
+  type: 'test'
+  ...
+# Subtest: R1/R2 A-B selects exact revision audio and preserves musical position
+ok 26 - R1/R2 A-B selects exact revision audio and preserves musical position
+  ---
+  duration_ms: 18470.528268
+  type: 'test'
+  ...
+# Subtest: late R1 A-B response cannot replace newer R2 selection
+ok 27 - late R1 A-B response cannot replace newer R2 selection
+  ---
+  duration_ms: 9839.967547
+  type: 'test'
+  ...
+# Subtest: A/B exposes completion only after transport, proof, artifact and position agree
+ok 28 - A/B exposes completion only after transport, proof, artifact and position agree
+  ---
+  duration_ms: 14279.953188
+  type: 'test'
+  ...
+# Subtest: fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+ok 29 - fresh server/browser preserves R2 current, R1/R2 history, exact WAVs and A/B
+  ---
+  duration_ms: 17351.8142
+  type: 'test'
+  ...
+# Subtest: RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+ok 30 - RS-001/002 six viewport zero overflow, dock parity and thumbs-first layout
+  ---
+  duration_ms: 3529.016291
+  type: 'test'
+  ...
+# Subtest: mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+ok 31 - mobile project R1 save, cold reload and dock delegates to canonical transport without fake proof
+  ---
+  duration_ms: 5590.324134
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 246612.174534

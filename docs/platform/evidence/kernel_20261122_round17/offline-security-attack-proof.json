@@ -1,0 +1,30 @@
+{
+  "diagnostic": {
+    "bearerValuesNotRecordedInAudit": true,
+    "credentialBootstrapVariableNamesObserved": true,
+    "navigationFromServiceWorker": true,
+    "navigationStatus": 200,
+    "navigatorReportedOnline": false,
+    "offlineMarkerMissing": true,
+    "workerControlled": true
+  },
+  "failedBoundary": "offline service worker navigation preferred locally reachable credential-bearing online bootstrap over sanitized cache",
+  "failingSourceSha": "0e1dae2694e7f5cb8421baa3d30d9c6cc55ad735",
+  "findingId": "SARA-R17-P0-OFFLINE-001",
+  "fullBrowserAfterRepair": "33/33 PASS if complete final regression matches this receipt",
+  "minimumRepair": "Service worker checks self.navigator.onLine === false before navigation fetch; returns sanitized offline CacheStorage document",
+  "originalFullBrowser": {
+    "executed": 33,
+    "failed": 1,
+    "passed": 32,
+    "skipped": 0
+  },
+  "originalTestAssertionsUnchanged": true,
+  "originalTestName": "local offline ScoreCore shell contains zero session or capability bearer tokens",
+  "productionSecurityRelease": "HOLD",
+  "repairedSourceSha": "7dc7a7c31a7786363a62ead3d1581cd14210e4b3",
+  "repo": "justinbusiness461-lab/SARA_studio",
+  "severity": "P0-security-credential-isolation",
+  "status": "RED_REPRODUCED_AND_GREEN_TESTED",
+  "targetedOfflineTestAfterRepair": "PASS"
+}

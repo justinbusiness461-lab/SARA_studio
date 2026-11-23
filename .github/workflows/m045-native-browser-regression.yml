@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - feat/m045-native-generation-attempt
+      - feat/platform-identity-and-catalog
+  pull_request:
+    branches:
+      - main
+      - feat/m045-native-generation-attempt
   workflow_dispatch:
 
 permissions:
@@ -33,21 +38,47 @@ jobs:
           set -euo pipefail
           echo "CHROMIUM_PATH=$(node -e "process.stdout.write(require('playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
           node -e "const {chromium}=require('playwright'); console.log('Playwright Chromium:',chromium.executablePath())"
-      - name: Python repository tests with zero skips
+      - name: Complete Python repository tests with zero skips
+        env:
+          PYTHON_MIN_TESTS: '635'
         shell: bash
         run: |
           set -euo pipefail
           PYTHONPATH=tools:tests python3 -m unittest discover -s tests -p 'test_*.py' -v 2>&1 | tee /tmp/m045-python.log
-          ! grep -E 'skipped=[1-9][0-9]*' /tmp/m045-python.log
-      - name: All 22 Node tests, including Playwright
+          count=$(awk '/^Ran [0-9]+ tests in / {n=$2} END {print n}' /tmp/m045-python.log)
+          test -n "$count"
+          test "$count" -ge "$PYTHON_MIN_TESTS"
+          ! grep -Eq '(^FAILED|skipped=[1-9][0-9]*)' /tmp/m045-python.log
+      - name: All Node tests with zero skips
+        env:
+          NODE_MIN_TESTS: '51'
         shell: bash
         run: |
           set -euo pipefail
           node --test --test-concurrency=1 tests/*.cjs 2>&1 | tee /tmp/m045-node.log
-          grep -Eq '^# tests 22$' /tmp/m045-node.log
-          grep -Eq '^# pass 22$' /tmp/m045-node.log
+          count=$(awk '/^# tests / {n=$3} END {print n}' /tmp/m045-node.log)
+          passed=$(awk '/^# pass / {n=$3} END {print n}' /tmp/m045-node.log)
+          test -n "$count"
+          test "$count" -ge "$NODE_MIN_TESTS"
+          test "$passed" -eq "$count"
           grep -Eq '^# fail 0$' /tmp/m045-node.log
           grep -Eq '^# skipped 0$' /tmp/m045-node.log
+          grep -Eq '^# cancelled 0$' /tmp/m045-node.log
+      - name: Dedicated Playwright Chromium suite with zero skips
+        env:
+          BROWSER_MIN_TESTS: '34'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test --test-concurrency=1 tests/*.browser.cjs 2>&1 | tee /tmp/m045-browser.log
+          count=$(awk '/^# tests / {n=$3} END {print n}' /tmp/m045-browser.log)
+          passed=$(awk '/^# pass / {n=$3} END {print n}' /tmp/m045-browser.log)
+          test -n "$count"
+          test "$count" -ge "$BROWSER_MIN_TESTS"
+          test "$passed" -eq "$count"
+          grep -Eq '^# fail 0$' /tmp/m045-browser.log
+          grep -Eq '^# skipped 0$' /tmp/m045-browser.log
+          grep -Eq '^# cancelled 0$' /tmp/m045-browser.log
       - name: Retain exact regression logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,4 +87,5 @@ jobs:
           path: |
             /tmp/m045-node.log
             /tmp/m045-python.log
+            /tmp/m045-browser.log
           if-no-files-found: warn

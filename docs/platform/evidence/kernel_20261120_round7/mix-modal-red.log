@@ -1,0 +1,125 @@
+EEE..........EEE
+======================================================================
+ERROR: test_exact_authorized_recipe_produces_revision_bound_wav_and_cold_reconstruction (tests.test_platform_round7_mix_owner.OwnedMixRecipe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_mix_owner.py", line 38, in test_exact_authorized_recipe_produces_revision_bound_wav_and_cold_reconstruction
+    from m045_stem_reconstruction_owner import authorized_reconstruct_mix
+ModuleNotFoundError: No module named 'm045_stem_reconstruction_owner'
+
+======================================================================
+ERROR: test_locked_tracks_reject_rendering_from_reinterpretation (tests.test_platform_round7_mix_owner.OwnedMixRecipe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_mix_owner.py", line 65, in test_locked_tracks_reject_rendering_from_reinterpretation
+    from m045_stem_reconstruction_owner import authorized_reconstruct_mix
+ModuleNotFoundError: No module named 'm045_stem_reconstruction_owner'
+
+======================================================================
+ERROR: test_wrong_recipe_timeline_and_foreign_principal_denied_before_publication (tests.test_platform_round7_mix_owner.OwnedMixRecipe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_mix_owner.py", line 54, in test_wrong_recipe_timeline_and_foreign_principal_denied_before_publication
+    from m045_stem_reconstruction_owner import authorized_reconstruct_mix
+ModuleNotFoundError: No module named 'm045_stem_reconstruction_owner'
+
+======================================================================
+ERROR: test_no_external_execution_preflight_has_exact_source_and_gate_holds (tests.test_platform_round7_modal_preflight.ZeroSpendModalPreflight)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_modal_preflight.py", line 11, in test_no_external_execution_preflight_has_exact_source_and_gate_holds
+    from m045_modal_trial_preflight import zero_spend_modal_preflight
+ModuleNotFoundError: No module named 'm045_modal_trial_preflight'
+
+======================================================================
+ERROR: test_positive_spend_execution_or_unbounded_duration_never_preflight (tests.test_platform_round7_modal_preflight.ZeroSpendModalPreflight)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_modal_preflight.py", line 23, in test_positive_spend_execution_or_unbounded_duration_never_preflight
+    from m045_modal_trial_preflight import zero_spend_modal_preflight
+ModuleNotFoundError: No module named 'm045_modal_trial_preflight'
+
+======================================================================
+ERROR: test_unpinned_or_nonconcurrent_deployment_fails_static_qualification (tests.test_platform_round7_modal_preflight.ZeroSpendModalPreflight)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round7/tests/test_platform_round7_modal_preflight.py", line 29, in test_unpinned_or_nonconcurrent_deployment_fails_static_qualification
+    from m045_modal_trial_preflight import zero_spend_modal_preflight
+ModuleNotFoundError: No module named 'm045_modal_trial_preflight'
+
+----------------------------------------------------------------------
+Ran 16 tests in 8.701s
+
+FAILED (errors=6)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-456892dd1e28511a7bf0a59fb07d0415 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-456892dd1e28511a7bf0a59fb07d0415/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-456892dd1e28511a7bf0a59fb07d0415/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-456892dd1e28511a7bf0a59fb07d0415/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "sara.studio.round20.private_pilot_issuer_and_local_recovery.v1",
+  "date": "2026-11-22",
+  "authority": {
+    "repo": "justinbusiness461-lab/SARA_studio",
+    "branch": "feat/platform-identity-and-catalog",
+    "expectedHead": "a80a84b6e5bd9dfba34e7e31ddea2e312b0f61b4",
+    "draftPr": 37
+  },
+  "verdict": "LOCAL_MECHANISM_PARTIALLY_VERIFIED__PRODUCTION_HOLD",
+  "branchesTouched": [
+    "feat/platform-identity-and-catalog"
+  ],
+  "implementation": {
+    "issuerPath": "tools/m045_soundtrack_grant.py",
+    "issuerGitBlobSha1": "982ccfaae888b9810fd633ee69c9794d1d88eec7",
+    "testPath": "tests/test_m045_round20_private_grants.py",
+    "testGitBlobSha1": "bd75cec40f6383b014e86c06a5ba82c848f3dbfa",
+    "localBranchBoundTestCases": 5,
+    "localAdditionalAdversarialTestCases": 9,
+    "failures": 0,
+    "skips": 0,
+    "noPrivateDriveIdsInNewSource": true,
+    "noBearerGrantsCommitted": true
+  },
+  "privatePilotContract": {
+    "scope": "private_cinema_pilot",
+    "rights_status": "UNVERIFIED_HELD",
+    "hostRightsCallbackRequired": true,
+    "requiredHostBindings": [
+      "principal_id",
+      "revision_id",
+      "artifact_id",
+      "cinema_project_id",
+      "approved_start_sample",
+      "approved_end_sample_exclusive",
+      "private_pilot_authorized"
+    ],
+    "sampleWindowSec": 20,
+    "sampleRateRequirement": "read WAV and compare to revision-backed ProductionTimeline section",
+    "previewIsCommercialReleaseAuthorized": false,
+    "publiclyIssuedGrants": 0,
+    "preservationOfLegacyIssuerPath": true
+  },
+  "scratch": {
+    "source": "Previously uploaded older SARA_studio source snapshot; NOT the live authenticated latest product checkout",
+    "sourceArchiveSha256": "3a2a1c1c99bc8b6e85eb25ebb86d2152879c7c717c7bc196f5b0a9622eac072a",
+    "studioServerSha256": "96048d39ef5a6422e44c2bf507043930c19dc0aace01d35df57097db1075c06e",
+    "proofScriptSha256": "7ffb90beace87e69441aba23490f10ac8f1aa0270deccf8ffacc53b1a60c5c2f",
+    "receiptSha256": "a8130d37e62f9439b44d3489257bd2f444fb93b8b266f03bdb13bdb26aa4cb92",
+    "isolatedScratchOnly": true,
+    "hostPrincipalAuthenticated": false,
+    "canonicalHostRevisionsCreated": 0,
+    "scratchR1RevisionsCreated": 3,
+    "scratchR2RevisionsCreated": 1,
+    "coldFreshPythonProcessReadback": 3,
+    "historicalR1PlaybackEvenWhenR2Selected": true,
+    "privatePilotGrantCount": 0,
+    "sourceMastersVerifiedAt44100": true,
+    "WAVSha256": [
+      "6dcf6984e2899eb694507009b7743872fbb84ae0a30a64f68d922acbd1d8b980",
+      "d889ccf2f55ac4b59c242b2377b8bbf3ea9f1310357816a343805522ba99c025",
+      "871a091d2f5b0a03f7f0a4f2917901b84ed42ba24efadae4ec1f635bc388e2a6"
+    ]
+  },
+  "pilotWindows": [
+    {
+      "title": "Turn The Noise Back On",
+      "rate": 44100,
+      "startSample": 11113200,
+      "endSampleExclusive": 11995200,
+      "startFrameAt24Fps": 6048,
+      "endFrameExclusiveAt24Fps": 6528
+    },
+    {
+      "title": "If This Is All I Get",
+      "rate": 44100,
+      "startSample": 11554200,
+      "endSampleExclusive": 12436200,
+      "startFrameAt24Fps": 6288,
+      "endFrameExclusiveAt24Fps": 6768
+    },
+    {
+      "title": "Outlaws and Echoes",
+      "rate": 44100,
+      "startSample": 8687700,
+      "endSampleExclusive": 9569700,
+      "startFrameAt24Fps": 4728,
+      "endFrameExclusiveAt24Fps": 5208
+    }
+  ],
+  "qualification": {
+    "mediaStaging": "PASS",
+    "privatePilotIssuerScopedUnit": "PASS",
+    "localScratchColdReopen": "PASS",
+    "productionHostCanonicalImport": "HOLD",
+    "hostSignedLiveSoundtrackGrants": "HOLD",
+    "fullExactHeadPythonNodeChromium": "NOT_EXECUTED",
+    "publicReleasePrivateGrantReject403": "NOT_EXECUTED",
+    "commercialRightsAndCreativeApproval": "HOLD"
+  },
+  "blockerOwner": "SARA_studio authenticated host and exact-head QA executor",
+  "blockerEdge": "Extend host importer to UNVERIFIED_HELD + select 44.1kHz; bind actual installed ProjectRevisions to catalog host principal; commit immutable exact window ProductionTimeline; configure production signing key and explicit private-pilot rights policy; prove Studio player cold reopen and 710+ exact-head suite",
+  "externalGpuSpendUsd": 0
+}

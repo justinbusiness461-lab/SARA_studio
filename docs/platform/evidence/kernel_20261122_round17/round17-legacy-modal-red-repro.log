@@ -1,0 +1,31 @@
+======================================================================
+FAIL: test_deploy_function_bounded_one_gpu_one_input_and_no_retry (test_m045_modal_termination_and_recovery.BillingDeployment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-r17-red-_3bf8__c/tests/test_m045_modal_termination_and_recovery.py", line 35, in test_deploy_function_bounded_one_gpu_one_input_and_no_retry
+    self.assertEqual(params,{'gpu':'L40S','timeout':120,'scaledown_window':30,
+AssertionError: {'gpu[17 chars]ut': 600, 'scaledown_window': 60, 'min_contain[69 chars]': 1} != {'gpu[17 chars]ut': 120, 'scaledown_window': 30, 'max_contain[69 chars]True}
+  {'gpu': 'L40S',
+   'max_containers': 1,
+   'min_containers': 0,
+   'retries': 0,
+-  'scaledown_window': 60,
+?                      ^
+
++  'scaledown_window': 30,
+?                      ^
+
+   'single_use_containers': True,
+-  'timeout': 600}
+?             ^^
+
++  'timeout': 120}
+?             ^^
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (failures=1)
+
+EXIT_CODE:1

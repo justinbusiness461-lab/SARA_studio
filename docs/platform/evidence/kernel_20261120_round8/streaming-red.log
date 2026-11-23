@@ -1,0 +1,111 @@
+EEEE..........
+======================================================================
+ERROR: test_small_exact_stream_is_byte_identical_to_existing_algorithm (tests.test_platform_round8_stream_mix.StreamMixTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round8/tests/test_platform_round8_stream_mix.py", line 24, in test_small_exact_stream_is_byte_identical_to_existing_algorithm
+    from m045_stem_reconstruction import reconstruct_master_to_file
+ImportError: cannot import name 'reconstruct_master_to_file' from 'm045_stem_reconstruction' (/tmp/sara-round8/tools/m045_stem_reconstruction.py)
+
+======================================================================
+ERROR: test_retained_music_project_must_hold_not_fake_completion (tests.test_platform_round8_erasure_completion.ErasureCompletionTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round8/tests/test_platform_round8_erasure_completion.py", line 33, in test_retained_music_project_must_hold_not_fake_completion
+    self.store.complete_account_erasure(self.account['principalId'],studio_root=self.fx.root)
+AttributeError: 'PlatformStore' object has no attribute 'complete_account_erasure'
+
+======================================================================
+ERROR: test_unowned_media_account_may_complete_with_durable_receipt (tests.test_platform_round8_erasure_completion.ErasureCompletionTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round8/tests/test_platform_round8_erasure_completion.py", line 19, in test_unowned_media_account_may_complete_with_durable_receipt
+    receipt=self.store.complete_account_erasure(owner,studio_root=self.fx.root)
+AttributeError: 'PlatformStore' object has no attribute 'complete_account_erasure'
+
+======================================================================
+ERROR: test_unpurged_and_wrong_owner_cannot_complete (tests.test_platform_round8_erasure_completion.ErasureCompletionTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/sara-round8/tests/test_platform_round8_erasure_completion.py", line 38, in test_unpurged_and_wrong_owner_cannot_complete
+    self.store.complete_account_erasure(self.account['principalId'],studio_root=self.fx.root)
+AttributeError: 'PlatformStore' object has no attribute 'complete_account_erasure'
+
+----------------------------------------------------------------------
+Ran 14 tests in 8.782s
+
+FAILED (errors=4)
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "DELETE /api/me HTTP/1.1" 202 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET / HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/sessions HTTP/1.1" 200 -
+[Studio-Server] "POST /api/me/sessions/revoke HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 409 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "PUT /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "GET /api/me/profile HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/projects/audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/write_production_file HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/dispatch_neural_compilation HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/local_neural_vocal_synthesis HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/take-audio HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/select-take HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/attempts/reconcile HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 403 -
+[Studio-Server] "POST /api/m045/scratch/render HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 503 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 400 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 201 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/search?q=Platform HTTP/1.1" 200 -
+[Studio-Server] "GET /api/artists/artist_a HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-5cb9f1d3b6bddeb9440444ea2e79b236 HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-5cb9f1d3b6bddeb9440444ea2e79b236/audio HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications/pub-5cb9f1d3b6bddeb9440444ea2e79b236/unpublish HTTP/1.1" 200 -
+[Studio-Server] "GET /api/explore HTTP/1.1" 200 -
+[Studio-Server] "GET /api/songs/pub-5cb9f1d3b6bddeb9440444ea2e79b236/audio HTTP/1.1" 404 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/publications HTTP/1.1" 403 -

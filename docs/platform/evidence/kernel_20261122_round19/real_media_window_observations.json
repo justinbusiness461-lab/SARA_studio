@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "sara.real_artist.preview_window.r19.v1",
+  "date": "2026-11-22",
+  "canonicalAuthority": "SARA_studio",
+  "expectedBaseline": "fbd1fd75c159d14e072df00c989a951c4f88cda0",
+  "status": "EXACT_DECODED_20_SECOND_MEDIA_CANDIDATES_ONLY",
+  "sourceIdentityContext": "Hostless local media read from previously authenticated user supplied masters; no private Drive URL or identifiers in this record",
+  "methodology": "FFmpeg 7.1.5 full-track stereo PCM16 decode at each sampling rate; sample-exact 20-second highest integrated-RMS window over whole-second starts; atomic output WAV fsync; independent ffmpeg re-decode and SHA256 witness",
+  "tdd": {
+    "red": "Missing preflight module failed import; no executable code under test",
+    "green": "2/2 local Python unit tests PASS; no skips",
+    "independentDecodeWitness": "6/6 physical WAV re-decode PASS",
+    "canonicalFullSuiteRunThisRound": false
+  },
+  "rights": "OWNER_SELF_ATTESTED_BUT_NO_HOST_PRINCIPAL_RIGHTS_CATALOG",
+  "musicalTimingQualified": false,
+  "canonicalProjectRevisionsCommitted": 0,
+  "acceptedAudioArtifactCount": 0,
+  "signedSoundtrackGrantsIssued": 0,
+  "productionQualified": false,
+  "creativeApproved": false,
+  "externalSpendUsd": 0,
+  "files": [
+    {
+      "title": "Turn The Noise Back On",
+      "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
+      "sourceCodec": "mp3",
+      "durationSec": 296.4,
+      "candidateStartSecond": 252,
+      "candidateEndSecond": 272,
+      "pcm44100": {
+        "frames": 13069476,
+        "sha256": "e2f0208c39cede2033178aff049d4b4bb4fbae7f33c656e5f5dc5d07a6bc064d",
+        "candidateWavSha256": "add7c321e7430280f407742e16f2f2fc77829b1f69ad3ec52c9e601fe275dff0"
+      },
+      "pcm48000": {
+        "frames": 14225280,
+        "sha256": "b2635756b0799b930984ab2adb9ad22f6e97bbab938416d09337c877b7d4cd33",
+        "candidateWavSha256": "8de40861b945bbd3079ac2c053e1ed4c3c62071eb04c15851ce09d8f150caf0d"
+      }
+    },
+    {
+      "title": "If This Is All I Get",
+      "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
+      "sourceCodec": "opus",
+      "durationSec": 290,
+      "candidateStartSecond": 262,
+      "candidateEndSecond": 282,
+      "pcm44100": {
+        "frames": 12789596,
+        "sha256": "5c13dbcf0b59b56e691ea0a77d18b831f60158cf280c141fc81519cc5ae9612f",
+        "candidateWavSha256": "5f25a26108abe1e3d02e3072056b1d1456307ae65cbf90a045ed3bd856a8f203"
+      },
+      "pcm48000": {
+        "frames": 13920648,
+        "sha256": "c73a42f38b513baba472fa70a13f48b435e99bee4bfd2405a49a46332bf8bffa",
+        "candidateWavSha256": "3f48e8a363b2b9509890bbdc57fd487755dfde10dbfbfb0676cd9a131eee9f00"
+      }
+    },
+    {
+      "title": "Outlaws and Echoes",
+      "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
+      "sourceCodec": "opus",
+      "durationSec": 218.4,
+      "candidateStartSecond": 197,
+      "candidateEndSecond": 217,
+      "pcm44100": {
+        "frames": 9632036,
+        "sha256": "00388e5dadf019b2cf878b7e7ed658e599e20b63b3118dab85957a5b511c794b",
+        "candidateWavSha256": "184404fcf3fc18d69136e844dffa489768e3da33e494bed789d16509459a5bf6"
+      },
+      "pcm48000": {
+        "frames": 10483848,
+        "sha256": "907b4f63af20200eec820c55ac08b226b7079699e9678cb9e9a0ca22e6699bc0",
+        "candidateWavSha256": "7a58a338f94d83d57f70367371c9fe6e60cd9758935e487235558fb24b1901a7"
+      }
+    }
+  ],
+  "note": "These RMS-based locations are measurable candidate excerpts, not artist-selected musical sections. No grant was authorized or signed. Full-track media was not committed or published. R18 importer currently selects 48 kHz playback; 44.1 kHz is separately decoded and observed. That mismatch with R19's requested 44.1 kHz canonical output must be resolved within Studio's rightful revision authority."
+}

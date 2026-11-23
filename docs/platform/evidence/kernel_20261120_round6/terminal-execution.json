@@ -1,0 +1,115 @@
+{
+  "baseline_head": "a036510c7a545324db4306f5db935fcfc5a46ff2",
+  "branch": "feat/platform-identity-and-catalog",
+  "browser_prior_round5": "FAILED_INCOMPLETE_INTERMEDIATE_SOURCE; root cause unproven",
+  "changed_source_sha256": {
+    "account-delete.html": "d9135637c990b8807f6eb4250eac7788961ce5e0e044ddb0b1ecbf891fcc0e9b",
+    "tests/test_platform_chat_studio.py": "775780d9e4ba648482ba5e3daf7f45d0356112d8c9dab95d484350807ac9f5da",
+    "tests/test_platform_round6_erasure.py": "5e2fd2e28c58d9c7ce1438cc02d215586750de5a5179115682a8f63c41eae24b",
+    "tests/test_platform_round6_repaint.py": "489d3c3b76a349b965da86ad0fb4e0138efe0959fc4bafd6f771316b31c4054e",
+    "tests/test_platform_round6_scratch.py": "7f3d69041b6762873492f9238aab068a7523b62c594b9a128327fed751cb68d1",
+    "tools/m045_chat_owner_operations.py": "82f6a8d9e07067968ccea1b7bb978b7608404dbae018e12cbfc7fc7c3e4afffb",
+    "tools/m045_chat_repaint_owner.py": "4fa223742ab58cdfa65b09c40221cb87068e797ce6dd9c9ee57664e9dd1a4f87",
+    "tools/m045_studio_chat_orchestrator.py": "03b978cd6e878e98d0dcbd47bb29099dd7991b60859f8e0e2f4723855b16631c",
+    "tools/platform_chat_approval.py": "d4f80a727b2e75e733ed1505ace9773d873e16ca5056c45a4ac2f2bf05345d8d",
+    "tools/platform_identity.py": "0c5d58cf7b56ac594755d25142ecb52a784af42b6ec7b8a3c5410531fb09cc64",
+    "tools/studio_server.py": "a5db64687b8ac0387491bad5209dceb1d9eee8c00a8684e76525be07f9f38781"
+  },
+  "cinema_repo_mutated": false,
+  "executor": "KERNEL browser VM local Linux Chromium; not independent physical phone or deployed website",
+  "gates": {
+    "chromium": {
+      "cancelled": 0,
+      "command": "CHROMIUM_PATH=/usr/local/bin/chromium node --test --test-concurrency=1 tests/*.browser.cjs",
+      "duration_ms": 219523.06034,
+      "failed": 0,
+      "log": "chromium-full-28.log",
+      "passed": 28,
+      "skipped": 0
+    },
+    "node": {
+      "command": "node --test tests/*.test.cjs",
+      "failed": 0,
+      "log": "node-full-42.log",
+      "passed": 42,
+      "skipped": 0
+    },
+    "python": {
+      "command": "PYTHONPATH=tools:tests python3 -m unittest discover -s tests -v",
+      "failed": 0,
+      "log": "python-full-326.log",
+      "passed": 326
+    },
+    "total": {
+      "failed": 0,
+      "passed": 396,
+      "skipped": 0
+    }
+  },
+  "known_holds": [
+    "R5 intermittent DJ timeout root cause not independently proven",
+    "Real authorized selective generative repaint provider and creative audition not executed",
+    "DJ Scratch audio remains UNRENDERED awaiting lawful sample assets and render",
+    "Erasure worker only purges mutable account/social drafts; immutable Studio history retained pending review",
+    "Public GET /account/delete implemented but not Internet deployed, registered with Play Console or physical compliance certified",
+    "Physical iOS and Android native plugins, Apple/Google provider receipts, identity/OIDC, HTTPS/CSRF/rate limiting, licensing, independent QA unverified",
+    "Modal GPU song and seven-engine cinema JOINT-1 not executed or certified"
+  ],
+  "log_identities": {
+    "chromium-full-28.log": {
+      "bytes": 6641,
+      "sha256": "79e637d7df7b1d19045f351f99a3a55fa0209ae8ffae1cfa440ffa8eea363a48"
+    },
+    "erasure-green.log": {
+      "bytes": 4490,
+      "sha256": "85b42a95054c63f2ddb107994c17920808dacc546907324ff19666e5a35f9081"
+    },
+    "erasure-red.log": {
+      "bytes": 5647,
+      "sha256": "ee426a960182433e5cc6cc7fbf2b396162f6e2db04cb45a36ec586399c42e5f6"
+    },
+    "node-full-42.log": {
+      "bytes": 8532,
+      "sha256": "00ff4893c85e00a9cc26612280c69fbdd059db70799ef32933d25deb6a1ab496"
+    },
+    "python-full-326.log": {
+      "bytes": 74299,
+      "sha256": "9941cf2e89430e91f463ed37327bf353a83093e561a1f0531cba5870865c198e"
+    },
+    "python-initial-failing-regression.log": {
+      "bytes": 74914,
+      "sha256": "436771fa63b56d8608345ae16e0874bbf9af611873bdf81111f3c8bea5aba24d"
+    },
+    "repaint-green.log": {
+      "bytes": 4923,
+      "sha256": "e1d9ebdcfec8aa43cc635ae375fda7ff63055c94eabad42686bc278684f862c7"
+    },
+    "repaint-red.log": {
+      "bytes": 5921,
+      "sha256": "668b4055a9e57d77e7461ca2d2bdc9ed2bd66df41e0439d094aa1aba6e20b2ed"
+    },
+    "scratch-green.log": {
+      "bytes": 4918,
+      "sha256": "dd26295aad3505603f36e61cf7e29a7e14f09554e91ae7ccb93c2724d69361ae"
+    },
+    "scratch-red.log": {
+      "bytes": 6199,
+      "sha256": "30816343f17c9b58a421e67bf86fc6167b1df21fac55382172a10ca4a384f796"
+    }
+  },
+  "main_mutated": false,
+  "observed_date_utc": "2026-11-20",
+  "pr": 37,
+  "product_source_commit": "7188406d2409b480f93e5a1916d72fdd58eca9ec",
+  "product_source_tree": "93df3d46349cb928f65307275113630207d4af9b",
+  "red_green": {
+    "account_web_and_mutable_purge": "RED_MISSING_PAGE_AND_WORKER_TO_GREEN",
+    "original_approval_test": "INTERMEDIATE_FULL_PYTHON_FAILED_1; owner validation-order repaired; complete replay PASS",
+    "repaint_chat": "RED_UNQUALIFIED_TO_GREEN_TEST_ONLY_PROVIDER_P1_OUTSIDE_REGION",
+    "scratch_chat": "RED_QUALIFICATION_TO_GREEN_EXACT_SYMBOLIC_EVENT"
+  },
+  "release_ready": false,
+  "repository": "justinbusiness461-lab/SARA_studio",
+  "schema": "sara.platform.round6.engineer1.terminal.v1",
+  "source_readback": "GITHUB_IMMUTABLE_RAW_IDENTICAL_11_OF_11"
+}

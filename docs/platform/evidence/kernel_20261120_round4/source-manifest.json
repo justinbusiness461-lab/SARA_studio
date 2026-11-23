@@ -1,0 +1,76 @@
+{
+  "files": {
+    "docs/platform/PLATFORM_ROUND4_ENGINEER1_RECEIPT_20261120.md": {
+      "gitBlobSha1": "bf1d6fbaaa735808e94dd1e152376332b7d7a102",
+      "sha256": "9ac9b7d236c60192d711a7d33270c98c4e45fe3a3f0a749f7736e3379ecbea10",
+      "size": 6802
+    },
+    "index.html": {
+      "gitBlobSha1": "fd1de6a965b3e232d8d0ea92fa0dcec89efa671b",
+      "sha256": "096f4d76f3c7b786bb5d1e63a994d39c291b71d37dbb15a4dc8c82899e4fe47b",
+      "size": 27598
+    },
+    "platform-ui.js": {
+      "gitBlobSha1": "f2561a3f0c4f99fe93013d78bc47446b43cc2382",
+      "sha256": "8f456019fb43b16aa23e216650fa620c50ad3cec70eaa674baab6e42cc2a82da",
+      "size": 22188
+    },
+    "studio-shell.css": {
+      "gitBlobSha1": "1dc44cc6508ee968fc3ff211c54a02e9d3cceb30",
+      "sha256": "2463c0d515b753d9795f580179b53b99ab5e080dede04dcb2f7e58432043104a",
+      "size": 14342
+    },
+    "tests/m045-dj-grid.browser.cjs": {
+      "gitBlobSha1": "e4e626fd44554e16f0d79c752a74e09dd0675d92",
+      "sha256": "1a258e1314d257876d3b2b7a107b56dcdcc298092e809257e5759f13c9e78eb3",
+      "size": 4735
+    },
+    "tests/m045-mobile-endurance.browser.cjs": {
+      "gitBlobSha1": "a88e5f2b1ebb0340f18f9c11a6e86bb7350b0b10",
+      "sha256": "087d30cf6d6fa3e4018cf9e56e2554b86249b224ed756e4992ba601d0a54953d",
+      "size": 7025
+    },
+    "tests/platform-wave2-ui.browser.cjs": {
+      "gitBlobSha1": "48e8f5b1bb16825216b62b31d4471ecf273dadb0",
+      "sha256": "7847475f6668e8274f0e2ce50f912f2d6e1aaa073b35d5f2f78202f766becb7b",
+      "size": 5890
+    },
+    "tests/qa-longtasks.cjs": {
+      "gitBlobSha1": "ceaf1761ec1155845d4dfa881def3e953eb760b6",
+      "sha256": "3c1e964d55e2a8da9ac6cf7a3e77d956c3284c266177f731f4012c82f22b9c19",
+      "size": 1419
+    },
+    "tests/r2-ab.browser.cjs": {
+      "gitBlobSha1": "7f093bd71d7286c277c05fc882e6a7559111b518",
+      "sha256": "afd7f10a2dd249b2e4dadd3dc3a5d67814112df2216cbf0149c4e5de23fe5021",
+      "size": 13081
+    },
+    "tests/test_platform_approval_challenge.py": {
+      "gitBlobSha1": "538d6fd28aa23c6561313350604e8e68d9cd47c0",
+      "sha256": "ed3989d10ec737be04588d2b3787a68e99d0be56e082596bcb006975b07df489",
+      "size": 8102
+    },
+    "tools/m045_studio_chat_orchestrator.py": {
+      "gitBlobSha1": "f23cb144cdd83c54e4ed81376bee2e99e3e20d8d",
+      "sha256": "603955625e5088973145dca9f199df72f29fa25c85f48c52353792f47cb4e3ac",
+      "size": 7997
+    },
+    "tools/platform_chat.py": {
+      "gitBlobSha1": "3cca3408c91e601d9e3ac02a0be1a6c6171ff684",
+      "sha256": "91c77889e3fd6fa544405e18786dec893ba9399ff95fbe9efce1e0a15593f66c",
+      "size": 4608
+    },
+    "tools/platform_chat_approval.py": {
+      "gitBlobSha1": "7bb23f014028db6b89310df2891809dd52b9ca62",
+      "sha256": "e38eb73ceae80933d427b416a12c77c263ef5770f649ad7ffcfb2139655e2f0c",
+      "size": 8404
+    },
+    "tools/studio_server.py": {
+      "gitBlobSha1": "5f45fa14471a9c5b04fc254af497695bb84d4e93",
+      "sha256": "d2ed84f394c46dc2313e7b3a7fdb351eec76b10d437d0adc608638f99d326c0d",
+      "size": 106808
+    }
+  },
+  "sourceBaseline": "546c6a6def951b020f5a42a2c03415751d281af3",
+  "sourceBranch": "feat/platform-identity-and-catalog"
+}

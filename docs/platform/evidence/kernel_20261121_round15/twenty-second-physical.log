@@ -1,0 +1,4 @@
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+[Studio-Server] "POST /api/auth/login HTTP/1.1" 200 -
+[Studio-Server] "POST /api/auth/signup HTTP/1.1" 201 -
+ROUND15_20_SECOND_PHYSICAL {"audioArtifactSha256": "7ef248160a5f5ba9143af22f918b3ea18abe2da716f6994b30bc19d8a38dde67", "creativeApproved": false, "elapsedSeconds": 3.291, "externalSpendUsd": 0, "frames": 882000, "integratedLufsReference": -31.2604, "listeningBundleSha256": "31ecfe7ba10a508db4cfe6db342a1dac4d523e18bf2c13133d81879d8038b072", "networkCallsMade": 0, "receiptSignatureVerified": true, "rightsStatus": "UNVERIFIED_HELD", "sampleRateHz": 44100, "truePeakDbtp4xReference": -30.3077}

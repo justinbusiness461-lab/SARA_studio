@@ -1,0 +1,120 @@
+{
+  "creativeApproved": false,
+  "dryStemMix": {
+    "byteLength": 4844,
+    "decodedBytesMatchedCanonicalPCM": true,
+    "ffprobe": {
+      "channels": 2,
+      "codec_name": "pcm_s16le",
+      "duration": "0.027211",
+      "sample_rate": "44100"
+    },
+    "frames": 1200,
+    "ownerResult": {
+      "artifactId": "4eedfbc12ce655ebd184b23b21484487d57e2952324d12760967291148ad75a9",
+      "creativeApproved": false,
+      "creativeStemsExact": false,
+      "operationId": "mix:199d0ea2e93514f7e773b569646aaefcfe20ac01070778e3",
+      "projectId": "05ba73d8944a431b82d25fe38fe06dfb",
+      "recipeSchema": "sara.mix.recipe.v1",
+      "recipeSha256": "00ce139f9ee7c28bda0e48996f6aa66804e99db1d37012e229525a6c87671179",
+      "reconstructionExact": true,
+      "releaseCleared": false,
+      "revisionId": "98c74ef711a73f48f841246a6b325085734063990d25a4f3661e5d93243ae9da",
+      "rightsStatus": "UNVERIFIED_HELD",
+      "sourceRevisionId": "db77a12ef6cd794c87751f5f74adeda532e64d90fc43cef45c229517894c5d82",
+      "state": "RENDERED_BOUND",
+      "stemArtifactIds": [
+        "03e983719f8f4162f1d19c7521cf4f54d834263ad10f89757eca7e20740dff50",
+        "a44ebe972b632e698c9cc9b387fafab96418f4e28e4300417bb0ca5689382542"
+      ]
+    },
+    "pcmSha256": "2f4102565897e27848480169f5212483c8a08498f02f8378da51e0adc333f9d6",
+    "recipeDigest": "00ce139f9ee7c28bda0e48996f6aa66804e99db1d37012e229525a6c87671179",
+    "sourceRights": "UNVERIFIED_HELD",
+    "stemSha256": [
+      "03e983719f8f4162f1d19c7521cf4f54d834263ad10f89757eca7e20740dff50",
+      "a44ebe972b632e698c9cc9b387fafab96418f4e28e4300417bb0ca5689382542"
+    ],
+    "wavSha256": "4eedfbc12ce655ebd184b23b21484487d57e2952324d12760967291148ad75a9"
+  },
+  "externalGPUCall": false,
+  "modalZeroSpendPreflight": {
+    "budgetCapUsd": 0,
+    "chargesIncurredUsd": 0,
+    "checkpointDigest": "NOT_EXAMINED",
+    "gateHolds": [
+      "OPERATOR_SPEND_APPROVAL_REQUIRED",
+      "HOST_PRICING_AND_CREDENTIALS_NOT_QUALIFIED",
+      "CHECKPOINT_BYTES_NOT_PHYSICALLY_VERIFIED",
+      "REAL_INFERENCE_AND_CREATIVE_AUDIO_NOT_RUN"
+    ],
+    "gpuAllocated": false,
+    "idleScaleDownSeconds": 60,
+    "machine": "L40S",
+    "maxConcurrentInputs": 1,
+    "maxContainers": 1,
+    "model": "ACE-Step 1.5",
+    "networkCallsMade": 0,
+    "priceQuote": "NOT_VERIFIED",
+    "readyForGpuLaunch": false,
+    "requestedGpuSecondsCap": 90,
+    "requestedSongSecondsCap": 30,
+    "serviceTimeoutSeconds": 600,
+    "sourceSha256": "d8b90ba4f8f49e8b7e71656d414d34dda9939fe2ebbf26fda54718e45268d351",
+    "state": "PREFLIGHT_ONLY",
+    "trialAuthorized": false,
+    "upstreamCommit": "ca1e85fe9430179831e6bc6be790c332190a3866"
+  },
+  "releaseCleared": false,
+  "schema": "sara.platform.r7.physical_proof.v1",
+  "scratch": {
+    "byteLength": 176444,
+    "decodedBytesMatchedCanonicalPCM": true,
+    "ffprobe": {
+      "channels": 2,
+      "codec_name": "pcm_s16le",
+      "duration": "1.000000",
+      "sample_rate": "44100"
+    },
+    "frames": 44100,
+    "originalArtifactSha256": "c322e63e2d0a899d03ad00f775e146efe65ee9899930b806d2e36e7a76c5e682",
+    "ownerResult": {
+      "artifactId": "d9a1ba271d8ac4513390a03a18f0214b0c3f32af84d339643c0125d898fff7c3",
+      "audioStatus": "RENDERED_BOUND_NOT_CREATIVELY_APPROVED",
+      "creativeApproved": false,
+      "operationId": "scratch:32a8ea6238b0abc87a13c1d7ffced79fc93f0ffbdedb2aba",
+      "preservationTier": "P1",
+      "projectId": "f30ed70095e844f1928b3c89bf995428",
+      "proof": {
+        "channels": 2,
+        "decks": [
+          "A"
+        ],
+        "fade_samples": 88,
+        "output_pcm_sha256": "808c18dd371af46353030c1e39d873cf449a80d28fd7275c638ab72d11e29564",
+        "sample_rate": 44100,
+        "sample_windows": [
+          [
+            0,
+            11025
+          ]
+        ],
+        "schema_version": "sara.scratch.dsp.v1",
+        "source_audio_sha256": "c322e63e2d0a899d03ad00f775e146efe65ee9899930b806d2e36e7a76c5e682",
+        "techniques": [
+          "chirp"
+        ]
+      },
+      "revisionId": "1a4da61fdec7371ec426ba6b86b45a398cff9b15783d0ca612431721e9fe8e51",
+      "sampleRightsSource": "HOST_ATTESTED_EXACT_EVENT_AND_SOURCE",
+      "sampleRightsStatus": "ARTIST_ORIGINAL",
+      "sourceRevisionId": "061daaffca3e0c04462861ef7f228ba0598ab207d2f70e08047bc59abf6071b7"
+    },
+    "pcmSha256": "808c18dd371af46353030c1e39d873cf449a80d28fd7275c638ab72d11e29564",
+    "rightsAttestedBy": "test fixture host callback only",
+    "sampleAssetSha256": "1443d5f78f1e2ef57c6e7f48098fc6dcd5889f0bf76ef62d2b70b970d5b0faf1",
+    "wavSha256": "d9a1ba271d8ac4513390a03a18f0214b0c3f32af84d339643c0125d898fff7c3"
+  },
+  "sourceKind": "DETERMINISTIC_TEST_FIXTURES_NOT_REAL_ARTIST_AUDIO"
+}
