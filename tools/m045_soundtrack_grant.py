@@ -161,14 +161,29 @@ def issue_authorized_grant(*,root,request: Mapping,principal_id:str,ring:HostSig
             raise GrantIssuerDenied('UNKNOWN_OR_AMBIGUOUS_CANONICAL_SECTION')
         sec=matches[0]
         start,end=sec.get('start_sample'),sec.get('end_sample_exclusive')
+        # Host-owned multi-window policy: each requested section is independently
+        # matched to its immutable timeline coordinates. Legacy flat one-window
+        # policies remain supported; client-supplied coordinates never are.
+        approved=rights
+        if 'approved_sections' in rights:
+            window_map=rights['approved_sections']
+            if not isinstance(window_map,Mapping):
+                raise GrantIssuerDenied('PRIVATE_PILOT_APPROVED_SECTION_MAP_INVALID')
+            approved=window_map.get(section_id)
+            if not isinstance(approved,Mapping):
+                raise GrantIssuerDenied('PRIVATE_PILOT_SECTION_NOT_HOST_ATTESTED')
+            approved_start=approved.get('start_sample')
+            approved_end=approved.get('end_sample_exclusive')
+        else:
+            approved_start=approved.get('approved_start_sample')
+            approved_end=approved.get('approved_end_sample_exclusive')
         if (type(start) is not int or type(end) is not int
             or type(sec.get('sample_rate')) is not int
             or sec['sample_rate']!=rate or not 0<=start<end<=count
-            or end-start!=20*rate
-            or type(rights.get('approved_start_sample')) is not int
-            or type(rights.get('approved_end_sample_exclusive')) is not int
-            or rights['approved_start_sample']!=start
-            or rights['approved_end_sample_exclusive']!=end):
+            or end-start not in (19*rate,20*rate)
+            or type(approved_start) is not int
+            or type(approved_end) is not int
+            or approved_start!=start or approved_end!=end):
             raise GrantIssuerDenied('PRIVATE_PILOT_EXACT_WINDOW_NOT_HOST_APPROVED')
         rights_status='UNVERIFIED_HELD'
     else:

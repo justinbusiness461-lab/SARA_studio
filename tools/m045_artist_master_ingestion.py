@@ -156,27 +156,43 @@ def inspect_host_attested_master(*, principal_id, title, source_path,
     entry=_call_host_catalog(principal_id,title,sha,host_catalog_lookup)
     physical=_decode_rates(raw)
     pilot=None
+    pilot_sections=[]
     if entry['rightsStatus']=='UNVERIFIED_HELD':
-        proposed=entry.get('pilotSection')
+        # Only host catalog policy determines musical sample coordinates.
+        # The legacy pilotSection remains valid; new multi-window authority
+        # supports one 19s S15 and additional distinct 20s private pilots.
+        proposed_many=entry.get('pilotSections')
+        if proposed_many is not None:
+            if ('pilotSection' in entry or not isinstance(proposed_many,list)
+                or not 1<=len(proposed_many)<=4):
+                raise ArtistMasterDenied('HELD_MASTER_HOST_SECTION_LIST_INVALID')
+        else:
+            proposed_many=[entry.get('pilotSection')]
         frames=physical['byRate'][44100]['frames']
-        if (not isinstance(proposed,dict)
-            or set(proposed)!={'id','sampleRate','startSample','endSampleExclusive'}
-            or not isinstance(proposed['id'],str)
-            or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}',proposed['id'])
-            or type(proposed['sampleRate']) is not int or proposed['sampleRate']!=44100
-            or type(proposed['startSample']) is not int
-            or type(proposed['endSampleExclusive']) is not int
-            or not 0<=proposed['startSample']<proposed['endSampleExclusive']<=frames
-            or proposed['endSampleExclusive']-proposed['startSample']!=20*44100):
-            raise ArtistMasterDenied('HELD_MASTER_HOST_SAMPLE_WINDOW_NOT_QUALIFIED')
-        pilot={'id':proposed['id'],'sample_rate':44100,
-               'start_sample':proposed['startSample'],
-               'end_sample_exclusive':proposed['endSampleExclusive']}
+        previous_end=0
+        used=set()
+        for proposed in proposed_many:
+            if (not isinstance(proposed,dict)
+                or set(proposed)!={'id','sampleRate','startSample','endSampleExclusive'}
+                or not isinstance(proposed['id'],str)
+                or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}',proposed['id'])
+                or proposed['id'] in used
+                or type(proposed['sampleRate']) is not int or proposed['sampleRate']!=44100
+                or type(proposed['startSample']) is not int
+                or type(proposed['endSampleExclusive']) is not int
+                or not previous_end<=proposed['startSample']<proposed['endSampleExclusive']<=frames
+                or proposed['endSampleExclusive']-proposed['startSample'] not in (19*44100,20*44100)):
+                raise ArtistMasterDenied('HELD_MASTER_HOST_SAMPLE_WINDOW_NOT_QUALIFIED')
+            pilot_sections.append({'id':proposed['id'],'sample_rate':44100,
+                 'start_sample':proposed['startSample'],
+                 'end_sample_exclusive':proposed['endSampleExclusive']})
+            used.add(proposed['id']);previous_end=proposed['endSampleExclusive']
+        pilot=pilot_sections[0]
     return {'entry':entry,'source':source,'raw':raw,'sha':sha,
-            'physical':physical,'pilotSection':pilot}
+            'physical':physical,'pilotSection':pilot,'pilotSections':pilot_sections}
 
 
-def _unqualified_import_spec(title,source_sha,codec,rights_status='ARTIST_OWNED',pilot_section=None):
+def _unqualified_import_spec(title,source_sha,codec,rights_status='ARTIST_OWNED',pilot_section=None,pilot_sections=None):
     # This neutral scaffold intentionally provides NO sections or events.
     # It is *not* a guessed BPM or accepted musical timing interpretation.
     # The 120 BPM internal coordinate placeholder must never support a grant.
@@ -199,7 +215,7 @@ def _unqualified_import_spec(title,source_sha,codec,rights_status='ARTIST_OWNED'
         # ProductionTimeline.sections from SongSpec.structure.sections.
         # These are exact sample coordinates; the internal 120 BPM
         # timebase remains explicitly unqualified for musical inference.
-        spec['structure']['sections']=[pilot_section]
+        spec['structure']['sections']=list(pilot_sections or [pilot_section])
     return spec
 
 
@@ -240,7 +256,7 @@ def _commit_preflight(root,principal_id,title,detail):
     playback=physical['byRate'][rate]
     artifact=playback['wavSha256']
     spec=_unqualified_import_spec(title,source_sha,physical['sourceCodec'],
-           catalog['rightsStatus'],detail.get('pilotSection'))
+           catalog['rightsStatus'],detail.get('pilotSection'),detail.get('pilotSections'))
 
     # PREPARING is durable *before* any canonical project transition.
     # On reentry, ALWAYS reread the real project graph first; stage alone
@@ -258,6 +274,8 @@ def _commit_preflight(root,principal_id,title,detail):
         identity.update({'privatePilotAuthorized':True,
                          'commercialReleaseAuthorized':False,
                          'pilotSection':detail['pilotSection']})
+        if len(detail.get('pilotSections',[]))>1:
+            identity['pilotSections']=detail['pilotSections']
     stage_file,prior=_stage_record(stage,source_sha+'.json',identity)
     try:
         selected=project_operation(root,{'projectId':pid},principal_id=principal_id)
@@ -331,8 +349,8 @@ def _commit_preflight(root,principal_id,title,detail):
         'rightsEvidenceSha256':catalog['rightsEvidenceSha256'],
         'sourceCodec':physical['sourceCodec'],
         'audioSampleRate':rate,'audioChannels':2,
-        'decoded48000Frames':playback['frames'],
-        'decoded48000PcmSha256':playback['pcmSha256'],
+        'decoded48000Frames':physical['byRate'][48000]['frames'],
+        'decoded48000PcmSha256':physical['byRate'][48000]['pcmSha256'],
         'decoded44100Frames':physical['byRate'][44100]['frames'],
         'decoded44100PcmSha256':physical['byRate'][44100]['pcmSha256'],
         'musicalTimingQualified':False,'creativeApproved':False,
