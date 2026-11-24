@@ -110,6 +110,12 @@ class StudioVocalOccurrenceContract(unittest.TestCase):
         project_occurrences(s, q)
         self.assertEqual(s, old_s); self.assertEqual(q, old_q)
 
+    def test_unhashable_method_and_bool_channel_denied_cleanly(self):
+        q = proposal(); q['occurrences'][0]['method'] = ['candidate_audio_assisted']
+        with self.assertRaises(VocalOccurrenceHeld): project_occurrences(studio_snapshot(), q)
+        s = studio_snapshot(); s['lyricTimeline']['sourceChannels'] = True
+        with self.assertRaises(VocalOccurrenceHeld): project_occurrences(s, proposal())
+
     def test_no_client_supplied_revision_identity_or_reference_confidence(self):
         q = proposal()
         for key, value in [('sourceSampleRate', 48000),('confidence',.99),('lyricTimelineRevisionId','z'*64),('frame24', 2)]:
