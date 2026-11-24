@@ -13,10 +13,10 @@ Every proposed occurrence binds: `ProjectRevision`, `LyricTimelineRevision`, `so
 
 - RED (module absent): `PYTHONPATH=<src>/tools python -m unittest discover -s <src>/tests -v` failed with `ModuleNotFoundError` (expected initial RED; not a product bug).
 - Intermediate candidate: **12 passing, 1 fixture error**; corrected the invalid test end-sample fixture after the test revealed its inconsistency. No test disabled.
-- GREEN: **13/13 Python unittest PASS**, `python -m compileall -q` PASS on the standalone exact two-file candidate in a local Python 3.13.5 environment. This does **not** certify the complete PR #37 source tree or browser test.
-- Exact local UTF-8 source SHA-256: `df8498dbeb3a7da3b0a018e23e227cfeedeb64932811d5a4a805e5cd56222cd4`.
-- Exact local UTF-8 test SHA-256: `0aca4fcaae35f5781fe7d663cc05961e86a5dfe784aa4f3025f701dd6fbcbc93`.
-- **GitHub independent blob identity:** source Git blob `bd2ad5cf64ea3f8ef9335da5f339c4509c6639a4`; test Git blob `202a25237b42e20ca00b2355c7ae85f13377a9c7`. Both match local `git hash-object`.
+- Second adversarial RED: unhashable JSON method produced uncontrolled `TypeError`. GREEN: strict method-type check and bool-channel rejection.\n- GREEN: **14/14 Python unittest PASS**, `python -m compileall -q` PASS on the standalone exact two-file candidate in a local Python 3.13.5 environment. This does **not** certify the complete PR #37 source tree or browser test.
+- Exact local UTF-8 source SHA-256: `f90f6cff4acccd8d6dded2fa952beeda68cdb7fc1b5df5cdfac5ed0589aa11f3`.
+- Exact local UTF-8 test SHA-256: `35e4f105ac6cf95f6fefd3ec9c81be2f8f545a70a142efd61625d4ea3a412b67`.
+- **GitHub independent blob identity:** source Git blob `663174ca9bb764f60f5800a9fe5ddf38d4549c63`; test Git blob `8069fcc4d24bbcbc2700ed39f810e920d6956db0`. Both match local `git hash-object`.
 
 ## Exact blocking boundary for broader R30
 
@@ -30,7 +30,7 @@ Every proposed occurrence binds: `ProjectRevision`, `LyricTimelineRevision`, `so
 
 WHAT CHANGED: two owner-correct code/test files that reject forged vocal timing authority and preserve repeated-word identities.
 FAILED: Real-song/Studio integrated vocal occurrence certification and strict three-song browser execution are outside this local candidate.
-PROVEN: 13/13 focused tests, syntax compilation and byte-identical GitHub blobs.
+PROVEN: 14/14 focused tests, syntax compilation and byte-identical GitHub blobs.
 UNPROVEN: full suite, audio listening, true onset timing, production Studio integration, commercial/creative approval, and release.
 TEAM NEXT: qualified Studio host completes R30 real-media and exact-head suites; lyric issuer owner adds trusted acoustic evidence without shadow authority; QA retries this new module in full tree; archive Drive `CURRENT`.
 JUSTIN ACTION: None for this candidate.
