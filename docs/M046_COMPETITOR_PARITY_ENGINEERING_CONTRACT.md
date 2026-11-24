@@ -95,7 +95,7 @@ RIGHTS-12 donor license readback; GPL-3.0 allEQ source must not enter product wi
 
 - Competitors: 6 official-source-reviewed, 2 published code trees inspected, 4 closed-source marketing/manual-only. No physical competitor comparison.
 - Research is logged in existing Forge PR #67 and used as **requirements**, not transplanted owner code.
-- Studio PR #43 includes media adapter and five test source files; their full checkout/Android runtime/actual audio proof needs a certified executor. Previously reported "5/5 local GREEN" does NOT by itself establish an independently recorded current-head test receipt. Treat as **FOCUSED_TEST_EXECUTION_UNVERIFIED pending direct reproduction** unless an exact independent raw log is attached.
+- Studio PR #43 includes one automotive adapter module and one focused Node test file containing five cases; their full checkout/Android runtime/actual audio proof needs a certified executor. Previously reported "5/5 local GREEN" does NOT by itself establish an independently recorded current-head test receipt. Treat as **FOCUSED_TEST_EXECUTION_UNVERIFIED pending direct reproduction** unless an exact independent raw log is attached.
 - No merger, deployment, APK, synchronized visual stream, car stereo proof, listener review or Google Play approval asserted.
 
 ## JUSTIN 101
