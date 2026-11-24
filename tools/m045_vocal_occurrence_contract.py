@@ -78,7 +78,7 @@ def project_occurrences(studio_project: dict, proposal: dict) -> dict:
             request['expectedSourceAudioDigest'] == lyric['sourceAudioDigest']):
         raise VocalOccurrenceHeld('DECODED_AUDIO_IDENTITY_CHANGED')
     if not (_positive(lyric.get('sourceSampleRate')) and
-            lyric.get('sourceChannels') in (1, 2) and
+            type(lyric.get('sourceChannels')) is int and lyric['sourceChannels'] in (1, 2) and
             _positive(lyric.get('decodedFrameCount'))):
         raise VocalOccurrenceHeld('invalid Studio sample-clock identity')
     if lyric.get('status') not in ('corrected', 'guided_candidate'):
@@ -108,7 +108,7 @@ def project_occurrences(studio_project: dict, proposal: dict) -> dict:
         wid = row['wordId']
         if not isinstance(wid, str) or wid not in word_by_id or wid in seen:
             raise VocalOccurrenceHeld('unrecognized/duplicate Studio occurrence ID')
-        if row.get('method') not in _UNVERIFIED_METHODS:
+        if not isinstance(row.get('method'), str) or row['method'] not in _UNVERIFIED_METHODS:
             raise VocalOccurrenceHeld('unverified alignment method required')
         start, end = row['proposedOnsetSample'], row['proposedEndSample']
         s = word_by_id[wid]
