@@ -57,6 +57,14 @@ Studio SongSpec + ProductionTimeline + ProjectRevision (AUTHORITATIVE)
 
 IMPORTANT: System-wide third-party audio equalization is a **separate OS-bound capability** from Studio media playback; it cannot be guaranteed for Spotify, Apple Music, games, protected players, hardware FM or car-resident AAOS apps. Android DynamicsProcessing is session-sensitive and attaching to session 0 is a deprecated/firmware-dependent path. Only claim coverage measured per actual Android/ROM/app.
 
+### Third-party audio and visualization permission boundary
+
+- **Equalize**: Android AudioEffects / DynamicsProcessing applies only to supported audio session routes. A claimed system-wide mode must be feature-probed and per-app/OS/device tested; session-0 DynamicsProcessing is deprecated/firmware-dependent. DUMP or Shizuku privileges are NOT defaults, and losing privilege must fail transparently.
+- **Visualize**: visualizing S.A.R.A.'s own lawful decoded playback is straightforward once the stream is authorized; **capturing other apps' output** requires Android AudioPlaybackCapture / MediaProjection conditions, supported usages, permitted capture policy and user consent. Protected/disallowing apps cannot be treated as capture-enabled; show unsupported, never invent spectrum. See https://developer.android.com/media/platform/av-capture.
+- **Car screens**: media library/session is the production baseline. Car App Library customized media experiences have distribution-channel restrictions; parked browser/video categories have separate requirements and cannot be smuggled into a moving car media app. See https://developer.android.com/training/cars and https://developer.android.com/docs/quality-guidelines/car-app-quality.
+- **Two different A/Bs**: (1) reversible playback DSP bypass / dry-wet compare that does not mutate stored masters; (2) historical ProjectRevision R1/R2 A/B at exactly matching musical position. Both need dedicated controls and separate evidence.
+- **Personalization**: include an optional local hearing/tone test for supported parked/phone surfaces; sensitive hearing profile is local/private unless the user explicitly authorizes a lawful save. Never infer medical diagnosis from a frequency response.
+
 ### Reuse-first code map
 
 - \`app-core.js\`: \`masterBus\`, \`lowShelf\`, \`highShelf\`, \`mixAnalyser\` and source DSP; preserve live/offline parity and source revision contract.
