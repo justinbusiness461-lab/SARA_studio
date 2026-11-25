@@ -70,7 +70,7 @@ def _read(operation, root, request, principal, label):
     return result
 
 
-def verify_real_staging(root, principal, originals, latest, read_project, read_audio):
+def verify_real_staging(root, principal, originals, latest, read_project, read_audio, read_cas):
     """Checks fixed real-master bytes, Studio ancestry, and lawful R2 CAS readback.
 
     Important: this procedure is a test precondition, not a grant or approval.
@@ -112,6 +112,15 @@ def verify_real_staging(root, principal, originals, latest, read_project, read_a
             or spec.get('privatePilotAuthorized') is not True
             or spec.get('commercialReleaseAuthorized') is not False):
             raise StrictStagingDenied('R32_REAL_MEDIA_RIGHTS_HELD_REQUIRED')
+        # CAS bytes are inspected only after actor/project/revision membership;
+        # raw CAS existence itself is never an authorization credential.
+        try:
+            source_bytes = read_cas(root, expected['sourceSha256'])
+        except (OSError, ValueError, PermissionError) as exc:
+            raise StrictStagingDenied('R32_SOURCE_CAS_UNAVAILABLE') from exc
+        if (type(source_bytes) is not bytes
+            or hashlib.sha256(source_bytes).hexdigest() != expected['sourceSha256']):
+            raise StrictStagingDenied('R32_SOURCE_CAS_IDENTITY_MISMATCH')
         wav = _read(read_audio, root, {'projectId': row['projectId'],
             'revisionId': row['revisionId'], 'artifactId': row['artifactId']},
             principal, 'R32_LAWFUL_AUDIO_READ_DENIED')
