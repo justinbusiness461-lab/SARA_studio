@@ -7,6 +7,7 @@ const {join,resolve}=require('node:path');
 const {once}=require('node:events');
 const {createInterface}=require('node:readline');
 const {chromium}=require('playwright');
+const {assertClockProgress,assertABMediaReadback}=require('../tools/m045_browser_media_clock.cjs');
 const root=resolve(__dirname,'..');
 const strictValue=process.env.SARA_R25_REAL_MEDIA_STRICT||'0';
 if(!['0','1'].includes(strictValue)) throw new Error('R27_REAL_MEDIA_STRICT_INVALID');
@@ -34,6 +35,17 @@ async function open(page, base, entry, revision) {
  assert.equal(await page.locator('#status').textContent(),'Audio verified. Ready to hear.');
  return proof;
 }
+async function sampledMediaClock(page){
+ return page.evaluate(()=>{
+  const p=typeof verifiedPlayback==='undefined'?null:verifiedPlayback;
+  if(!p?.media) return null;
+  const a=p.media;
+  return {revisionId:p.revisionId,artifactId:p.artifactId,
+   currentTimeSec:a.currentTime,durationSec:a.duration,
+   readyState:a.readyState,paused:a.paused,ended:a.ended,
+   observedAtMs:performance.now()};
+ });
+}
 test('R25 three-song real or test-source cold open at mobile/desktop and exact R1/R2 A-B',{timeout:240000},async t=>{
  const temporary=mkdtempSync(join(tmpdir(),'sara-r25-cold-'));
  t.after(()=>rmSync(temporary,{recursive:true,force:true}));
@@ -57,28 +69,44 @@ test('R25 three-song real or test-source cold open at mobile/desktop and exact R
    const proof=await open(page,runtime.url,entry,entry.selected);
    const geometry=await page.evaluate(()=>({innerWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
    assert.ok(geometry.scrollWidth<=geometry.innerWidth+1,JSON.stringify(geometry));
-   results.push({title:entry.title,width,revisionId:proof.revisionId,artifactId:proof.artifactId});
+   // A WAV digest plus a UI readiness flag is not physical browser playback.
+   // Every real master on mobile AND desktop must advance its actual media clock.
+   await page.locator('#btnPlay').click();
+   await page.waitForFunction(()=>window.__M044_PLAYBACK_STARTED__===true &&
+     typeof verifiedPlayback!=='undefined' && verifiedPlayback?.media &&
+     !verifiedPlayback.media.paused && verifiedPlayback.media.readyState>=2,
+     null,{timeout:18000});
+   const beforeClock=await sampledMediaClock(page);
+   assert.ok(beforeClock,'REAL_MEDIA_CLOCK_MISSING');
+   await page.waitForFunction(start=>typeof verifiedPlayback!=='undefined' &&
+     verifiedPlayback?.media?.currentTime >= start+0.12,beforeClock.currentTimeSec,
+     {timeout:18000});
+   const afterClock=await sampledMediaClock(page);
+   const clock=assertClockProgress(beforeClock,afterClock,entry.selected);
+   results.push({title:entry.title,width,revisionId:proof.revisionId,
+     artifactId:proof.artifactId,mediaClockAdvanceSec:clock.advanceSec,
+     mediaObservedElapsedMs:clock.observedElapsedMs});
    if(width===1440&&entry.title==='Turn The Noise Back On'){
      // Audio proof publishes before its historical ancestor HTTP readback; do not race the readiness gate.
      await page.waitForFunction(()=>!document.querySelector('#btnABR1').disabled && !document.querySelector('#btnABR2').disabled,null,{timeout:30000});
      assert.equal(await page.locator('#btnABR1').isDisabled(),false);
      assert.equal(await page.locator('#btnABR2').isDisabled(),false);
-     await page.locator('#btnPlay').click();
-     await page.waitForFunction(()=>window.__M044_PLAYBACK_STARTED__===true,null,{timeout:18000});
-     await page.waitForTimeout(250);
      await page.locator('#btnABR1').click();
      await page.waitForFunction(id=>window.__M044_PLAYBACK_PROOF__?.revisionId===id,entry.r1.revisionId,{timeout:60000});
      const r1proof=await page.evaluate(()=>({p:window.__M044_PLAYBACK_PROOF__,ab:window.__M044_AB_PROOF__}));
      assert.equal(r1proof.p.artifactId,entry.r1.artifactId);
-     assert.ok(Math.abs(r1proof.ab.fromPositionSec-r1proof.ab.toPositionSec)<=0.05,JSON.stringify(r1proof.ab));
+     const r1observed=assertABMediaReadback(r1proof.ab,await sampledMediaClock(page),entry.r1);
+     assert.ok(r1observed.uiDriftSec<=0.05,JSON.stringify(r1observed));
      await page.locator('#btnABR2').click();
      await page.waitForFunction(id=>window.__M044_PLAYBACK_PROOF__?.revisionId===id || window.__M044_AB_SWITCH__?.state==='FAILED',entry.selected.revisionId,{timeout:60000});
      const finalSwitch=await page.evaluate(()=>({state:window.__M044_AB_SWITCH__,status:document.querySelector('#status')?.textContent,abStatus:document.querySelector('#abStatus')?.textContent,proof:window.__M044_PLAYBACK_PROOF__}));
      assert.equal(finalSwitch.proof?.revisionId,entry.selected.revisionId,'REAL_MEDIA_R2_SWITCH_FAILURE '+JSON.stringify(finalSwitch));
      const r2proof=await page.evaluate(()=>({p:window.__M044_PLAYBACK_PROOF__,ab:window.__M044_AB_PROOF__}));
      assert.equal(r2proof.p.artifactId,entry.selected.artifactId);
-     assert.ok(Math.abs(r2proof.ab.fromPositionSec-r2proof.ab.toPositionSec)<=0.05,JSON.stringify(r2proof.ab));
-     results.push({ab:'R1->R2',r1PositionDriftSec:Math.abs(r1proof.ab.fromPositionSec-r1proof.ab.toPositionSec),r2PositionDriftSec:Math.abs(r2proof.ab.fromPositionSec-r2proof.ab.toPositionSec)});
+     const r2observed=assertABMediaReadback(r2proof.ab,await sampledMediaClock(page),entry.selected);
+     assert.ok(r2observed.uiDriftSec<=0.05,JSON.stringify(r2observed));
+     results.push({ab:'R1->R2',r1PositionDriftSec:Math.abs(r1proof.ab.fromPositionSec-r1proof.ab.toPositionSec),r2PositionDriftSec:r2observed.uiDriftSec,
+       independentR1LagSec:r1observed.sampleDriftSec, independentR2LagSec:r2observed.sampleDriftSec});
    }
    await page.close();
   }
