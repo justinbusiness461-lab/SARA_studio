@@ -1,0 +1,90 @@
+{
+  "blockers": {
+    "acceptedStudioPcmLineage": "MISSING",
+    "full55OccurrenceImport": "HOLD",
+    "independentDENIAL01Onset": "UNVERIFIED",
+    "mainMerge": "HOLD",
+    "onsetContainingWindowProof": "UNVERIFIED",
+    "pulseforgeVisualRender": "HOLD",
+    "studioIssuer": "NOT_IMPLEMENTED_OR_NOT_INVOKED"
+  },
+  "commercialReleaseAuthorized": false,
+  "crossRepoR6DigestMatch": {
+    "notStudioMasterAcceptance": true,
+    "pulseforgePR": 98,
+    "r6PcmTestConstantMatchesIndependentCrop": true,
+    "testedBlob": "ec440d3fd012ebc097d772581ecb46a5511d8ca7",
+    "testedSource": "tests/test_pf_e5_r7_denial01_window.py"
+  },
+  "date": "2026-11-25",
+  "evidenceCeiling": "SOURCE_DECODED_CROP_OBSERVATION_ONLY",
+  "externalSpendUSD": 0,
+  "occurrence": {
+    "boundaryStatus": "UNVERIFIED",
+    "canonicalOnsetSample": null,
+    "creativeApproved": false,
+    "hasIndependentOnsetWitness": false,
+    "localOnsetSample": null,
+    "lyricTokenRef": "denial-chorus-w001",
+    "occurrenceId": "DENIAL_01",
+    "onsetVisibility": "UNMARKED",
+    "productionQualified": false,
+    "scope": "ONE_OCCURRENCE_ONLY",
+    "studioIssued": false
+  },
+  "ownerRepo": "justinbusiness461-lab/SARA_studio",
+  "physicalReproduction": {
+    "GREEN": "12/12 Python focused tests pass, 0 skip",
+    "RED": "ModuleNotFoundError",
+    "chromiumPositive": "NOT_EXECUTED",
+    "sourceReferenceExtraction": "PASS",
+    "testedModuleIndependentWavPcmDigestMatch": "PASS"
+  },
+  "provenance": {
+    "acceptedAudioArtifactId": null,
+    "canonicalStudioDecodeMatch": "NOT_PROVEN",
+    "channels": 2,
+    "coordinateSystem": "LOCAL_FFMPEG_DECODED_PCM_START_UNBOUND",
+    "decodedDurationSec": 211.56,
+    "decodedFullPcmFrames": 10154880,
+    "decodedFullPcmSha256": "9ddb2468d5aa4b367852c9e6efbc18098e507284cbadb40f23a7eacb64232f42",
+    "durationGapMs": 24.0,
+    "mp3ContainerDurationSec": 211.584,
+    "pcmEncoding": "s16le",
+    "projectRevisionId": null,
+    "sampleRateHz": 48000,
+    "sourceMp3Sha256": "aad232ff0b9e5672e59db1cf29f229b1c3f10492dfc2f6d366518ba2af281dec",
+    "sourceSizeBytes": 5070447
+  },
+  "rightsStatus": "UNVERIFIED_HELD",
+  "schema": "sara.studio.engineer1.r33.denial01.observation-evidence.v1",
+  "windows": [
+    {
+      "endSampleExclusive": 4512000,
+      "framesPerChannel": 1632000,
+      "identityPhysicalReadback": true,
+      "pcmSha256": "6279d4603ff390f58d567feff668454163e6c63e4bba12225be3dbe25e9a1668",
+      "startSample": 2880000,
+      "wavSha256": "760dc44937e905176d8da72adc9c4e4f0884822adbe7b045e1b1dfd4d67048ef",
+      "windowClass": "WIDER_PRE_ONSET_REVIEW_CANDIDATE"
+    },
+    {
+      "endSampleExclusive": 3504000,
+      "framesPerChannel": 624000,
+      "identityPhysicalReadback": true,
+      "pcmSha256": "e0b3e6da89837b9189044ae4bfae3dfe7f4e247606affc6534e7ddbf3293469e",
+      "startSample": 2880000,
+      "wavSha256": "b7fd10489a054a5fecd5a787c26825307e08291291954d613db363998c498300",
+      "windowClass": "WIDER_PRE_ONSET_REVIEW_CANDIDATE"
+    },
+    {
+      "endSampleExclusive": 4512000,
+      "framesPerChannel": 1248000,
+      "identityPhysicalReadback": true,
+      "pcmSha256": "21a4a34305e4e9c80b84ceb0e1396c7c9d0d44e69b313f3f5eb6d1223b95c71a",
+      "startSample": 3264000,
+      "wavSha256": "7e16e4bbf5fff72072b95af668db85f07be400f43fec6b3f6ffabce61c795fb4",
+      "windowClass": "R6_HISTORY_COMPARISON_NOT_ONSET_EVIDENCE"
+    }
+  ]
+}
