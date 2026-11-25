@@ -40,7 +40,7 @@ if real:
    # Only verified artist source hashes, lawful Studio R1 media and an
    # immutable R1->R2 chain may qualify the strict physical browser run.
    verify_real_staging(root,principal,originals,latest,
-                       studio.project_operation,studio.project_audio_bytes)
+                       studio.project_operation,studio.project_audio_bytes,\n                       studio.artifact_bytes)
   except StrictStagingDenied as exc:
    raise SystemExit('R32_REAL_MEDIA_STAGING_DENIED: ' + str(exc)) from exc
 elif (root/'.r25_fixture_receipt.json').is_file():
