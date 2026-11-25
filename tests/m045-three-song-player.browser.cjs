@@ -8,6 +8,7 @@ const {once}=require('node:events');
 const {createInterface}=require('node:readline');
 const {chromium}=require('playwright');
 const {assertClockProgress,assertABMediaReadback}=require('../tools/m045_browser_media_clock.cjs');
+const {assertThreeSongBrowserCoverage}=require('../tools/m045_three_song_coverage.cjs');
 const root=resolve(__dirname,'..');
 const strictValue=process.env.SARA_R25_REAL_MEDIA_STRICT||'0';
 if(!['0','1'].includes(strictValue)) throw new Error('R27_REAL_MEDIA_STRICT_INVALID');
@@ -86,7 +87,7 @@ test('R25 three-song real or test-source cold open at mobile/desktop and exact R
    results.push({title:entry.title,width,revisionId:proof.revisionId,
      artifactId:proof.artifactId,mediaClockAdvanceSec:clock.advanceSec,
      mediaObservedElapsedMs:clock.observedElapsedMs});
-   if(width===1440&&entry.title==='Turn The Noise Back On'){
+   if(entry.title==='Turn The Noise Back On'){
      // Audio proof publishes before its historical ancestor HTTP readback; do not race the readiness gate.
      await page.waitForFunction(()=>!document.querySelector('#btnABR1').disabled && !document.querySelector('#btnABR2').disabled,null,{timeout:30000});
      assert.equal(await page.locator('#btnABR1').isDisabled(),false);
@@ -105,11 +106,12 @@ test('R25 three-song real or test-source cold open at mobile/desktop and exact R
      assert.equal(r2proof.p.artifactId,entry.selected.artifactId);
      const r2observed=assertABMediaReadback(r2proof.ab,await sampledMediaClock(page),entry.selected);
      assert.ok(r2observed.uiDriftSec<=0.05,JSON.stringify(r2observed));
-     results.push({ab:'R1->R2',r1PositionDriftSec:Math.abs(r1proof.ab.fromPositionSec-r1proof.ab.toPositionSec),r2PositionDriftSec:r2observed.uiDriftSec,
+     results.push({ab:'R1->R2',width,r1PositionDriftSec:Math.abs(r1proof.ab.fromPositionSec-r1proof.ab.toPositionSec),r2PositionDriftSec:r2observed.uiDriftSec,
        independentR1LagSec:r1observed.sampleDriftSec, independentR2LagSec:r2observed.sampleDriftSec});
    }
    await page.close();
   }
  }
- console.log('R25_COLD_REOPEN_PHYSICAL_EVIDENCE',JSON.stringify({realMedia:runtime.stagingRealMedia,strictRealMedia,certificationMode:strictRealMedia?'REAL_MEDIA_STRICT':'SYNTHETIC_FIXTURE_NOT_REAL_MEDIA_CERTIFICATION',inventory:results}));
+ const coverage=assertThreeSongBrowserCoverage(results);
+ console.log('R25_COLD_REOPEN_PHYSICAL_EVIDENCE',JSON.stringify({realMedia:runtime.stagingRealMedia,strictRealMedia,certificationMode:strictRealMedia?'REAL_MEDIA_STRICT':'SYNTHETIC_FIXTURE_NOT_REAL_MEDIA_CERTIFICATION',inventory:results,coverage}));
 });
