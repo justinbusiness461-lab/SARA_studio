@@ -78,12 +78,19 @@ class StrictBinding(unittest.TestCase):
                 return self.wavs[song['title']]
         raise PermissionError('not lawfully bound')
 
-    def check(self, originals=None, latest=None, project=None, audio=None):
+    def cas(self, root, digest):
+        for title in TITLES:
+            if digest == self.oracles[title]['sourceSha256']:
+                return ('source:'+title).encode()
+        raise FileNotFoundError('CAS object absent')
+
+    def check(self, originals=None, latest=None, project=None, audio=None, cas=None):
         return verify_real_staging('local-staging-root',PRINCIPAL,
             self.originals if originals is None else originals,
             self.r2 if latest is None else latest,
             self.project if project is None else project,
-            self.audio if audio is None else audio)
+            self.audio if audio is None else audio,
+            self.cas if cas is None else cas)
 
     def test_valid_test_fixture_is_only_local_unit_input_not_production_proof(self):
         self.assertEqual(self.check()['verifiedMasterCount'],3)
@@ -109,6 +116,16 @@ class StrictBinding(unittest.TestCase):
             good=self.audio(root,request,principal_id=principal_id)
             return good[:-4]+b'\x12\x34\x56\x78'
         with self.assertRaisesRegex(StrictStagingDenied,'WAV|PCM'):self.check(audio=corrupt)
+
+    def test_source_cas_missing_rejected_after_authorized_revision_membership(self):
+        def missing(root,digest): raise FileNotFoundError('source missing')
+        with self.assertRaisesRegex(StrictStagingDenied,'SOURCE_CAS_UNAVAILABLE'):
+            self.check(cas=missing)
+
+    def test_source_cas_rebranded_bytes_rejected(self):
+        def wrong(root,digest): return b'fake source'
+        with self.assertRaisesRegex(StrictStagingDenied,'SOURCE_CAS_IDENTITY'):
+            self.check(cas=wrong)
 
     def test_foreign_or_unbound_artifact_rejected(self):
         def denied(*args,**kwargs): raise PermissionError('foreign')
