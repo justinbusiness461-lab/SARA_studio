@@ -19,7 +19,7 @@ def fixture():
     original=hashlib.sha256(raw).hexdigest(); wavsha=hashlib.sha256(wav).hexdigest(); pcmsha=hashlib.sha256(pcm).hexdigest()
     project={
         'manifest':{'projectId':'project-1','currentRevisionId':'revision-1'},
-        'revision':{'projectId':'project-1','revisionId':'revision-1','sourceAssetDigests':[original],
+        'revision':{'projectId':'project-1','revisionId':'revision-1','sourceAssetDigests':[original,wavsha],
                     'outputArtifactIds':[wavsha],'lyricTimelineDigest':'l'*64},
         'lyricTimeline':{'revisionId':'lyric-1','sourceArtifactId':wavsha,'sourceAudioDigest':pcmsha,
                          'sourceSampleRate':sr,'sourceChannels':channels,'decodedFrameCount':frames,
@@ -38,7 +38,7 @@ def fixture():
            'revocationEpoch':'3','observedAtEpochMs':'100','expiresAtEpochMs':'1000'}
     payload={'occurrenceId':'DENIAL_01','lyricTokenRef':'denial-chorus-w001',
         'sourceProjectRevisionId':'revision-1','sourceAudioArtifactId':original,'sourceAudioArtifactDigest':original,
-        'decodedAudioArtifactId':wavsha,'decodedPcmDigest':pcmsha,'onsetSample':'3000',
+        'decodedAudioArtifactId':wavsha,'decodedPcmDigest':pcmsha,'sourceSampleRate':'48000','onsetSample':'3000',
         'coordinateSystem':'PCM_ARTIFACT_START','observationWindowId':'window-1',
         'boundaryStatus':'FULLY_OBSERVED','onsetVisibility':'OBSERVED_INSIDE_WINDOW',
         'issuerPrincipalId':'studio-issuer','issuerVersion':'3','authorizationGrantId':'issuer-grant',
@@ -120,6 +120,18 @@ class SignedStudioV3(unittest.TestCase):
         for change in [{'current':False},{'observedAtEpochMs':'1000'},{'authorizationGrantId':'other'}]:
             x=fixture();x['grant'].update(change)
             with self.assertRaises(StudioEvidenceDenied):self.check(x)
+    def test_source_clock_cannot_be_absent_from_signed_studio_evidence(self):
+        x=fixture();p=self.check(x)
+        self.assertEqual(p.get('sourceSampleRate'),'48000')
+
+    def test_lyric_wav_must_be_project_source_not_merely_render_output(self):
+        x=fixture()
+        wavsha=hashlib.sha256(x['wav']).hexdigest()
+        self.assertIn(wavsha,x['project']['revision']['sourceAssetDigests'])
+        x['project']['revision']['sourceAssetDigests'].remove(wavsha)
+        with self.assertRaisesRegex(StudioEvidenceDenied,'LYRIC_WAV_NOT_PROJECT_SOURCE'):
+            self.check(x)
+
     def test_canonical_receipt_sign_and_tamper_detection(self):
         x=fixture();p=self.check(x)
         receipt=sign_studio_receipt('receipt-1',x['signed'],p,x['grant'],x['issuer'],key_id='issuer-key',issued_at_epoch_ms=200)
