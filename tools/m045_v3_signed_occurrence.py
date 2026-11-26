@@ -151,8 +151,7 @@ def verify_vocal_evidence(signed, *, studio_project, source_audio_bytes,
         or payload['decodedPcmDigest'] != info['pcmSha']
         or _dec(payload['sourceSampleRate']) != info['rate']):
         _deny('CANONICAL_SIGNAL_IDENTITY_MISMATCH')
-    if (source_digest not in revision.get('sourceAssetDigests', [])
-        or info['sha'] not in revision.get('outputArtifactIds', [])):
+    if source_digest not in revision.get('sourceAssetDigests', []):
         _deny('ARTIFACT_NOT_IN_REVISION')
     if info['sha'] not in revision.get('sourceAssetDigests', []):
         _deny('LYRIC_WAV_NOT_PROJECT_SOURCE')
@@ -298,7 +297,7 @@ def verify_vocal_evidence_from_studio(root, principal_id, project_id, revision_i
     """
     if not all(isinstance(x, str) and x for x in (principal_id,project_id,revision_id)):
         _deny('STUDIO_PROJECT_AUTHORIZATION_REQUIRED')
-    from studio_server import project_operation, project_audio_bytes, artifact_bytes
+    from studio_server import project_operation, artifact_bytes
     try:
         # Membership and revision association are decided by Studio, not here.
         snapshot = project_operation(root, {'projectId':project_id,'revisionId':revision_id},
@@ -311,14 +310,15 @@ def verify_vocal_evidence_from_studio(root, principal_id, project_id, revision_i
             _deny('STUDIO_SELECTED_REVISION_MISMATCH')
         payload = signed['payload']
         source_id, decoded_id = payload['sourceAudioArtifactId'], payload['decodedAudioArtifactId']
-        if source_id not in revision['sourceAssetDigests'] or decoded_id not in revision['outputArtifactIds']:
+        if source_id not in revision['sourceAssetDigests']:
             _deny('ARTIFACT_NOT_IN_REVISION')
-        # Project-audio read independently rechecks authorization and lawful
-        # revision->output-artifact association before serving media.
-        wav = project_audio_bytes(root, {
-            'projectId':project_id,'revisionId':revision_id,'artifactId':decoded_id,
-        }, principal_id=principal_id)
-        # Existing CAS reader is allowed ONLY after the membership gate above.
+        if (decoded_id not in revision['sourceAssetDigests']
+                or snapshot.get('lyricTimeline', {}).get('sourceArtifactId') != decoded_id):
+            _deny('LYRIC_WAV_NOT_PROJECT_SOURCE')
+        # Source WAV is a verified Studio ProjectRevision source, NOT necessarily
+        # an output render. project_audio_bytes only authorizes output renders;
+        # selected historical revision + source membership precede both CAS reads.
+        wav = artifact_bytes(root, decoded_id)
         raw = artifact_bytes(root, source_id)
     except StudioEvidenceDenied:
         raise
