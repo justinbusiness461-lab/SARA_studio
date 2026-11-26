@@ -1,0 +1,27 @@
+{
+  "acceptedStudioProjectRevisionId": null,
+  "claimClassification": "E1_EXACT_SOURCE_PLUS_E2_REFERENCE_TESTED_NOT_E3",
+  "denial01OnsetSample": null,
+  "frozenGitHubReadback": {
+    "candidateBaseSha": "d876cad4d55aadee144e7bf6756c224b41a8c117",
+    "candidateHeadSha": "2d3953b6bdc3f24143803c2f45e49460dfe58ea6",
+    "candidatePR": 44,
+    "mainSha": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+    "repository": "justinbusiness461-lab/SARA_studio"
+  },
+  "independentGithubObservationRequiresCurrentnessRereadAtActualMerge": true,
+  "mainMerged": false,
+  "positiveStrictChromium": "NOT_EXECUTED",
+  "preflight": {
+    "candidateHeadSha": "2d3953b6bdc3f24143803c2f45e49460dfe58ea6",
+    "maxEvidenceLevel": "E2_SOURCE_AND_STRUCTURAL_PRECHECK",
+    "mergeAuthorized": false,
+    "observedMainSha": "d6aa889a0def72bb8e1c87009a98d6c29e47067e",
+    "schema": "sj3.studio.promotion-preflight.result.v1",
+    "status": "QUALIFICATION_HOLD",
+    "verificationNote": "Caller must independently authenticate GitHub readback, tests, rights, prerequisite issuers and qualification receipts before separate serial main promotion."
+  },
+  "qualificationReceiptAvailable": false,
+  "schema": "sj3.studio.r35.pr44.provisional-preflight.v1",
+  "ticketIsNotPromotionAuthorization": true
+}
