@@ -108,7 +108,7 @@ def verify_vocal_evidence(signed, *, studio_project, source_audio_bytes,
         _deny('SIGNED_OCCURRENCE_MALFORMED')
     required = {'occurrenceId','lyricTokenRef','sourceProjectRevisionId',
         'sourceAudioArtifactId','sourceAudioArtifactDigest','decodedAudioArtifactId',
-        'decodedPcmDigest','onsetSample','coordinateSystem','observationWindowId',
+        'decodedPcmDigest','sourceSampleRate','onsetSample','coordinateSystem','observationWindowId',
         'boundaryStatus','onsetVisibility','issuerPrincipalId','issuerVersion',
         'authorizationGrantId','observationEvidenceDigest'}
     if set(payload) != required or set(attest) != {'algorithm','keyId','signatureBase64'}:
@@ -148,11 +148,14 @@ def verify_vocal_evidence(signed, *, studio_project, source_audio_bytes,
     if (payload['sourceAudioArtifactId'] != source_digest
         or payload['sourceAudioArtifactDigest'] != source_digest
         or payload['decodedAudioArtifactId'] != info['sha']
-        or payload['decodedPcmDigest'] != info['pcmSha']):
+        or payload['decodedPcmDigest'] != info['pcmSha']
+        or _dec(payload['sourceSampleRate']) != info['rate']):
         _deny('CANONICAL_SIGNAL_IDENTITY_MISMATCH')
     if (source_digest not in revision.get('sourceAssetDigests', [])
         or info['sha'] not in revision.get('outputArtifactIds', [])):
         _deny('ARTIFACT_NOT_IN_REVISION')
+    if info['sha'] not in revision.get('sourceAssetDigests', []):
+        _deny('LYRIC_WAV_NOT_PROJECT_SOURCE')
     if (lyric.get('sourceArtifactId') != info['sha']
         or lyric.get('sourceAudioDigest') != info['pcmSha']
         or lyric.get('sourceSampleRate') != info['rate']
