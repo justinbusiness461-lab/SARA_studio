@@ -54,6 +54,36 @@ class SignedStudioV3(unittest.TestCase):
         return verify_vocal_evidence(x['signed'],studio_project=x['project'],source_audio_bytes=x['raw'],
             decoded_wav_bytes=x['wav'],evidence=x['evidence'],grant=x['grant'],
             trusted_issuer_key=x['keys']['issuer'],trusted_observer_key=x['keys']['observer'],trusted_issuer_key_id='issuer-key',trusted_observer_key_id='observer-key')
+    def test_legitimate_lyric_source_needs_no_render_output_binding(self):
+        """Studio project_operation lyric candidate attaches its WAV to sourceAssetDigests only."""
+        x=fixture()
+        self.assertIn(hashlib.sha256(x['wav']).hexdigest(),x['project']['revision']['sourceAssetDigests'])
+        x['project']['revision']['outputArtifactIds']=[]
+        self.assertEqual(self.check(x)['onsetSample'],'3000')
+
+    def test_lawful_lyric_source_read_does_not_use_output_only_audio_api(self):
+        """A source WAV is authorized through selected revision and read by immutable CAS digest."""
+        x=fixture();x['project']['revision']['outputArtifactIds']=[]
+        calls=[]
+        def project(root,req,principal_id=None):
+            calls.append('auth')
+            return x['project']
+        def output_only(*args,**kw):
+            raise AssertionError('source WAV was routed into render-only project_audio_bytes')
+        def cas(root,aid):
+            if aid==hashlib.sha256(x['wav']).hexdigest():
+                calls.append('cas_wav');return x['wav']
+            if aid==hashlib.sha256(x['raw']).hexdigest():
+                calls.append('cas_original');return x['raw']
+            raise AssertionError('unexpected CAS digest')
+        stub=types.SimpleNamespace(project_operation=project, project_audio_bytes=output_only, artifact_bytes=cas)
+        with patch.dict(sys.modules,{'studio_server':stub}):
+            p=verify_vocal_evidence_from_studio('root','principal-1','project-1','revision-1',
+                    x['signed'],x['evidence'],x['grant'],x['keys']['issuer'],x['keys']['observer'],
+                    'issuer-key','observer-key')
+        self.assertEqual(p['onsetSample'],'3000')
+        self.assertEqual(calls,['auth','cas_wav','cas_original'])
+
     def test_lawful_host_authorization_denial_precedes_any_cas_read(self):
         x=fixture();reads=[]
         def denial(*args,**kw):
@@ -73,17 +103,21 @@ class SignedStudioV3(unittest.TestCase):
             reads.append('auth')
             self.assertEqual((principal_id,req),('principal-1',{'projectId':'project-1','revisionId':'revision-1'}))
             return x['project']
-        def audio(root,req,principal_id=None):
-            reads.append('wav');self.assertEqual(req['artifactId'],hashlib.sha256(x['wav']).hexdigest());return x['wav']
+        def output_only(*args,**kw):
+            self.fail('lyric source must never use rendered-output-only media read')
         def cas(root,aid):
-            reads.append('cas');self.assertEqual(aid,hashlib.sha256(x['raw']).hexdigest());return x['raw']
-        stub=types.SimpleNamespace(project_operation=project,project_audio_bytes=audio,artifact_bytes=cas)
+            if aid==hashlib.sha256(x['wav']).hexdigest():
+                reads.append('cas_wav');return x['wav']
+            if aid==hashlib.sha256(x['raw']).hexdigest():
+                reads.append('cas_original');return x['raw']
+            self.fail('unexpected CAS identity')
+        stub=types.SimpleNamespace(project_operation=project,project_audio_bytes=output_only,artifact_bytes=cas)
         with patch.dict(sys.modules,{'studio_server':stub}):
             p=verify_vocal_evidence_from_studio('private-root','principal-1','project-1','revision-1',
                 x['signed'],x['evidence'],x['grant'],x['keys']['issuer'],x['keys']['observer'],
                 'issuer-key','observer-key')
         self.assertEqual(p['onsetSample'],'3000')
-        self.assertEqual(reads,['auth','wav','cas'])
+        self.assertEqual(reads,['auth','cas_wav','cas_original'])
 
     def test_authentic_synthetic_structural_evidence(self):
         x=fixture();p=self.check(x);self.assertEqual(p['onsetSample'],'3000')
@@ -111,8 +145,9 @@ class SignedStudioV3(unittest.TestCase):
         x=fixture();x['decoded_wav_bytes']=x['wav']+b'x'
         with self.assertRaises(StudioEvidenceDenied):verify_vocal_evidence(x['signed'],studio_project=x['project'],source_audio_bytes=x['raw'],decoded_wav_bytes=x['decoded_wav_bytes'],evidence=x['evidence'],grant=x['grant'],trusted_issuer_key=x['keys']['issuer'],trusted_observer_key=x['keys']['observer'],trusted_issuer_key_id='issuer-key',trusted_observer_key_id='observer-key')
     def test_wrong_immutable_project_association_rejected(self):
-        x=fixture();x['project']['revision']['outputArtifactIds']=[]
+        x=fixture();x['project']['revision']['sourceAssetDigests'].remove(hashlib.sha256(x['raw']).hexdigest())
         with self.assertRaisesRegex(StudioEvidenceDenied,'ARTIFACT_NOT_IN_REVISION'):self.check(x)
+
     def test_lyric_word_must_be_in_authorized_timeline(self):
         x=fixture();x['project']['lyricTimeline']['words']=[]
         with self.assertRaisesRegex(StudioEvidenceDenied,'WORD_NOT_IN_STUDIO_LYRIC_TIMELINE'):self.check(x)
