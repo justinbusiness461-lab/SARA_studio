@@ -24,6 +24,7 @@ if strict_real_media:
 sys.path.insert(0,'tools')
 import studio_server as studio
 from m045_artist_master_ingestion import ingest_three_song_batch,commit_verified_edit
+from r25_strict_staging_binding import StrictStagingDenied, verify_real_staging
 TITLES=('Turn The Noise Back On','If This Is All I Get','Outlaws and Echoes')
 real=os.environ.get('SARA_R25_REAL_MEDIA_ROOT')
 root=Path(real or sys.argv[1]).resolve()
@@ -34,6 +35,14 @@ if real:
  latest=json.loads((evidence/'private_r2_receipt.json').read_text())
  originals=imported['songs']
  assert len(originals)==3 and {s['title'] for s in originals}==set(TITLES)
+ if strict_real_media:
+  try:
+   # Only verified artist source hashes, lawful Studio R1 media and an
+   # immutable R1->R2 chain may qualify the strict physical browser run.
+   verify_real_staging(root,principal,originals,latest,
+                       studio.project_operation,studio.project_audio_bytes,\n                       studio.artifact_bytes)
+  except StrictStagingDenied as exc:
+   raise SystemExit('R32_REAL_MEDIA_STAGING_DENIED: ' + str(exc)) from exc
 elif (root/'.r25_fixture_receipt.json').is_file():
  old=json.loads((root/'.r25_fixture_receipt.json').read_text())
  originals=old['originals'];latest=old['latest']

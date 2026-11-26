@@ -1,0 +1,55 @@
+{
+  "schema": "sara.studio.engineer1.r30.physical_source_decode.v1",
+  "date": "2026-11-24",
+  "owner": "SARA_studio",
+  "observedBasePr37": "d876cad4d55aadee144e7bf6756c224b41a8c117",
+  "pr36": "862a7ed11f12835b92c4f0b5673241ae4362b8c2",
+  "source": "Authorized private master source bytes independently decoded in local Python + FFmpeg execution, no synthetic fallback",
+  "decode": "ffmpeg -map 0:a:0 -vn -sn -dn -ac 2 -ar 44100 -c:a pcm_s16le",
+  "results": [
+    {
+      "title": "Turn The Noise Back On",
+      "sourceSha256": "ea55f2178c735a45b28d0416d7f8e04dc5243fff93ce4aa00d530844a23c1627",
+      "pcmSha256": "e2f0208c39cede2033178aff049d4b4bb4fbae7f33c656e5f5dc5d07a6bc064d",
+      "wavSha256": "6dcf6984e2899eb694507009b7743872fbb84ae0a30a64f68d922acbd1d8b980",
+      "frames": 13069476,
+      "sourceBytes": 6924924,
+      "pass": true
+    },
+    {
+      "title": "If This Is All I Get",
+      "sourceSha256": "4832c5c311acd6645346fbd5e25ab50422894b43a568a9dd27a5b50f8425c74f",
+      "pcmSha256": "5c13dbcf0b59b56e691ea0a77d18b831f60158cf280c141fc81519cc5ae9612f",
+      "wavSha256": "d889ccf2f55ac4b59c242b2377b8bbf3ea9f1310357816a343805522ba99c025",
+      "frames": 12789596,
+      "sourceBytes": 4913812,
+      "pass": true
+    },
+    {
+      "title": "Outlaws and Echoes",
+      "sourceSha256": "5f34b55921cf805096956471ac9e2ee2606c69c8818540a914c0fd01d38feb8d",
+      "pcmSha256": "00388e5dadf019b2cf878b7e7ed658e599e20b63b3118dab85957a5b511c794b",
+      "wavSha256": "871a091d2f5b0a03f7f0a4f2917901b84ed42ba24efadae4ec1f635bc388e2a6",
+      "frames": 9632036,
+      "sourceBytes": 3659883,
+      "pass": true
+    }
+  ],
+  "rate": 44100,
+  "channels": 2,
+  "format": "pcm_s16le",
+  "verifiedMasterCount": 3,
+  "externalSpendUsd": 0,
+  "evidenceLimit": {
+    "positiveStudioHandlerStrictRealMediaBrowser": "NOT_EXECUTED",
+    "coldOpen390px": "NOT_EXECUTED",
+    "coldOpen1440px": "NOT_EXECUTED",
+    "r1R2PositionLessThan50Ms": "NOT_EXECUTED",
+    "stagingR2Receipt": "NOT_READ_BACK",
+    "fullExactHeadRegression": "NOT_EXECUTED",
+    "StudioProjectRevisionIngestion": "NOT_EXECUTED",
+    "productionRights": "UNVERIFIED_HELD",
+    "mainIntegration": "NOT_EXECUTED",
+    "round30DriveContinuity": "NOT_PUBLISHED"
+  }
+}

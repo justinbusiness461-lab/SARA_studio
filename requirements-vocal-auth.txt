@@ -1,0 +1,2 @@
+# Studio V3 optional acoustic-evidence issuer dependency. Fail closed if unavailable.
+cryptography>=42,<48
